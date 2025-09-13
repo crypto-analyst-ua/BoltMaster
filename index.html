@@ -13,1066 +13,1113 @@
   <!-- Cloudinary SDK -->
   <script src="https://upload-widget.cloudinary.com/global/all.js"></script>
   <style>
-    /* Обновленные стили с улучшенным дизайном */
-    :root {
-      --primary: #3498db;
-      --secondary: #f39c12;
-      --dark: #2c3e50;
-      --light: #ecf0f1;
-      --danger: #e74c3c;
-      --success: #27ae60;
-      --gray: #95a5a6;
-      --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      --transition: all 0.3s ease;
-      --card-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
-    }
-    
-    * {
-      box-sizing: border-box;
-    }
-    
-    body { 
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-      margin:0; 
-      padding:0; 
-      background:#f7f7f7; 
-      color: #333;
-      line-height: 1.6;
-    }
-    
-    header { 
-      background: var(--dark); 
-      color: #fff; 
-      padding: 15px 20px; 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
-      flex-wrap: wrap;
-      box-shadow: var(--shadow);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    
-    .logo { 
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    
-    .logo i {
-      font-size: 24px;
-      color: var(--secondary);
-    }
-    
-    header h1 { 
-      font-size: 22px; 
-      margin:0; 
-      font-weight: 700;
-    }
-    
-    .header-controls {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    
-    .search-container {
-      position: relative;
-    }
-    
-    header input, header select, header button { 
-      padding: 10px 15px; 
-      border: none;
-      border-radius: 4px;
-      font-size: 14px;
-    }
-    
-    header input {
-      padding-left: 35px;
-      width: 250px;
-    }
-    
-    .search-icon {
-      position: absolute;
-      left: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--gray);
-    }
-    
-    .btn { 
-      padding: 10px 15px; 
-      border: none; 
-      border-radius: 4px; 
-      cursor: pointer; 
-      font-weight: 600;
-      transition: var(--transition);
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-    }
-    
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow);
-    }
-    
-    .btn-buy { 
-      background: var(--secondary); 
-      color: #fff; 
-    }
-    
-    .btn-buy:hover {
-      background: #e67e22;
-    }
-    
-    .btn-detail { 
-      background: var(--primary); 
-      color: #fff;
-    }
-    
-    .btn-detail:hover {
-      background: #2980b9;
-    }
-    
-    .btn-admin { 
-      background: var(--success); 
-      color: #fff; 
-    }
-    
-    .btn-admin:hover {
-      background: #219955;
-    }
-    
-    .btn-cart {
-      background: var(--light);
-      color: var(--dark);
-      position: relative;
-    }
-    
-    .cart-count {
-      position: absolute;
-      top: -8px;
-      right: -8px;
-      background: var(--secondary);
-      color: white;
-      border-radius: 50%;
-      width: 22px;
-      height: 22px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      font-weight: bold;
-    }
-    
-    .btn-favorite {
-      background: transparent;
-      color: var(--gray);
-      padding: 5px;
-    }
-    
-    .btn-favorite.active {
-      color: var(--danger);
-    }
-    
-    .user-menu {
-      position: relative;
-      display: inline-block;
-    }
-    
-    .user-btn {
-      background: var(--primary);
-      color: white;
-      border-radius: 20px;
-      padding: 8px 15px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-    }
-    
-    .user-dropdown {
-      display: none;
-      position: absolute;
-      right: 0;
-      top: 100%;
-      background: white;
-      min-width: 150px;
-      box-shadow: var(--shadow);
-      border-radius: 4px;
-      z-index: 1000;
-      margin-top: 5px;
-    }
-    
-    .user-dropdown a {
-      display: block;
-      padding: 10px 15px;
-      color: #333;
-      text-decoration: none;
-    }
-    
-    .user-dropdown a:hover {
-      background: #f5f5f5;
-    }
-    
-    .user-menu:hover .user-dropdown {
-      display: block;
-    }
-    
-    main { 
-      max-width: 1400px; 
-      margin: 20px auto; 
-      display: grid; 
-      grid-template-columns: 1fr 3fr 1fr; 
-      gap: 20px; 
-      padding: 0 20px;
-    }
-    
-    .filters {
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: var(--shadow);
-      align-self: start;
-    }
-    
-    .filters h3 {
-      margin-top: 0;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #eee;
-    }
-    
-    .filter-group {
-      margin-bottom: 15px;
-    }
-    
-    .filter-group label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: 500;
-    }
-    
-    .filter-group input, .filter-group select {
-      width: 100%;
-      padding: 8px 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
-    
-    .price-range {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-    
-    .price-range input {
-      flex: 1;
-    }
-    
-    .filter-buttons {
-      display: flex;
-      gap: 10px;
-    }
-    
-    .filter-buttons button {
-      flex: 1;
-      padding: 8px;
-    }
-    
-    .products-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-      gap: 15px;
-    }
-    
-    .sort-select {
-      padding: 8px 15px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
-    
-    .view-options {
-      display: flex;
-      gap: 10px;
-    }
-    
-    .view-btn {
-      background: #f0f0f0;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    
-    .view-btn.active {
-      background: var(--primary);
-      color: white;
-    }
-    
-    .grid { 
-      display: grid; 
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
-      gap: 20px; 
-    }
-    
-    .list-view .card {
-      display: flex;
-      flex-direction: row;
-    }
-    
-    .list-view .card img {
-      width: 150px;
-      height: 150px;
-      margin-right: 15px;
-    }
-    
-    .list-view .card h3 {
-      margin-top: 0;
-    }
-    
-    .card { 
-      background: #fff; 
-      padding: 15px; 
-      border-radius: 8px; 
-      box-shadow: var(--card-shadow);
-      transition: var(--transition);
-      display: flex;
-      flex-direction: column;
-      position: relative;
-    }
-    
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    }
-    
-    .card-badge {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background: var(--secondary);
-      color: white;
-      padding: 5px 10px;
-      border-radius: 3px;
-      font-size: 12px;
-      font-weight: bold;
-      z-index: 2;
-    }
-    
-    .card-discount {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: var(--danger);
-      color: white;
-      padding: 5px 10px;
-      border-radius: 3px;
-      font-size: 12px;
-      font-weight: bold;
-      z-index: 2;
-    }
-    
-    .card img { 
-      width: 100%; 
-      height: 180px; 
-      object-fit: cover; 
-      border-radius: 6px; 
-      margin-bottom: 15px;
-      transition: var(--transition);
-    }
-    
-    .card:hover img {
-      transform: scale(1.05);
-    }
-    
-    .card h3 { 
-      margin: 0 0 10px; 
-      font-size: 16px; 
-      font-weight: 600;
-      flex-grow: 1;
-    }
-    
-    .card p { 
-      font-size: 14px; 
-      color: #555; 
-      margin-bottom: 15px;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-    
-    .price-container {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin: 10px 0;
-    }
-    
-    .price { 
-      font-weight: bold; 
-      font-size: 18px;
-      color: var(--dark);
-    }
-    
-    .old-price {
-      text-decoration: line-through;
-      color: var(--gray);
-      font-size: 14px;
-    }
-    
-    .rating {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      color: #f39c12;
-      margin: 5px 0;
-    }
-    
-    .card-actions {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 15px;
-      gap: 10px;
-    }
-    
-    .card-actions button {
-      flex: 1;
-    }
-    
-    aside { 
-      background: #fff; 
-      padding: 20px; 
-      border-radius: 8px; 
-      box-shadow: var(--shadow);
-      align-self: start;
-    }
-    
-    aside h3 {
-      margin-top: 0;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #eee;
-    }
-    
-    .featured-products {
-      margin-top: 20px;
-    }
-    
-    .featured-item {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 15px;
-      padding-bottom: 15px;
-      border-bottom: 1px solid #eee;
-    }
-    
-    .featured-item img {
-      width: 60px;
-      height: 60px;
-      object-fit: cover;
-      border-radius: 4px;
-    }
-    
-    .featured-item-info {
-      flex-grow: 1;
-    }
-    
-    .featured-item-title {
-      font-size: 14px;
-      margin: 0 0 5px;
-    }
-    
-    .featured-item-price {
-      font-weight: bold;
-      color: var(--secondary);
-    }
-    
-    footer { 
-      text-align:center; 
-      padding: 30px 15px; 
-      font-size:14px; 
-      color: #555; 
-      background: var(--dark);
-      color: white;
-      margin-top: 40px;
-    }
-    
-    .footer-content {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 30px;
-      text-align: left;
-    }
-    
-    .footer-section h4 {
-      color: var(--secondary);
-      margin-bottom: 15px;
-    }
-    
-    .footer-section p, .footer-section a {
-      color: #ccc;
-      margin-bottom: 10px;
-      display: block;
-      text-decoration: none;
-    }
-    
-    .footer-section a:hover {
-      color: white;
-    }
-    
-    .social-links {
-      display: flex;
-      gap: 15px;
-      margin-top: 15px;
-    }
-    
-    .social-links a {
-      color: white;
-      font-size: 18px;
-    }
-    
-    .copyright {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding-top: 20px;
-      margin-top: 20px;
-      border-top: 1px solid #444;
-    }
-    
-    .modal { 
-      position: fixed; 
-      top: 0; 
-      left: 0; 
-      right: 0; 
-      bottom: 0; 
-      background: rgba(0,0,0,0.6); 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      z-index: 1000;
-      padding: 20px;
-      opacity: 0;
-      visibility: hidden;
-      transition: var(--transition);
-    }
-    
-    .modal.active {
-      opacity: 1;
-      visibility: visible;
-    }
-    
-    .modal-content { 
-      background: #fff; 
-      padding: 30px; 
-      border-radius: 8px; 
-      max-width: 800px; 
-      width: 100%;
-      max-height: 90vh;
-      overflow-y: auto;
-      position: relative;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    }
-    
-    .modal-close {
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      background: none;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      color: var(--gray);
-    }
-    
-    .modal h3 { 
-      margin-top: 0; 
-      font-size: 24px;
-      padding-right: 30px;
-    }
-    
-    .product-detail {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 30px;
-    }
-    
-    .product-image {
-      border-radius: 8px;
-      overflow: hidden;
-      position: relative;
-    }
-    
-    .product-image img {
-      width: 100%;
-      height: auto;
-      display: block;
-    }
-    
-    .product-gallery {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      margin-top: 10px;
-    }
-    
-    .product-gallery img {
-      height: 70px;
-      cursor: pointer;
-      border-radius: 4px;
-      opacity: 0.7;
-      transition: var(--transition);
-    }
-    
-    .product-gallery img:hover, .product-gallery img.active {
-      opacity: 1;
-    }
-    
-    .product-info h4 {
-      margin-top: 0;
-      color: var(--dark);
-    }
-    
-    .detail-price {
-      font-size: 24px;
-      font-weight: bold;
-      color: var(--secondary);
-      margin: 15px 0;
-    }
-    
-    .product-meta {
-      display: flex;
-      gap: 15px;
-      margin: 15px 0;
-      font-size: 14px;
-      color: #777;
-    }
-    
-    .product-meta div {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-    
-    .product-description {
-      margin: 20px 0;
-      line-height: 1.6;
-    }
-    
-    .product-specs {
-      margin: 20px 0;
-    }
-    
-    .spec-row {
-      display: flex;
-      padding: 8px 0;
-      border-bottom: 1px solid #eee;
-    }
-    
-    .spec-name {
-      font-weight: 500;
-      width: 40%;
-      color: #555;
-    }
-    
-    .spec-value {
-      width: 60%;
-    }
-    
-    .detail-actions {
-      display: flex;
-      gap: 10px;
-      margin-top: 20px;
-    }
-    
-    .detail-actions button {
-      flex: 1;
-    }
-    
-    .quantity-control {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin: 15px 0;
-    }
-    
-    .quantity-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      border: 1px solid #ddd;
-      background: white;
-      font-size: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: var(--transition);
-    }
-    
-    .quantity-btn:hover {
-      background: #f5f5f5;
-    }
-    
-    .quantity-input {
-      width: 50px;
-      text-align: center;
-      padding: 5px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
-    
-    .cart-item {
-      display: flex;
-      gap: 15px;
-      padding: 15px 0;
-      border-bottom: 1px solid #eee;
-    }
-    
-    .cart-item-image {
-      width: 80px;
-      height: 80px;
-      border-radius: 6px;
-      object-fit: cover;
-    }
-    
-    .cart-item-details {
-      flex-grow: 1;
-    }
-    
-    .cart-item-title {
-      font-weight: 600;
-      margin-bottom: 5px;
-    }
-    
-    .cart-item-price {
-      color: var(--secondary);
-      font-weight: bold;
-    }
-    
-    .cart-item-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    
-    .cart-total {
-      font-size: 18px;
-      font-weight: bold;
-      text-align: right;
-      margin: 20px 0;
-      padding-top: 20px;
-      border-top: 2px solid #eee;
-    }
-    
-    .empty-cart {
-      text-align: center;
-      padding: 30px;
-      color: var(--gray);
-    }
-    
-    .empty-cart i {
-      font-size: 50px;
-      margin-bottom: 15px;
-    }
-    
-    .checkout-form {
-      margin-top: 20px;
-    }
-    
-    .form-group {
-      margin-bottom: 15px;
-    }
-    
-    .form-group label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: 500;
-    }
-    
-    .form-group input, .form-group textarea, .form-group select {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-family: inherit;
-    }
-    
-    .form-row {
-      display: flex;
-      gap: 15px;
-    }
-    
-    .form-row .form-group {
-      flex: 1;
-    }
-    
-    .notification {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: var(--success);
-      color: white;
-      padding: 15px 20px;
-      border-radius: 6px;
-      box-shadow: var(--shadow);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      transform: translateY(100px);
-      opacity: 0;
-      transition: var(--transition);
-      z-index: 1000;
-    }
-    
-    .notification.error {
-      background: var(--danger);
-    }
-    
-    .notification.warning {
-      background: var(--secondary);
-    }
-    
-    .notification.show {
-      transform: translateY(0);
-      opacity: 1;
-    }
-    
-    .admin-panel {
-      margin-top: 20px;
-      padding-top: 20px;
-      border-top: 1px solid #eee;
-    }
-    
-    .admin-panel h4 {
-      margin-top: 0;
-      }
-    
-    .tabs {
-      display: flex;
-      border-bottom: 1px solid #ddd;
-      margin-bottom: 20px;
-    }
-    
-    .tab {
-      padding: 10px 20px;
-      cursor: pointer;
-      border-bottom: 3px solid transparent;
-    }
-    
-    .tab.active {
-      border-bottom-color: var(--primary);
-      color: var(--primary);
-      font-weight: 600;
-    }
-    
-    .tab-content {
-      display: none;
-    }
-    
-    .tab-content.active {
-      display: block;
-    }
-    
-    .admin-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 15px 0;
-    }
-    
-    .admin-table th, .admin-table td {
-      padding: 10px;
-      text-align: left;
-      border-bottom: 1px solid #eee;
-    }
-    
-    .admin-table th {
-      background: #f7f7f7;
-      font-weight: 600;
-    }
-    
-    .admin-table tr:hover {
-      background: #f9f9f9;
-    }
-    
-    .loading {
-      text-align: center;
-      padding: 40px;
-      color: var(--gray);
-    }
-    
-    .loading i {
-      font-size: 48px;
-      margin-bottom: 15px;
-      animation: spin 1s infinite linear;
-    }
-    
-    .skeleton {
-      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-      background-size: 200% 100%;
-      animation: loading 1.5s infinite;
-      border-radius: 4px;
-      height: 1em;
-      margin-bottom: 10px;
-    }
-    
-    .skeleton-img {
-      height: 180px;
-      margin-bottom: 15px;
-      border-radius: 6px;
-    }
-    
-    .skeleton-title {
-      height: 20px;
-      width: 80%;
-      margin-bottom: 10px;
-    }
-    
-    .skeleton-text {
-      height: 14px;
-      width: 100%;
-      margin-bottom: 8px;
-    }
-    
-    .skeleton-price {
-      height: 24px;
-      width: 40%;
-      margin: 10px 0;
-    }
-    
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    
-    @keyframes loading {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-    
-    .pagination {
-      display: flex;
-      justify-content: center;
-      margin-top: 30px;
-      gap: 5px;
-    }
-    
-    .pagination button {
-      padding: 8px 15px;
-      border: 1px solid #ddd;
-      background: white;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    
-    .pagination button.active {
-      background: var(--primary);
-      color: white;
-      border-color: var(--primary);
-    }
-    
-    .pagination button:hover:not(.active) {
-      background: #f5f5f5;
-    }
-    
-    .auth-modal {
-      max-width: 400px;
-    }
-    
-    .auth-tabs {
-      display: flex;
-      margin-bottom: 20px;
-    }
-    
-    .auth-tab {
-      flex: 1;
-      text-align: center;
-      padding: 10px;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-    }
-    
-    .auth-tab.active {
-      border-bottom-color: var(--primary);
-      color: var(--primary);
-      font-weight: 600;
-    }
-    
-    @media (max-width: 1200px) {
-      main {
-        grid-template-columns: 1fr 2fr;
-      }
-      
-      aside {
-        grid-column: 1 / -1;
-      }
-    }
-    
-    @media (max-width: 900px) {
-      main {
-        grid-template-columns: 1fr;
-      }
-      
-      .product-detail {
-        grid-template-columns: 1fr;
-      }
-      
-      header {
-        flex-direction: column;
-        gap: 15px;
-      }
-      
-      .header-controls {
-        width: 100%;
-        justify-content: center;
-      }
-      
-      .footer-content {
-        grid-template-columns: 1fr;
-        text-align: center;
-      }
-      
-      .social-links {
-        justify-content: center;
-      }
-    }
-    
-    @media (max-width: 600px) {
-      .header-controls {
-        flex-direction: column;
-        width: 100%;
-      }
-      
-      .search-container, header select, header button {
-        width: 100%;
-      }
-      
-      .grid {
-        grid-template-columns: 1fr;
-      }
-      
-      .card-actions {
-        flex-direction: column;
-      }
-      
-      .form-row {
-        flex-direction: column;
-        gap: 0;
-      }
-      
-      .product-meta {
-        flex-direction: column;
-        gap: 5px;
-      }
-    }
+/* Основные переменные и сброс стилей */
+:root {
+  --primary: #3498db;
+  --secondary: #f39c12;
+  --dark: #2c3e50;
+  --light: #ecf0f1;
+  --danger: #e74c3c;
+  --success: #27ae60;
+  --gray: #95a5a6;
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --transition: all 0.3s ease;
+  --card-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+  --border-radius: 8px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f7f7f7;
+  color: #333;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+}
+
+/* Контейнеры и сетка */
+main {
+  display: grid;
+  grid-template-columns: 250px 1fr 250px;
+  gap: 20px;
+  max-width: 1400px;
+  margin: 20px auto;
+  padding: 0 15px;
+}
+
+@media (max-width: 1024px) {
+  main {
+    grid-template-columns: 200px 1fr;
+  }
+  
+  main > aside:last-child {
+    grid-column: 1 / -1;
+    margin-top: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  main {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Шапка */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background: white;
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo i {
+  font-size: 24px;
+  color: var(--primary);
+}
+
+.logo h1 {
+  font-size: 18px;
+  margin: 0;
+  color: var(--dark);
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.search-container {
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--gray);
+}
+
+#search {
+  padding: 8px 10px 8px 35px;
+  border: 1px solid #ddd;
+  border-radius: var(--border-radius);
+  width: 200px;
+}
+
+select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: var(--border-radius);
+  background: white;
+}
+
+.btn {
+  padding: 8px 12px;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 500;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+.btn-admin {
+  background: var(--dark);
+  color: white;
+}
+
+.btn-cart {
+  position: relative;
+  background: var(--primary);
+  color: white;
+}
+
+.cart-count {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: var(--danger);
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.user-menu {
+  position: relative;
+  display: inline-block;
+}
+
+.user-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: var(--border-radius);
+  background: #f5f5f5;
+}
+
+.user-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  width: 150px;
+  display: none;
+  z-index: 10;
+}
+
+.user-menu:hover .user-dropdown {
+  display: block;
+}
+
+.user-dropdown a {
+  display: block;
+  padding: 10px 15px;
+  text-decoration: none;
+  color: var(--dark);
+  transition: var(--transition);
+}
+
+.user-dropdown a:hover {
+  background: #f5f5f5;
+}
+
+/* Боковая панель с фильтрами */
+.filters {
+  background: white;
+  padding: 20px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  height: fit-content;
+  position: sticky;
+  top: 90px;
+}
+
+.filters h3 {
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.filter-group {
+  margin-bottom: 15px;
+}
+
+.filter-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.price-range {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.price-range input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: var(--border-radius);
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.btn-detail {
+  background: var(--primary);
+  color: white;
+}
+
+/* Сетка товаров */
+.products-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.view-options {
+  display: flex;
+  gap: 5px;
+}
+
+.view-btn {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+}
+
+.view-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.grid.list-view {
+  grid-template-columns: 1fr;
+}
+
+.card {
+  background: white;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+  transition: var(--transition);
+  position: relative;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.card h3 {
+  padding: 15px 15px 5px;
+  font-size: 16px;
+  margin: 0;
+}
+
+.card p {
+  padding: 0 15px;
+  color: #666;
+  font-size: 14px;
+  margin: 0 0 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.price-container {
+  padding: 0 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.price {
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--dark);
+}
+
+.old-price {
+  font-size: 14px;
+  color: var(--gray);
+  text-decoration: line-through;
+}
+
+.rating {
+  padding: 0 15px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #f39c12;
+  font-size: 14px;
+  margin-bottom: 15px;
+}
+
+.card-actions {
+  padding: 0 15px 15px;
+  display: flex;
+  gap: 10px;
+}
+
+.btn-buy {
+  background: var(--secondary);
+  color: white;
+  flex: 1;
+  justify-content: center;
+}
+
+.btn-favorite {
+  background: none;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 18px;
+  transition: var(--transition);
+}
+
+.btn-favorite.active, .btn-favorite:hover {
+  color: var(--danger);
+}
+
+.card-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: var(--success);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.card-discount {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: var(--danger);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Скелетон загрузки */
+.skeleton-img {
+  background: #ddd;
+  height: 200px;
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+.skeleton-title {
+  height: 20px;
+  background: #ddd;
+  margin: 15px 15px 10px;
+  border-radius: 4px;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+.skeleton-text {
+  height: 14px;
+  background: #ddd;
+  margin: 0 15px 8px;
+  border-radius: 4px;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+.skeleton-price {
+  height: 24px;
+  width: 80px;
+  background: #ddd;
+  margin: 0 15px 10px;
+  border-radius: 4px;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Популярные товары */
+.featured-products {
+  background: white;
+  padding: 15px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  margin-top: 20px;
+}
+
+.featured-item {
+  display: flex;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.featured-item:last-child {
+  border-bottom: none;
+}
+
+.featured-item:hover {
+  background: #f9f9f9;
+}
+
+.featured-item img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: var(--border-radius);
+}
+
+.featured-item-info {
+  flex: 1;
+}
+
+.featured-item-title {
+  font-size: 14px;
+  margin: 0 0 5px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.featured-item-price {
+  font-weight: bold;
+  color: var(--dark);
+}
+
+/* Пагинация */
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 30px;
+}
+
+.pagination button {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+}
+
+.pagination button.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* Админ-панель */
+.admin-panel {
+  background: white;
+  padding: 20px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  margin-top: 20px;
+}
+
+.admin-panel h4 {
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 15px;
+}
+
+.tab {
+  padding: 10px 15px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+
+.tab.active {
+  border-bottom-color: var(--primary);
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* Модальное окно */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal.active {
+  display: flex;
+}
+
+.modal-content {
+  background: white;
+  border-radius: var(--border-radius);
+  padding: 25px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--gray);
+}
+
+.modal h3 {
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+/* Детали товара */
+.product-detail {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .product-detail {
+    grid-template-columns: 1fr;
+  }
+}
+
+.product-image img {
+  width: 100%;
+  border-radius: var(--border-radius);
+}
+
+.detail-price {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--dark);
+}
+
+.product-meta {
+  margin: 15px 0;
+}
+
+.product-meta div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  color: #666;
+}
+
+.product-description {
+  margin: 15px 0;
+}
+
+.quantity-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.quantity-btn {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+}
+
+.quantity-input {
+  width: 50px;
+  text-align: center;
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: var(--border-radius);
+}
+
+.detail-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* Корзина */
+.cart-item {
+  display: flex;
+  gap: 15px;
+  padding: 15px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.cart-item:last-child {
+  border-bottom: none;
+}
+
+.cart-item-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: var(--border-radius);
+}
+
+.cart-item-details {
+  flex: 1;
+}
+
+.cart-item-title {
+  margin: 0 0 5px;
+  font-size: 16px;
+}
+
+.cart-item-price {
+  font-weight: bold;
+  color: var(--dark);
+  margin-bottom: 10px;
+}
+
+.cart-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cart-total {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 20px 0;
+  text-align: right;
+  padding-top: 15px;
+  border-top: 2px solid #eee;
+}
+
+.empty-cart {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.empty-cart i {
+  font-size: 60px;
+  color: #ddd;
+  margin-bottom: 15px;
+}
+
+.empty-cart h3 {
+  margin-bottom: 10px;
+}
+
+/* Формы */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: var(--border-radius);
+  font-family: inherit;
+}
+
+.checkout-form {
+  margin-top: 20px;
+}
+
+/* Доставка */
+.delivery-options {
+  margin: 20px 0;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.delivery-option {
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.delivery-option:last-child {
+  border-bottom: none;
+}
+
+.delivery-option:hover {
+  background-color: #f9f9f9;
+}
+
+.delivery-option.selected {
+  background-color: #e8f4fd;
+  border-left: 4px solid var(--primary);
+}
+
+.delivery-details {
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  margin-top: 10px;
+  display: none;
+}
+
+.delivery-details.active {
+  display: block;
+}
+
+.city-search {
+  position: relative;
+  margin-bottom: 15px;
+}
+
+.suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 100;
+  display: none;
+}
+
+.suggestions.active {
+  display: block;
+}
+
+.suggestion-item {
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
+
+.suggestion-item:hover {
+  background-color: #f0f0f0;
+}
+
+.warehouses-list {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  display: none;
+}
+
+.warehouses-list.active {
+  display: block;
+}
+
+.warehouse-item {
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
+
+.warehouse-item:hover {
+  background-color: #f0f0f0;
+}
+
+/* Уведомления */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: white;
+  padding: 15px 20px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transform: translateX(100%);
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.notification.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.notification.success {
+  border-left: 4px solid var(--success);
+}
+
+.notification.error {
+  border-left: 4px solid var(--danger);
+}
+
+.notification.warning {
+  border-left: 4px solid var(--secondary);
+}
+
+/* Вкладки авторизации */
+.auth-tabs {
+  display: flex;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 20px;
+}
+
+.auth-tab {
+  padding: 10px 15px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+
+.auth-tab.active {
+  border-bottom-color: var(--primary);
+  color: var(--primary);
+  font-weight: 500;
+}
+
+/* Статусы заказов */
+.order-status {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.status-new {
+  background-color: #3498db;
+  color: white;
+}
+
+.status-processing {
+  background-color: #f39c12;
+  color: white;
+}
+
+.status-shipped {
+  background-color: #9b59b6;
+  color: white;
+}
+
+.status-delivered {
+  background-color: #27ae60;
+  color: white;
+}
+
+.status-cancelled {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.admin-order-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+/* Футер */
+footer {
+  background: var(--dark);
+  color: white;
+  padding: 40px 0 20px;
+  margin-top: 50px;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 30px;
+}
+
+.footer-section h4 {
+  margin-bottom: 15px;
+  font-size: 18px;
+}
+
+.footer-section a {
+  display: block;
+  color: #ddd;
+  text-decoration: none;
+  margin-bottom: 10px;
+  transition: var(--transition);
+}
+
+.footer-section a:hover {
+  color: white;
+}
+
+.footer-section p {
+  margin-bottom: 10px;
+  color: #ddd;
+}
+
+.social-links {
+  display: flex;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.social-links a {
+  font-size: 20px;
+}
+
+.copyright {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding-top: 20px;
+  margin-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ddd;
+}
+
+/* Адаптивность */
+@media (max-width: 1024px) {
+  .header-controls {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  
+  #search {
+    width: 150px;
+  }
+}
+
+@media (max-width: 768px) {
+  header {
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px;
+  }
+  
+  .logo h1 {
+    font-size: 16px;
+  }
+  
+  .header-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  #search {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+  
+  .footer-content {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+  
+  .social-links {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .card-actions {
+    flex-direction: column;
+  }
+  
+  .detail-actions {
+    flex-direction: column;
+  }
+  
+  .admin-order-actions {
+    flex-direction: column;
+  }
+  
+  .modal-content {
+    padding: 15px;
+  }
+  
+  .product-detail {
+    gap: 15px;
+  }
+}
   </style>
 </head>
 <body>
@@ -1566,7 +1613,7 @@
   async function uploadToCloudinary(imageUrl, productId) {
     return new Promise((resolve, reject) => {
       // Формируем URL для загрузки через Cloudinary
-      const uploadUrl = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOAD_NAME}/upload`;
+      const uploadUrl = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`;
       
       // Создаем форму данных для загрузки
       const formData = new FormData();
@@ -2192,306 +2239,726 @@
         <div class="form-row">
           <div class="form-group">
             <label>Имя</label>
-            <input type="text" required value="${currentUser.displayName || ''}">
+            <input type="text" id="order-name" required value="${currentUser.displayName || ''}">
           </div>
           <div class="form-group">
             <label>Телефон</label>
-            <input type="tel" required>
+            <input type="tel" id="order-phone" required>
           </div>
         </div>
         <div class="form-group">
-            <label>Email</label>
-            <input type="email" required value="${currentUser.email || ''}">
+          <label>Email</label>
+          <input type="email" id="order-email" required value="${currentUser.email || ''}">
+        </div>
+        
+        <div class="delivery-options">
+          <h4>Способ доставки</h4>
+          <div class="delivery-option" onclick="selectDelivery('nova-poshta')">
+            <input type="radio" name="delivery" id="nova-poshta" value="nova-poshta">
+            <label for="nova-poshta">Новая Почта</label>
           </div>
+          <div class="delivery-option" onclick="selectDelivery('ukr-poshta')">
+            <input type="radio" name="delivery" id="ukr-poshta" value="ukr-poshta">
+            <label for="ukr-poshta">Укрпочта</label>
+          </div>
+          <div class="delivery-option" onclick="selectDelivery('courier')">
+            <input type="radio" name="delivery" id="courier" value="courier">
+            <label for="courier">Курьерская доставка</label>
+          </div>
+        </div>
+        
+        <div id="nova-poshta-details" class="delivery-details">
+          <div class="city-search">
+            <label>Город</label>
+            <input type="text" id="np-city" placeholder="Начните вводить название города" oninput="searchCities(this.value, 'nova-poshta')">
+            <div id="np-city-suggestions" class="suggestions"></div>
+          </div>
+          <div class="form-group">
+            <label>Отделение</label>
+            <div id="np-warehouses" class="warehouses-list"></div>
+          </div>
+        </div>
+        
+        <div id="ukr-poshta-details" class="delivery-details">
+          <div class="city-search">
+            <label>Город</label>
+            <input type="text" id="up-city" placeholder="Начните вводить название города" oninput="searchCities(this.value, 'ukr-poshta')">
+            <div id="up-city-suggestions" class="suggestions"></div>
+          </div>
+          <div class="form-group">
+            <label>Отделение</label>
+            <div id="up-warehouses" class="warehouses-list"></div>
+          </div>
+        </div>
+        
+        <div id="courier-details" class="delivery-details">
           <div class="form-group">
             <label>Адрес доставки</label>
-            <textarea required></textarea>
+            <textarea id="courier-address" required placeholder="Улица, дом, квартира"></textarea>
           </div>
-          <div class="form-group">
-            <label>Способ оплата</label>
-            <select required>
-              <option value="">Выберите способ оплаты</option>
-              <option value="cash">Наличными при получении</option>
-              <option value="card">Онлайн-оплата картой</option>
-            </select>
-          </div>
-          <button type="submit" class="btn btn-buy">Подтвердить заказ</button>
-        </form>
-      `;
-    }
-    
-    // Размещение заказа
-    function placeOrder(event) {
-      event.preventDefault();
-      
-      const order = {
-        userId: currentUser.uid,
-        items: cart,
-        total: Object.entries(cart).reduce((sum, [productId, quantity]) => {
-          const product = products.find(p => p.id === productId);
-          return sum + (product ? product.price * quantity : 0);
-        }, 0),
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        status: 'new'
-      };
-      
-      db.collection("orders").add(order)
-        .then(() => {
-          // Очищаем корзину
-          cart = {};
-          localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
-          updateCartCount();
-          
-          showNotification("Заказ успешно оформлен");
-          closeModal();
-        })
-        .catch(error => {
-          console.error("Ошибка оформления заказа: ", error);
-          showNotification("Ошибка оформления заказа", "error");
-        });
-    }
-    
-    // Открытие модального окна
-    function openModal() {
-      document.getElementById("modal").classList.add("active");
-    }
-    
-    // Закрытие модального окна
-    function closeModal() {
-      document.getElementById("modal").classList.remove("active");
-    }
-    
-    // Открытие модального окна авторизации
-    function openAuthModal() {
-      const modalContent = document.getElementById("modal-content");
-      modalContent.innerHTML = `
-        <h3>Вход в систему</h3>
-        <div class="auth-tabs">
-          <div class="auth-tab active" onclick="switchAuthTab('login')">Вход</div>
-          <div class="auth-tab" onclick="switchAuthTab('register')">Регистрация</div>
-          <div class="auth-tab" onclick="switchAuthTab('admin')">Администратор</div>
         </div>
-        <form id="login-form" onsubmit="login(event)">
-          <div class="form-group">
-            <label>Email</label>
-            <input type="email" required>
-          </div>
-          <div class="form-group">
-            <label>Пароль</label>
-            <input type="password" required>
-          </div>
-          <button type="submit" class="btn btn-detail">Войти</button>
-        </form>
-        <form id="register-form" style="display:none;" onsubmit="register(event)">
-          <div class="form-group">
-            <label>Имя</label>
-            <input type="text" required>
-          </div>
-          <div class="form-group">
-            <label>Email</label>
-            <input type="email" required>
-          </div>
-          <div class="form-group">
-            <label>Пароль</label>
-            <input type="password" required minlength="6">
-          </div>
-          <button type="submit" class="btn btn-detail">Зарегистрироваться</button>
-        </form>
-        <div id="admin-auth-form" style="display:none;">
-          <p>Для доступа к панели администратора введите пароль:</p>
-          <div class="form-group">
-            <label>Пароль администратора</label>
-            <input type="password" id="admin-password" required>
-          </div>
-          <button class="btn btn-admin" onclick="verifyAdminPassword()">Получить права администратора</button>
+        
+        <div class="form-group">
+          <label>Способ оплаты</label>
+          <select id="payment-method" required>
+            <option value="">Выберите способ оплаты</option>
+            <option value="cash">Наличными при получении</option>
+            <option value="card">Онлайн-оплата картой</option>
+          </select>
         </div>
-      `;
-      
-      openModal();
+        
+        <div class="cart-total">Итого: ${formatPrice(calculateCartTotal())} ₴</div>
+        
+        <button type="submit" class="btn btn-buy">Подтвердить заказ</button>
+      </form>
+    `;
+    
+    openModal();
+  }
+
+  // Выбор способа доставки
+  function selectDelivery(method) {
+    // Устанавливаем выбранный radio
+    document.getElementById(method).checked = true;
+    
+    // Убираем выделение со всех вариантов
+    document.querySelectorAll('.delivery-option').forEach(option => {
+      option.classList.remove('selected');
+    });
+    
+    // Добавляем выделение к выбранному варианту
+    document.querySelector(`.delivery-option[onclick="selectDelivery('${method}')"]`).classList.add('selected');
+    
+    // Скрываем все блоки с деталями доставки
+    document.querySelectorAll('.delivery-details').forEach(details => {
+      details.classList.remove('active');
+    });
+    
+    // Показываем только выбранный блок
+    document.getElementById(`${method}-details`).classList.add('active');
+  }
+
+  // Поиск городов для Новой Почты и Укрпочты
+  async function searchCities(query, service) {
+    if (query.length < 2) {
+      document.getElementById(`${service}-city-suggestions`).innerHTML = '';
+      document.getElementById(`${service}-city-suggestions`).classList.remove('active');
+      return;
     }
     
-    // Переключение вкладок авторизации
-    function switchAuthTab(tab) {
-      const loginForm = document.getElementById("login-form");
-      const registerForm = document.getElementById("register-form");
-      const adminForm = document.getElementById("admin-auth-form");
-      const tabs = document.querySelectorAll(".auth-tab");
+    try {
+      // В реальном приложении здесь должен быть запрос к API службы доставки
+      // Для демонстрации используем заглушку
+      let cities = [];
       
-      tabs.forEach(t => t.classList.remove('active'));
-      
-      if (tab === 'login') {
-        loginForm.style.display = 'block';
-        registerForm.style.display = 'none';
-        adminForm.style.display = 'none';
-        tabs[0].classList.add('active');
-      } else if (tab === 'register') {
-        loginForm.style.display = 'none';
-        registerForm.style.display = 'block';
-        adminForm.style.display = 'none';
-        tabs[1].classList.add('active');
-      } else if (tab === 'admin') {
-        loginForm.style.display = 'none';
-        registerForm.style.display = 'none';
-        adminForm.style.display = 'block';
-        tabs[2].classList.add('active');
+      if (service === 'nova-poshta') {
+        // Заглушка для Новой Почты
+        cities = [
+          'Киев', 'Харьков', 'Одесса', 'Днепр', 'Львов', 
+          'Запорожье', 'Винница', 'Херсон', 'Полтава'
+        ].filter(city => city.toLowerCase().includes(query.toLowerCase()));
+      } else if (service === 'ukr-poshta') {
+        // Заглушка для Укрпочты
+        cities = [
+          'Киев', 'Харьков', 'Одесса', 'Днепр', 'Львов',
+          'Запорожье', 'Винница', 'Херсон', 'Полтава', 'Чернигов'
+        ].filter(city => city.toLowerCase().includes(query.toLowerCase()));
       }
-    }
-    
-    // Вход в систему
-    function login(event) {
-      event.preventDefault();
-      const email = event.target.querySelector('input[type="email"]').value;
-      const password = event.target.querySelector('input[type="password"]').value;
       
-      auth.signInWithEmailAndPassword(email, password)
-        .then(() => {
-          showNotification("Вход выполнен успешно");
-          closeModal();
-        })
-        .catch(error => {
-          console.error("Ошибка входа: ", error);
-          showNotification("Ошибка входа: " + error.message, "error");
-        });
-    }
-    
-    // Регистрация
-    function register(event) {
-      event.preventDefault();
-      const name = event.target.querySelector('input[type="text"]').value;
-      const email = event.target.querySelector('input[type="email"]').value;
-      const password = event.target.querySelector('input[type="password"]').value;
+      const suggestions = document.getElementById(`${service}-city-suggestions`);
+      suggestions.innerHTML = '';
       
-      auth.createUserWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-          // Обновляем профиль пользователя
-          return userCredential.user.updateProfile({
-            displayName: name
-          });
-        })
-        .then(() => {
-          showNotification("Регистрация выполнена успешно");
-          closeModal();
-        })
-        .catch(error => {
-          console.error("Ошибка регистрации: ", error);
-          showNotification("Ошибка регистрации: " + error.message, "error");
+      if (cities.length > 0) {
+        cities.forEach(city => {
+          const item = document.createElement('div');
+          item.className = 'suggestion-item';
+          item.textContent = city;
+          item.onclick = () => {
+            document.getElementById(`${service}-city`).value = city;
+            suggestions.innerHTML = '';
+            suggestions.classList.remove('active');
+            // Загружаем отделения для выбранного города
+            loadWarehouses(city, service);
+          };
+          suggestions.appendChild(item);
         });
-    }
-    
-    // Функция проверки пароля администратора
-    function verifyAdminPassword() {
-      const password = document.getElementById("admin-password").value;
-      if (password === ADMIN_PASSWORD) {
-        if (!currentUser) {
-          showNotification("Сначала войдите в систему", "error");
-          switchAuthTab('login');
-          return;
-        }
-        
-        // Сохраняем пользователя как администратора
-        const admins = JSON.parse(localStorage.getItem(ADMINS_STORAGE_KEY) || '{}');
-        admins[currentUser.uid] = true;
-        localStorage.setItem(ADMINS_STORAGE_KEY, JSON.stringify(admins));
-        
-        document.getElementById("admin-panel").style.display = "block";
-        adminMode = true;
-        showNotification("Права администратора получены");
-        closeModal();
+        suggestions.classList.add('active');
       } else {
-        showNotification("Неверный пароль администратора", "error");
+        suggestions.classList.remove('active');
       }
+    } catch (error) {
+      console.error('Ошибка при поиске городов:', error);
+    }
+  }
+
+  // Загрузка отделений для выбранного города
+  async function loadWarehouses(city, service) {
+    try {
+      // В реальном приложении здесь должен быть запрос к API службы доставки
+      // Для демонстрации используем заглушку
+      let warehouses = [];
+      
+      if (service === 'nova-poshta') {
+        // Заглушка для отделений Новой Почты
+        warehouses = [
+          `Отделение №1, ул. Главная, 123`,
+          `Отделение №2, ул. Центральная, 45`,
+          `Отделение №3, пр. Победы, 67`
+        ];
+      } else if (service === 'ukr-poshta') {
+        // Заглушка для отделений Укрпочты
+        warehouses = [
+          `Отделение №101, ул. Школьная, 10`,
+          `Отделение №102, ул. Садовая, 25`,
+          `Отделение №103, пр. Мира, 89`
+        ];
+      }
+      
+      const warehousesList = document.getElementById(`${service}-warehouses`);
+      warehousesList.innerHTML = '';
+      
+      warehouses.forEach(warehouse => {
+        const item = document.createElement('div');
+        item.className = 'warehouse-item';
+        item.textContent = warehouse;
+        item.onclick = () => {
+          // Сохраняем выбранное отделение
+          document.getElementById(`${service}-warehouses`).setAttribute('data-selected', warehouse);
+          
+          // Подсвечиваем выбранное отделение
+          document.querySelectorAll(`#${service}-warehouses .warehouse-item`).forEach(el => {
+            el.style.backgroundColor = '';
+          });
+          item.style.backgroundColor = '#e8f4fd';
+        };
+        warehousesList.appendChild(item);
+      });
+      
+      warehousesList.classList.add('active');
+    } catch (error) {
+      console.error('Ошибка при загрузке отделений:', error);
+    }
+  }
+
+  // Расчет общей стоимости корзины
+  function calculateCartTotal() {
+    return Object.entries(cart).reduce((sum, [productId, quantity]) => {
+      const product = products.find(p => p.id === productId);
+      return sum + (product ? product.price * quantity : 0);
+    }, 0);
+  }
+
+  // Размещение заказа
+  function placeOrder(event) {
+    event.preventDefault();
+    
+    // Получаем данные формы
+    const name = document.getElementById('order-name').value;
+    const phone = document.getElementById('order-phone').value;
+    const email = document.getElementById('order-email').value;
+    const paymentMethod = document.getElementById('payment-method').value;
+    
+    // Проверяем выбранный способ доставки
+    const deliveryMethod = document.querySelector('input[name="delivery"]:checked').value;
+    let deliveryDetails = {};
+    
+    if (deliveryMethod === 'nova-poshta') {
+      const city = document.getElementById('np-city').value;
+      const warehouse = document.getElementById('np-warehouses').getAttribute('data-selected');
+      
+      if (!city || !warehouse) {
+        showNotification('Выберите город и отделение Новой Почты', 'error');
+        return;
+      }
+      
+      deliveryDetails = {
+        service: 'Новая Почта',
+        city,
+        warehouse
+      };
+    } else if (deliveryMethod === 'ukr-poshta') {
+      const city = document.getElementById('up-city').value;
+      const warehouse = document.getElementById('up-warehouses').getAttribute('data-selected');
+      
+      if (!city || !warehouse) {
+        showNotification('Выберите город и отделение Укрпочты', 'error');
+        return;
+      }
+      
+      deliveryDetails = {
+        service: 'Укрпочта',
+        city,
+        warehouse
+      };
+    } else if (deliveryMethod === 'courier') {
+      const address = document.getElementById('courier-address').value;
+      
+      if (!address) {
+        showNotification('Введите адрес доставки', 'error');
+        return;
+      }
+      
+      deliveryDetails = {
+        service: 'Курьер',
+        address
+      };
     }
     
-    // Функция для ввода пароля администратора
-    function promptAdminPassword() {
-      const password = prompt("Введите пароль администратора:");
-      if (password === ADMIN_PASSWORD) {
-        if (!currentUser) {
-          showNotification("Сначала войдите в систему", "error");
-          openAuthModal();
+    // Создаем объект заказа
+    const order = {
+      userId: currentUser.uid,
+      userName: name,
+      userPhone: phone,
+      userEmail: email,
+      items: cart,
+      total: calculateCartTotal(),
+      delivery: deliveryDetails,
+      paymentMethod,
+      status: 'new',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    
+    // Сохраняем заказ в Firestore
+    db.collection("orders").add(order)
+      .then((docRef) => {
+        // Очищаем корзину
+        cart = {};
+        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+        updateCartCount();
+        
+        showNotification("Заказ успешно оформлен. Номер вашего заказа: " + docRef.id);
+        closeModal();
+        
+        // Если администратор, обновляем список заказов
+        if (adminMode) {
+          loadAdminOrders();
+        }
+      })
+      .catch(error => {
+        console.error("Ошибка оформления заказа: ", error);
+        showNotification("Ошибка оформления заказа", "error");
+      });
+  }
+
+  // Открытие модального окна
+  function openModal() {
+    document.getElementById("modal").classList.add("active");
+  }
+
+  // Закрытие модального окна
+  function closeModal() {
+    document.getElementById("modal").classList.remove("active");
+  }
+
+  // Открытие модального окна авторизации
+  function openAuthModal() {
+    const modalContent = document.getElementById("modal-content");
+    modalContent.innerHTML = `
+      <h3>Вход в систему</h3>
+      <div class="auth-tabs">
+        <div class="auth-tab active" onclick="switchAuthTab('login')">Вход</div>
+        <div class="auth-tab" onclick="switchAuthTab('register')">Регистрация</div>
+        <div class="auth-tab" onclick="switchAuthTab('admin')">Администратор</div>
+      </div>
+      <form id="login-form" onsubmit="login(event)">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" required>
+        </div>
+        <div class="form-group">
+          <label>Пароль</label>
+          <input type="password" required>
+        </div>
+        <button type="submit" class="btn btn-detail">Войти</button>
+      </form>
+      <form id="register-form" style="display:none;" onsubmit="register(event)">
+        <div class="form-group">
+          <label>Имя</label>
+          <input type="text" required>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" required>
+        </div>
+        <div class="form-group">
+          <label>Пароль</label>
+          <input type="password" required minlength="6">
+        </div>
+        <button type="submit" class="btn btn-detail">Зарегистрироваться</button>
+      </form>
+      <div id="admin-auth-form" style="display:none;">
+        <p>Для доступа к панели администратора введите пароль:</p>
+        <div class="form-group">
+          <label>Пароль администратора</label>
+          <input type="password" id="admin-password" required>
+        </div>
+        <button class="btn btn-admin" onclick="verifyAdminPassword()">Получить права администратора</button>
+      </div>
+    `;
+    
+    openModal();
+  }
+
+  // Переключение вкладок авторизации
+  function switchAuthTab(tab) {
+    const loginForm = document.getElementById("login-form");
+    const registerForm = document.getElementById("register-form");
+    const adminForm = document.getElementById("admin-auth-form");
+    const tabs = document.querySelectorAll(".auth-tab");
+    
+    tabs.forEach(t => t.classList.remove('active'));
+    
+    if (tab === 'login') {
+      loginForm.style.display = 'block';
+      registerForm.style.display = 'none';
+      adminForm.style.display = 'none';
+      tabs[0].classList.add('active');
+    } else if (tab === 'register') {
+      loginForm.style.display = 'none';
+      registerForm.style.display = 'block';
+      adminForm.style.display = 'none';
+      tabs[1].classList.add('active');
+    } else if (tab === 'admin') {
+      loginForm.style.display = 'none';
+      registerForm.style.display = 'none';
+      adminForm.style.display = 'block';
+      tabs[2].classList.add('active');
+    }
+  }
+
+  // Вход в систему
+  function login(event) {
+    event.preventDefault();
+    const email = event.target.querySelector('input[type="email"]').value;
+    const password = event.target.querySelector('input[type="password"]').value;
+    
+    auth.signInWithEmailAndPassword(email, password)
+      .then(() => {
+        showNotification("Вход выполнен успешно");
+        closeModal();
+      })
+      .catch(error => {
+        console.error("Ошибка входа: ", error);
+        showNotification("Ошибка входа: " + error.message, "error");
+      });
+  }
+
+  // Регистрация
+  function register(event) {
+    event.preventDefault();
+    const name = event.target.querySelector('input[type="text"]').value;
+    const email = event.target.querySelector('input[type="email"]').value;
+    const password = event.target.querySelector('input[type="password"]').value;
+    
+    auth.createUserWithEmailAndPassword(email, password)
+      .then((userCredential) => {
+        // Обновляем профиль пользователя
+        return userCredential.user.updateProfile({
+          displayName: name
+        });
+      })
+      .then(() => {
+        showNotification("Регистрация выполнена успешно");
+        closeModal();
+      })
+      .catch(error => {
+        console.error("Ошибка регистрации: ", error);
+        showNotification("Ошибка регистрации: " + error.message, "error");
+      });
+  }
+
+  // Функция проверки пароля администратора
+  function verifyAdminPassword() {
+    const password = document.getElementById("admin-password").value;
+    if (password === ADMIN_PASSWORD) {
+      if (!currentUser) {
+        showNotification("Сначала войдите в систему", "error");
+        switchAuthTab('login');
+        return;
+      }
+      
+      // Сохраняем пользователя как администратора
+      const admins = JSON.parse(localStorage.getItem(ADMINS_STORAGE_KEY) || '{}');
+      admins[currentUser.uid] = true;
+      localStorage.setItem(ADMINS_STORAGE_KEY, JSON.stringify(admins));
+      
+      document.getElementById("admin-panel").style.display = "block";
+      adminMode = true;
+      showNotification("Права администратора получены");
+      closeModal();
+      
+      // Загружаем заказы для админ-панели
+      loadAdminOrders();
+    } else {
+      showNotification("Неверный пароль администратора", "error");
+    }
+  }
+
+  // Функция для ввода пароля администратора
+  function promptAdminPassword() {
+    const password = prompt("Введите пароль администратора:");
+    if (password === ADMIN_PASSWORD) {
+      if (!currentUser) {
+        showNotification("Сначала войдите в систему", "error");
+        openAuthModal();
+        return;
+      }
+      
+      // Сохраняем пользователя как администратора
+      const admins = JSON.parse(localStorage.getItem(ADMINS_STORAGE_KEY) || '{}');
+      admins[currentUser.uid] = true;
+      localStorage.setItem(ADMINS_STORAGE_KEY, JSON.stringify(admins));
+      
+      document.getElementById("admin-panel").style.display = "block";
+      adminMode = true;
+      showNotification("Права администратора получены");
+      
+      // Загружаем заказы для админ-панели
+      loadAdminOrders();
+    } else if (password) {
+      showNotification("Неверный пароль администратора", "error");
+    }
+  }
+
+  // Проверка статуса администратора
+  function checkAdminStatus(userId) {
+    // Проверяем, есть ли пользователь в списке администраторов в LocalStorage
+    const admins = JSON.parse(localStorage.getItem(ADMINS_STORAGE_KEY) || '{}');
+    if (admins[userId]) {
+      document.getElementById("admin-panel").style.display = "block";
+      adminMode = true;
+      
+      // Загружаем заказы для админ-панели
+      loadAdminOrders();
+    }
+  }
+
+  // Выход из системы
+  function logout() {
+    // Не удаляем права администратора при выходе, чтобы не вводить пароль каждый раз
+    auth.signOut()
+      .then(() => {
+        showNotification("Выход выполнен успешно");
+      })
+      .catch(error => {
+        console.error("Ошибка выхода: ", error);
+        showNotification("Ошибка выхода", "error");
+      });
+  }
+
+  // Переключение вкладок в админ-панели
+  function switchTab(tabId) {
+    const tabs = document.querySelectorAll(".tab");
+    const tabContents = document.querySelectorAll(".tab-content");
+    
+    tabs.forEach(tab => tab.classList.remove("active"));
+    tabContents.forEach(content => content.classList.remove("active"));
+    
+    document.querySelector(`.tab[onclick="switchTab('${tabId}')"]`).classList.add("active");
+    document.getElementById(tabId).classList.add("active");
+    
+    // Если переключились на вкладку заказов, загружаем их
+    if (tabId === 'orders-tab') {
+      loadAdminOrders();
+    }
+  }
+
+  // Загрузка заказов для админ-панели
+  function loadAdminOrders() {
+    const ordersList = document.getElementById("admin-orders-list");
+    ordersList.innerHTML = '<p>Загрузка заказов...</p>';
+    
+    db.collection("orders")
+      .orderBy("createdAt", "desc")
+      .get()
+      .then((querySnapshot) => {
+        if (querySnapshot.empty) {
+          ordersList.innerHTML = '<p>Заказов нет</p>';
           return;
         }
         
-        // Сохраняем пользователя как администратора
-        const admins = JSON.parse(localStorage.getItem(ADMINS_STORAGE_KEY) || '{}');
-        admins[currentUser.uid] = true;
-        localStorage.setItem(ADMINS_STORAGE_KEY, JSON.stringify(admins));
+        ordersList.innerHTML = '';
         
-        document.getElementById("admin-panel").style.display = "block";
-        adminMode = true;
-        showNotification("Права администратора получены");
-      } else if (password) {
-        showNotification("Неверный пароль администратора", "error");
-      }
-    }
-    
-    // Проверка статуса администратора
-    function checkAdminStatus(userId) {
-      // Проверяем, есть ли пользователь в списке администраторов в LocalStorage
-      const admins = JSON.parse(localStorage.getItem(ADMINS_STORAGE_KEY) || '{}');
-      if (admins[userId]) {
-        document.getElementById("admin-panel").style.display = "block";
-        adminMode = true;
-      }
-    }
-    
-    // Выход из системы
-    function logout() {
-      // Не удаляем права администратора при выходе, чтобы не вводить пароль каждый раз
-      auth.signOut()
-        .then(() => {
-          showNotification("Выход выполнен успешно");
-        })
-        .catch(error => {
-          console.error("Ошибка выхода: ", error);
-          showNotification("Ошибка выхода", "error");
+        querySnapshot.forEach((doc) => {
+          const order = { id: doc.id, ...doc.data() };
+          const orderElement = document.createElement('div');
+          orderElement.className = 'order-item';
+          orderElement.style.border = '1px solid #eee';
+          orderElement.style.padding = '15px';
+          orderElement.style.marginBottom = '15px';
+          orderElement.style.borderRadius = '8px';
+          
+          // Форматируем дату
+          const orderDate = order.createdAt ? order.createdAt.toDate().toLocaleString('ru-RU') : 'Дата не указана';
+          
+          // Определяем статус заказа
+          let statusClass = 'status-new';
+          let statusText = 'Новый';
+          
+          if (order.status === 'processing') {
+            statusClass = 'status-processing';
+            statusText = 'В обработке';
+          } else if (order.status === 'shipped') {
+            statusClass = 'status-shipped';
+            statusText = 'Отправлен';
+          } else if (order.status === 'delivered') {
+            statusClass = 'status-delivered';
+            statusText = 'Доставлен';
+          } else if (order.status === 'cancelled') {
+            statusClass = 'status-cancelled';
+            statusText = 'Отменен';
+          }
+          
+          orderElement.innerHTML = `
+            <h4>Заказ #${order.id}</h4>
+            <p><strong>Клиент:</strong> ${order.userName} (${order.userEmail}, ${order.userPhone})</p>
+            <p><strong>Дата:</strong> ${orderDate}</p>
+            <p><strong>Сумма:</strong> ${formatPrice(order.total)} ₴</p>
+            <p><strong>Доставка:</strong> ${order.delivery.service}</p>
+            <p><strong>Статус:</strong> <span class="order-status ${statusClass}">${statusText}</span></p>
+            
+            <div class="admin-order-actions">
+              <button class="btn btn-detail" onclick="viewOrderDetails('${order.id}')">Детали</button>
+              <button class="btn btn-admin" onclick="changeOrderStatus('${order.id}', 'processing')">В обработку</button>
+              <button class="btn" onclick="changeOrderStatus('${order.id}', 'shipped')">Отправить</button>
+              <button class="btn" style="background: var(--success); color: white;" onclick="changeOrderStatus('${order.id}', 'delivered')">Доставлен</button>
+              <button class="btn" style="background: var(--danger); color: white;" onclick="changeOrderStatus('${order.id}', 'cancelled')">Отменить</button>
+            </div>
+          `;
+          
+          ordersList.appendChild(orderElement);
         });
+      })
+      .catch((error) => {
+        console.error("Ошибка загрузки заказов: ", error);
+        ordersList.innerHTML = '<p>Ошибка загрузки заказов</p>';
+      });
+  }
+
+  // Просмотр деталей заказа
+  function viewOrderDetails(orderId) {
+    db.collection("orders").doc(orderId).get()
+      .then((doc) => {
+        if (!doc.exists) {
+          showNotification("Заказ не найден", "error");
+          return;
+        }
+        
+        const order = { id: doc.id, ...doc.data() };
+        const modalContent = document.getElementById("modal-content");
+        
+        let itemsHTML = '';
+        for (const [productId, quantity] of Object.entries(order.items)) {
+          const product = products.find(p => p.id === productId);
+          if (product) {
+            itemsHTML += `
+              <div class="cart-item">
+                <img src="${product.image || 'https://via.placeholder.com/80x80?text=No+Image'}" alt="${product.title}" class="cart-item-image">
+                <div class="cart-item-details">
+                  <h4 class="cart-item-title">${product.title}</h4>
+                  <div class="cart-item-price">${formatPrice(product.price)} ₴ x ${quantity} = ${formatPrice(product.price * quantity)} ₴</div>
+                </div>
+              </div>
+            `;
+          }
+        }
+        
+        // Форматируем дату
+        const orderDate = order.createdAt ? order.createdAt.toDate().toLocaleString('ru-RU') : 'Дата не указана';
+        const updatedDate = order.updatedAt ? order.updatedAt.toDate().toLocaleString('ru-RU') : 'Дата не указана';
+        
+        modalContent.innerHTML = `
+          <h3>Детали заказа #${order.id}</h3>
+          <div class="order-details">
+            <p><strong>Клиент:</strong> ${order.userName}</p>
+            <p><strong>Email:</strong> ${order.userEmail}</p>
+            <p><strong>Телефон:</strong> ${order.userPhone}</p>
+            <p><strong>Дата создания:</strong> ${orderDate}</p>
+            <p><strong>Дата обновления:</strong> ${updatedDate}</p>
+            <p><strong>Способ оплаты:</strong> ${order.paymentMethod === 'cash' ? 'Наличными при получении' : 'Онлайн-оплата картой'}</p>
+            
+            <h4>Доставка</h4>
+            <p><strong>Служба:</strong> ${order.delivery.service}</p>
+            ${order.delivery.city ? `<p><strong>Город:</strong> ${order.delivery.city}</p>` : ''}
+            ${order.delivery.warehouse ? `<p><strong>Отделение:</strong> ${order.delivery.warehouse}</p>` : ''}
+            ${order.delivery.address ? `<p><strong>Адрес:</strong> ${order.delivery.address}</p>` : ''}
+            
+            <h4>Товары</h4>
+            ${itemsHTML}
+            
+            <div class="cart-total">Итого: ${formatPrice(order.total)} ₴</div>
+          </div>
+        `;
+        
+        openModal();
+      })
+      .catch((error) => {
+        console.error("Ошибка загрузки деталей заказа: ", error);
+        showNotification("Ошибка загрузки деталей заказа", "error");
+      });
+  }
+
+  // Изменение статуса заказа
+  function changeOrderStatus(orderId, status) {
+    const statusMap = {
+      'new': 'Новый',
+      'processing': 'В обработке',
+      'shipped': 'Отправлен',
+      'delivered': 'Доставлен',
+      'cancelled': 'Отменен'
+    };
+    
+    if (!confirm(`Изменить статус заказа на "${statusMap[status]}"?`)) {
+      return;
     }
     
-    // Переключение вкладок в админ-панели
-    function switchTab(tabId) {
-      const tabs = document.querySelectorAll(".tab");
-      const tabContents = document.querySelectorAll(".tab-content");
-      
-      tabs.forEach(tab => tab.classList.remove("active"));
-      tabContents.forEach(content => content.classList.remove("active"));
-      
-      document.querySelector(`.tab[onclick="switchTab('${tabId}')"]`).classList.add("active");
-      document.getElementById(tabId).classList.add("active");
+    db.collection("orders").doc(orderId).update({
+      status,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    })
+    .then(() => {
+      showNotification("Статус заказа обновлен");
+      loadAdminOrders(); // Перезагружаем список заказов
+    })
+    .catch((error) => {
+      console.error("Ошибка обновления статуса заказа: ", error);
+      showNotification("Ошибка обновления статуса заказа", "error");
+    });
+  }
+
+  // Сохранение URL фида
+  function saveFeedUrl() {
+    const feedUrl = document.getElementById("feed-url").value;
+    localStorage.setItem(FEED_URL_KEY, feedUrl);
+    showNotification("URL фида сохранен");
+  }
+
+  // Очистка каталога
+  function clearCatalog() {
+    if (confirm("Вы уверены, что хотите очистить каталог? Это действие нельзя отменить.")) {
+      // Здесь должна быть логика очистки каталога
+      showNotification("Каталог очищен");
     }
+  }
+
+  // Экспорт в JSON
+  function exportJSON() {
+    const dataStr = JSON.stringify(products, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
     
-    // Сохранение URL фида
-    function saveFeedUrl() {
-      const feedUrl = document.getElementById("feed-url").value;
-      localStorage.setItem(FEED_URL_KEY, feedUrl);
-      showNotification("URL фида сохранен");
-    }
+    const exportFileDefaultName = 'products.json';
     
-    // Очистка каталога
-    function clearCatalog() {
-      if (confirm("Вы уверены, что хотите очистить каталог? Это действие нельзя отменить.")) {
-        // Здесь должна быть логика очистки каталога
-        showNotification("Каталог очищен");
-      }
-    }
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
     
-    // Экспорт в JSON
-    function exportJSON() {
-      const dataStr = JSON.stringify(products, null, 2);
-      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-      
-      const exportFileDefaultName = 'products.json';
-      
-      const linkElement = document.createElement('a');
-      linkElement.setAttribute('href', dataUri);
-      linkElement.setAttribute('download', exportFileDefaultName);
-      linkElement.click();
-      
-      showNotification("Данные экспортированы в JSON");
-    }
-    
-    // Инициализация приложения после загрузки DOM
-    document.addEventListener('DOMContentLoaded', initApp);
-  </script>
+    showNotification("Данные экспортированы в JSON");
+  }
+
+  // Инициализация приложения после загрузки DOM
+  document.addEventListener('DOMContentLoaded', initApp);
+</script>
 </body>
 </html>
