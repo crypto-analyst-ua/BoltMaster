@@ -1,25 +1,10 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>BoltMaster — Інтернет-магазин інструментів</title>
+  <title>ElectroTools — Интернет-магазин инструментов</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="BoltMaster - найкращий вибір інструментів, наборів та автоключів в Україні. Швидка доставка, якісні товари, гарантія якості.">
-  <meta name="keywords" content="інструменти, BoltMaster, купити інструменти, інструменти Україна, будівельні інструменти, електричні інструменти">
-  <meta name="author" content="BoltMaster">
-  <meta name="geo.region" content="UA">
-  <meta name="geo.placename" content="Ukraine">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Firebase App (обязательно) -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <!-- Firebase Auth -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-  <!-- Firebase Firestore -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-  <!-- Firebase Storage -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-  <!-- Cloudinary Upload Widget -->
-  <script src="https://upload-widget.cloudinary.com/global/all.js"></script>
   <style>
     /* Стили остаются без изменений */
     :root {
@@ -613,21 +598,6 @@
       100% { transform: rotate(360deg); }
     }
     
-    .progress-bar {
-      width: 100%;
-      height: 20px;
-      background-color: #f0f0f0;
-      border-radius: 10px;
-      margin: 10px 0;
-      overflow: hidden;
-    }
-    
-    .progress-bar-inner {
-      height: 100%;
-      background-color: var(--primary);
-      transition: width 0.3s ease;
-    }
-    
     @media (max-width: 1200px) {
       main {
         grid-template-columns: 1fr 2fr;
@@ -681,52 +651,24 @@
 <body>
 
 <header>
-  <a href="#" class="logo" onclick="showHomePage(event)">
+  <div class="logo">
     <i class="fas fa-tools"></i>
-    <h1>BoltMaster — магазин інструментів</h1>
-  </a>
+    <h1>ElectroTools — магазин инструментов</h1>
+  </div>
   <div class="header-controls">
     <div class="search-container">
       <i class="fas fa-search search-icon"></i>
-      <input type="text" id="search" placeholder="Пошук...">
+      <input type="text" id="search" placeholder="Поиск...">
     </div>
     <select id="category">
-      <option value="">Всі категорії</option>
+      <option value="">Все категории</option>
     </select>
     <button onclick="toggleFavorites()" class="btn" id="favorites-btn">
       <i class="far fa-heart"></i>
     </button>
-    
-    <div id="auth-buttons">
-      <button onclick="openAuthModal('login')" class="btn btn-auth">
-        <i class="fas fa-sign-in-alt"></i> Увійти
-      </button>
-      <button onclick="openAuthModal('register')" class="btn btn-auth">
-        <i class="fas fa-user-plus"></i> Реєстрація
-      </button>
-    </div>
-    
-    <div id="user-menu" class="user-menu" style="display:none;">
-      <img id="user-avatar" src="" class="user-avatar" onclick="toggleUserDropdown()">
-      <div id="user-dropdown" class="user-dropdown">
-        <div class="user-dropdown-item" onclick="showProfileSection('profile')">
-          <i class="fas fa-user"></i> Профіль
-        </div>
-        <div class="user-dropdown-item" onclick="showProfileSection('orders')">
-          <i class="fas fa-shopping-bag"></i> Мої замовлення
-        </div>
-        <div class="user-dropdown-item" onclick="showProfileSection('reviews')">
-          <i class="fas fa-star"></i> Мої відгуки
-        </div>
-        <div class="user-dropdown-item" onclick="logout()">
-          <i class="fas fa-sign-out-alt"></i> Вийти
-        </div>
-        <div id="admin-menu-item" class="user-dropdown-item" style="display:none;" onclick="showAdminPanel()">
-          <i class="fas fa-cog"></i> Панель керування
-        </div>
-      </div>
-    </div>
-    
+    <button onclick="loginAdmin()" class="btn btn-admin">
+      <i class="fas fa-user-cog"></i> Админ
+    </button>
     <button onclick="openCart()" class="btn btn-cart">
       <i class="fas fa-shopping-cart"></i>
       <span class="cart-count" id="cart-count">0</span>
@@ -736,288 +678,83 @@
 
 <main>
   <aside class="filters">
-    <h3>Фільтри</h3>
+    <h3>Фильтры</h3>
     <div class="filter-group">
-      <label>Ціна, ₴</label>
+      <label>Цена, ₴</label>
       <div class="price-range">
-        <input type="number" id="price-min" placeholder="від" min="0">
+        <input type="number" id="price-min" placeholder="от" min="0">
         <span>-</span>
         <input type="number" id="price-max" placeholder="до" min="0">
       </div>
     </div>
     <div class="filter-group">
-      <label>Бренд</label>
-      <select id="brand">
-        <option value="">Всі бренди</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <label>Рейтинг</label>
-      <select id="rating">
-        <option value="">Будь-який рейтинг</option>
-        <option value="4">4+ зірок</option>
-        <option value="3">3+ зірок</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <label>Сортування</label>
+      <label>Сортировка</label>
       <select id="sort">
-        <option value="default">За замовчуванням</option>
-        <option value="price-asc">Ціна (за зростанням)</option>
-        <option value="price-desc">Ціна (за спаданням)</option>
-        <option value="name-asc">Назва (А-Я)</option>
-        <option value="name-desc">Назва (Я-А)</option>
-        <option value="rating-desc">За рейтингом</option>
+        <option value="default">По умолчанию</option>
+        <option value="price-asc">Цена (по возрастанию)</option>
+        <option value="price-desc">Цена (по убыванию)</option>
+        <option value="name-asc">Название (А-Я)</option>
+        <option value="name-desc">Название (Я-А)</option>
       </select>
     </div>
     <div class="filter-buttons">
-      <button onclick="applyFilters()" class="btn btn-detail">Застосувати</button>
-      <button onclick="resetFilters()" class="btn">Скинути</button>
+      <button onclick="applyFilters()" class="btn btn-detail">Применить</button>
+      <button onclick="resetFilters()" class="btn">Сбросить</button>
     </div>
   </aside>
 
   <section>
     <div class="products-header">
-      <h2 id="products-title">Всі товари</h2>
+      <h2 id="products-title">Все товары</h2>
       <span id="products-count"></span>
     </div>
     <div id="product-grid" class="grid">
       <div class="loading">
         <i class="fas fa-spinner"></i>
-        <h3>Завантаження товарів...</h3>
+        <h3>Загрузка товаров...</h3>
       </div>
     </div>
   </section>
 
   <aside>
-    <h3>Про магазин</h3>
-    <p>Каталог електроінструментів, наборів та автоключів.</p>
-    
-    <div id="profile-sections">
-      <div id="profile-section" class="profile-section">
-        <h4>Мій профіль</h4>
-        <div class="form-group">
-          <label>Ім'я</label>
-          <input type="text" id="profile-name" placeholder="Ваше ім'я">
-        </div>
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" id="profile-email" disabled>
-        </div>
-        <div class="form-group">
-          <label>Телефон</label>
-          <input type="tel" id="profile-phone" placeholder="Ваш телефон">
-        </div>
-        <div class="form-group">
-          <label>Адреса</label>
-          <input type="text" id="profile-address" placeholder="Ваша адреса">
-        </div>
-        <button onclick="updateProfile()" class="btn btn-detail">Зберегти зміни</button>
-      </div>
-      
-      <div id="orders-section" class="profile-section">
-        <h4>Мої замовлення</h4>
-        <div id="orders-list" class="orders-list">
-          <div class="empty-cart">
-            <i class="fas fa-shopping-bag"></i>
-            <h3>Замовлень поки немає</h3>
-            <p>Зробіть покупки, щоб побачити їх тут</p>
-          </div>
-        </div>
-      </div>
-      
-      <div id="reviews-section" class="profile-section">
-        <h4>Мої відгуки</h4>
-        <div id="user-reviews" class="reviews-container">
-          <div class="empty-cart">
-            <i class="fas fa-star"></i>
-            <h3>Відгуків поки немає</h3>
-            <p>Залишайте відгуки до товарів, щоб побачити їх тут</p>
-          </div>
-        </div>
-      </div>
-    </div>
+    <h3>О магазине</h3>
+    <p>Каталог электроинструментов, наборов и автоключей. Данные загружаются из XML-фида.</p>
     
     <div id="admin-panel" class="admin-panel" style="display:none;">
-      <h4>Панель керування</h4>
+      <h4>Админ-панель</h4>
       <div class="tabs">
-        <div class="tab active" onclick="switchTab('import-tab')">Імпорт</div>
-        <div class="tab" onclick="switchTab('products-tab')">Товари</div>
-        <div class="tab" onclick="switchTab('add-product-tab')">Додати товар</div>
-        <div class="tab" onclick="switchTab('orders-tab')">Замовлення</div>
-        <div class="tab" onclick="switchTab('api-feed-tab')">API Фид</div>
+        <div class="tab active" onclick="switchTab('import-tab')">Импорт</div>
+        <div class="tab" onclick="switchTab('products-tab')">Товары</div>
       </div>
       
       <div id="import-tab" class="tab-content active">
         <div class="filter-group">
-          <label>URL XML-фіду:</label>
-          <input type="text" id="feed-url" placeholder="https://example.com/feed.xml">
-          <button onclick="saveFeedUrl()" class="btn" style="margin-top: 10px;">Зберегти URL</button>
+          <label>URL XML-фида:</label>
+          <input type="text" id="feed-url" placeholder="https://api.dropshipping.ua/api/feeds/2091.xml">
+          <button onclick="saveFeedUrl()" class="btn" style="margin-top: 10px;">Сохранить URL</button>
         </div>
-        <button onclick="loadFromFeed()" class="btn btn-detail">Оновити з фіду</button>
+        <button onclick="loadFromFeed()" class="btn btn-detail">Обновить из фида</button>
         <p id="feed-message" style="font-size:12px; color:#555; margin-top: 10px;"></p>
-        <button onclick="clearCatalog()" class="btn">Очистити каталог</button>
-        <button onclick="exportJSON()" class="btn">Експорт JSON</button>
+        <button onclick="clearCatalog()" class="btn">Очистить каталог</button>
+        <button onclick="exportJSON()" class="btn">Экспорт JSON</button>
       </div>
       
       <div id="products-tab" class="tab-content">
         <div id="admin-products-list"></div>
       </div>
       
-      <div id="add-product-tab" class="tab-content">
-        <div class="form-group">
-          <label>Назва товару</label>
-          <input type="text" id="product-title" placeholder="Назва">
-        </div>
-        <div class="form-group">
-          <label>Опис</label>
-          <textarea id="product-description" rows="3" placeholder="Опис товару" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px;"></textarea>
-        </div>
-        <div class="form-group">
-          <label>Ціна, ₴</label>
-          <input type="number" id="product-price" placeholder="Ціна" min="0" step="0.01">
-        </div>
-        <div class="form-group">
-          <label>Категорія</label>
-          <input type="text" id="product-category" placeholder="Категорія">
-        </div>
-        <div class="form-group">
-          <label>Бренд</label>
-          <input type="text" id="product-brand" placeholder="Бренд">
-        </div>
-        <div class="form-group">
-          <label>Зображення</label>
-          <button onclick="openCloudinaryWidget()" class="btn" style="width:100%;">
-            <i class="fas fa-cloud-upload-alt"></i> Завантажити зображення
-          </button>
-          <div id="product-image-preview" style="margin-top:10px; text-align:center;"></div>
-          <input type="hidden" id="product-image-url">
-        </div>
-        <button onclick="addProduct()" class="btn btn-detail">Додати товар</button>
-      </div>
-      
-      <div id="orders-tab" class="tab-content">
-        <div id="admin-orders-list">
-          <div class="empty-cart">
-            <i class="fas fa-clipboard-list"></i>
-            <h3>Замовлень немає</h3>
-            <p>Тут будуть відображатися замовлення користувачів</p>
-          </div>
-        </div>
-      </div>
-      
-      <div id="api-feed-tab" class="tab-content">
-        <div class="filter-group">
-          <label>URL XML-фіду:</label>
-          <input type="text" id="api-feed-url" placeholder="https://api.dropshipping.ua/api/feeds/2091.xml" value="https://api.dropshipping.ua/api/feeds/2091.xml">
-          <button onclick="saveApiFeedUrl()" class="btn" style="margin-top: 10px;">Зберегти URL</button>
-        </div>
-        <button onclick="loadFromApiFeed()" class="btn btn-detail">Завантажити з API фіду</button>
-        <p id="api-feed-message" style="font-size:12px; color:#555; margin-top: 10px;"></p>
-        <div class="filter-group">
-          <label>Ліміт товарів (0 = всі):</label>
-          <input type="number" id="api-feed-limit" value="50" min="0">
-        </div>
-        <div class="filter-group">
-          <label>Категорія за замовчуванням:</label>
-          <input type="text" id="api-feed-category" placeholder="Інструменти">
-        </div>
-        <button onclick="clearApiProducts()" class="btn">Видалити товари з API</button>
-      </div>
-      
-      <button onclick="hideAdminPanel()" class="btn" style="margin-top: 20px;">Сховати панель</button>
+      <button onclick="logoutAdmin()" class="btn" style="margin-top: 20px;">Выйти</button>
     </div>
   </aside>
 </main>
 
 <footer>
-  © <span id="year"></span> BoltMaster. Всі права захищені.
+  © <span id="year"></span> ElectroTools. Загрузите данные из вашего XML-фида.
 </footer>
 
 <div id="modal" class="modal">
   <div class="modal-content" id="modal-content">
     <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
-  </div>
-</div>
-
-<div id="auth-modal" class="modal">
-  <div class="modal-content auth-modal">
-    <button class="modal-close" onclick="closeAuthModal()"><i class="fas fa-times"></i></button>
-    <h3>Вхід / Реєстрація</h3>
-    
-    <div class="auth-tabs">
-      <div class="auth-tab active" onclick="switchAuthTab('login')">Вхід</div>
-      <div class="auth-tab" onclick="switchAuthTab('register')">Реєстрація</div>
-    </div>
-    
-    <div id="login-form" class="auth-form active">
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" id="login-email" placeholder="Ваш email">
-      </div>
-      <div class="form-group">
-        <label>Пароль</label>
-        <input type="password" id="login-password" placeholder="Пароль">
-      </div>
-      <button onclick="login()" class="btn btn-detail" style="width:100%;">Увійти</button>
-      <div class="form-footer">
-        <a onclick="switchAuthTab('forgot')">Забули пароль?</a>
-      </div>
-    </div>
-    
-    <div id="register-form" class="auth-form">
-      <div class="form-group">
-        <label>Ім'я</label>
-        <input type="text" id="register-name" placeholder="Ваше ім'я">
-      </div>
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" id="register-email" placeholder="Ваш email">
-      </div>
-      <div class="form-group">
-        <label>Пароль</label>
-        <input type="password" id="register-password" placeholder="Пароль (мінімум 6 символів)">
-      </div>
-      <div class="form-group">
-        <label>Підтвердження пароля</label>
-        <input type="password" id="register-confirm" placeholder="Повторіть пароль">
-      </div>
-      <button onclick="register()" class="btn btn-detail" style="width:100%;">Зареєструватися</button>
-    </div>
-    
-    <div id="forgot-form" class="auth-form">
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" id="forgot-email" placeholder="Ваш email">
-      </div>
-      <button onclick="resetPassword()" class="btn btn-detail" style="width:100%;">Відновити пароль</button>
-      <div class="form-footer">
-        <a onclick="switchAuthTab('login')">Повернутися до входу</a>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div id="review-modal" class="modal">
-  <div class="modal-content">
-    <button class="modal-close" onclick="closeReviewModal()"><i class="fas fa-times"></i></button>
-    <h3>Залишити відгук</h3>
-    <div id="review-product-info" style="margin-bottom:20px;"></div>
-    <div class="form-group">
-      <label>Оцінка</label>
-      <div style="font-size:24px; color:#f39c12;" id="review-rating">
-        <i class="far fa-star" data-value="1"></i>
-        <i class="far fa-star" data-value="2"></i>
-        <i class="far fa-star" data-value="3"></i>
-        <i class="far fa-star" data-value="4"></i>
-        <i class="far fa-star" data-value="5"></i>
-      </div>
-    </div>
-    <div class="form-group">
-      <label>Відгук</label>
-      <textarea id="review-text" rows="4" placeholder="Ваш відгук" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px;"></textarea>
-    </div>
-    <button onclick="submitReview()" class="btn btn-detail" style="width:100%;">Надіслати відгук</button>
   </div>
 </div>
 
@@ -1027,207 +764,195 @@
 </div>
 
 <script>
-  // Конфигурация Firebase
-  const firebaseConfig = {
-  apiKey: "AIzaSyCxAEDkZ57_yu1RDZ6xAEl7KkBgVli00b0",
-  authDomain: "boltmaster-2025.firebaseapp.com",
-  projectId: "boltmaster-2025",
-  storageBucket: "boltmaster-2025.firebasestorage.app",
-  messagingSenderId: "995027194761",
-  appId: "1:995027194761:web:d3464fefcc6eb41129c758"
-};
-
-  // Конфигурация Cloudinary
-const cloudinaryConfig = {
-  cloudName: "dhfkb6xv2",
-  uploadPreset: "unsigned_preset"
-};
-
-  // Инициализация Firebase
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-  const storage = firebase.storage();
-
-  // Глобальные переменные
+  const ADMIN_PASSWORD = "12345";
+  const STORAGE_KEY = "electrotools_products";
+  const CART_STORAGE_KEY = "electrotools_cart";
+  const FAVORITES_STORAGE_KEY = "electrotools_favorites";
+  const FEED_URL_KEY = "electrotools_feed_url";
+  const FEED_UPDATE_TIME_KEY = "electrotools_feed_update";
+  
   let products = [];
   let cart = {};
   let favorites = {};
-  let orders = [];
-  let currentUser = null;
-  let isAdmin = false;
+  let adminMode = false;
   let showingFavorites = false;
-  let currentProductForReview = null;
   let currentFilters = {
     category: '',
-    brand: '',
     minPrice: null,
     maxPrice: null,
     sort: 'default',
-    search: '',
-    rating: ''
+    search: ''
   };
 
-  // Глобальные переменные для API фида
-  let apiFeedUrl = 'https://api.dropshipping.ua/api/feeds/2091.xml';
-  let apiFeedLimit = 50;
-  let apiFeedCategory = 'Інструменти';
-
-  // Инициализация приложения
-  document.addEventListener('DOMContentLoaded', function() {
-    initApp();
-    document.getElementById("year").innerText = new Date().getFullYear();
+  // Функция для загрузки XML-фида
+  async function loadFromFeed() {
+    const messageElement = document.getElementById("feed-message");
+    messageElement.textContent = "Загрузка данных...";
     
-    // Закрытие модального окна при клике вне его
-    document.getElementById("modal").addEventListener("click", function(e) {
-      if(e.target === this) closeModal();
-    });
+    // Получаем URL из сохраненных настроек
+    const feedUrl = localStorage.getItem(FEED_URL_KEY) || document.getElementById("feed-url").value;
     
-    document.getElementById("auth-modal").addEventListener("click", function(e) {
-      if(e.target === this) closeAuthModal();
-    });
-    
-    document.getElementById("review-modal").addEventListener("click", function(e) {
-      if(e.target === this) closeReviewModal();
-    });
-    
-    // Обработчики событий для фильтров
-    document.getElementById("search").addEventListener("input", function() {
-      currentFilters.search = this.value;
-      renderProducts();
-    });
-    
-    document.getElementById("category").addEventListener("change", function() {
-      currentFilters.category = this.value;
-      renderProducts();
-    });
-    
-    document.getElementById("brand").addEventListener("change", function() {
-      currentFilters.brand = this.value;
-      renderProducts();
-    });
-    
-    document.getElementById("rating").addEventListener("change", function() {
-      currentFilters.rating = this.value;
-      renderProducts();
-    });
-    
-    document.getElementById("sort").addEventListener("change", function() {
-      currentFilters.sort = this.value;
-      renderProducts();
-    });
-    
-    // Обработчики для рейтинга в отзывах
-    const stars = document.querySelectorAll('#review-rating i');
-    stars.forEach(star => {
-      star.addEventListener('click', function() {
-        const value = parseInt(this.getAttribute('data-value'));
-        setRating(value);
-      });
-    });
-  });
-
-  // Инициализация приложения
-  function initApp() {
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        currentUser = user;
-        loadUserData(user.uid);
-        document.getElementById('auth-buttons').style.display = 'none';
-        document.getElementById('user-menu').style.display = 'block';
-        document.getElementById('user-avatar').src = user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.displayName || user.email) + '&background=3498db&color=fff';
-        
-        // Проверяем, является ли пользователь администратором
-        checkAdminStatus(user.uid);
-      } else {
-        currentUser = null;
-        document.getElementById('auth-buttons').style.display = 'flex';
-        document.getElementById('user-menu').style.display = 'none';
-        hideAdminPanel();
-      }
-    });
-    
-    loadProducts();
-    loadApiFeedSettings(); // Загружаем настройки API фида
-  }
-
-  // Загрузка настроек API фида
-  function loadApiFeedSettings() {
-    db.collection("settings").doc("apiFeedSettings").get()
-      .then(doc => {
-        if (doc.exists) {
-          const settings = doc.data();
-          apiFeedUrl = settings.url || apiFeedUrl;
-          apiFeedLimit = settings.limit || apiFeedLimit;
-          apiFeedCategory = settings.category || apiFeedCategory;
-          
-          document.getElementById('api-feed-url').value = apiFeedUrl;
-          document.getElementById('api-feed-limit').value = apiFeedLimit;
-          document.getElementById('api-feed-category').value = apiFeedCategory;
-        }
-      })
-      .catch(error => {
-        console.error("Помилка завантаження налаштувань API фіду:", error);
-      });
-  }
-
-  // Сохранение настроек API фида
-  function saveApiFeedUrl() {
-    const url = document.getElementById('api-feed-url').value.trim();
-    const limit = parseInt(document.getElementById('api-feed-limit').value) || 0;
-    const category = document.getElementById('api-feed-category').value.trim();
-    
-    if (!url) {
-      showNotification('Введіть URL фіду', true);
+    if (!feedUrl) {
+      messageElement.textContent = "Введите URL фида";
+      showNotification("Введите URL фида для загрузки");
       return;
     }
     
-    apiFeedUrl = url;
-    apiFeedLimit = limit;
-    apiFeedCategory = category;
+    // Сохраняем URL, если он был введен в поле
+    if (document.getElementById("feed-url").value) {
+      localStorage.setItem(FEED_URL_KEY, document.getElementById("feed-url").value);
+    }
     
-    db.collection("settings").doc("apiFeedSettings").set({
-      url: url,
-      limit: limit,
-      category: category,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    })
-    .then(() => {
-      showNotification('Налаштування API фіду збережено');
-    })
-    .catch(error => {
-      console.error("Помилка збереження налаштувань API фіду:", error);
-      showNotification('Помилка збереження налаштувань API фіду', true);
-    });
-  }
-
-  // Загрузка товаров из Firestore
-  function loadProducts() {
-    const grid = document.getElementById("product-grid");
-    grid.innerHTML = `
-      <div class="loading">
-        <i class="fas fa-spinner"></i>
-        <h3>Завантаження товарів...</h3>
-      </div>
-    `;
-    
-    db.collection("products").get()
-      .then(querySnapshot => {
-        products = [];
-        querySnapshot.forEach(doc => {
-          products.push({ id: doc.id, ...doc.data() });
+    try {
+      // Используем прокси для обхода CORS
+      const proxyUrl = 'https://corsproxy.io/?';
+      const response = await fetch(proxyUrl + encodeURIComponent(feedUrl));
+      
+      if (!response.ok) {
+        throw new Error(`Ошибка HTTP: ${response.status}`);
+      }
+      
+      const xmlText = await response.text();
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+      
+      // Проверяем, есть ли ошибки парсинга
+      if (xmlDoc.getElementsByTagName("parsererror").length > 0) {
+        throw new Error("Ошибка парсинга XML");
+      }
+      
+      // Парсим XML в зависимости от структуры
+      let items = [];
+      const offers = xmlDoc.getElementsByTagName("offer");
+      
+      for (let i = 0; i < offers.length; i++) {
+        const offer = offers[i];
+        const id = offer.getAttribute("id") || `feed-${i}`;
+        const getValue = (tagName) => {
+          const element = offer.getElementsByTagName(tagName)[0];
+          return element ? element.textContent.trim() : "";
+        };
+        
+        const title = getValue("name") || getValue("title") || getValue("model");
+        const priceText = getValue("price");
+        const price = priceText ? parseFloat(priceText.replace(/[^0-9.,]/g, "").replace(",", ".")) : 0;
+        const description = getValue("description") || "";
+        
+        // Получаем URL изображения
+        let image = "";
+        const pictureElement = offer.getElementsByTagName("picture")[0];
+        if (pictureElement) {
+          image = pictureElement.textContent.trim();
+        }
+        
+        // Получаем категорию
+        const category = getValue("category") || "Без категории";
+        
+        items.push({
+          id,
+          title,
+          price,
+          description,
+          image,
+          category,
+          fromFeed: true
         });
-        renderProducts();
-        renderCategories();
-        renderBrands();
-      })
-      .catch(error => {
-        console.error("Помилка завантаження товарів:", error);
-        showNotification("Помилка завантаження товарів", true);
-      });
+      }
+      
+      if (items.length === 0) {
+        throw new Error("Не найдено товаров в фиде");
+      }
+      
+      products = items;
+      saveProducts();
+      
+      // Сохраняем время последнего обновления
+      localStorage.setItem(FEED_UPDATE_TIME_KEY, new Date().getTime());
+      
+      messageElement.textContent = `Загружено ${items.length} товаров`;
+      renderProducts();
+      showNotification("Данные успешно загружены из фида");
+      
+    } catch (error) {
+      console.error("Ошибка загрузки фида:", error);
+      messageElement.textContent = `Ошибка: ${error.message}`;
+      showNotification("Ошибка загрузки данных из фида");
+    }
   }
 
-  // Отображение товаров
+  // Сохраняем URL фида
+  function saveFeedUrl() {
+    const feedUrl = document.getElementById("feed-url").value;
+    if (!feedUrl) {
+      showNotification("Введите URL фида");
+      return;
+    }
+    
+    try {
+      // Проверяем, является ли введенный текст валидным URL
+      new URL(feedUrl);
+      localStorage.setItem(FEED_URL_KEY, feedUrl);
+      showNotification("URL фида сохранен");
+    } catch (e) {
+      showNotification("Введите корректный URL");
+    }
+  }
+
+  // Проверяем, нужно ли обновить данные из фида (раз в сутки)
+  function shouldUpdateFeed() {
+    const lastUpdate = localStorage.getItem(FEED_UPDATE_TIME_KEY);
+    if (!lastUpdate) return true;
+    
+    const now = new Date().getTime();
+    const oneDay = 24 * 60 * 60 * 1000; // 24 часа в миллисекундах
+    
+    return (now - lastUpdate) > oneDay;
+  }
+
+  function loadProducts() {
+    // Загружаем данные из localStorage
+    const data = localStorage.getItem(STORAGE_KEY);
+    if(data) {
+      products = JSON.parse(data);
+      updateCartCount();
+      renderProducts();
+    }
+    
+    // Загружаем корзину и избранное
+    const cartData = localStorage.getItem(CART_STORAGE_KEY);
+    if(cartData) cart = JSON.parse(cartData);
+    
+    const favoritesData = localStorage.getItem(FAVORITES_STORAGE_KEY);
+    if(favoritesData) favorites = JSON.parse(favoritesData);
+    
+    // Загружаем сохраненный URL фида
+    const feedUrl = localStorage.getItem(FEED_URL_KEY);
+    if (feedUrl) {
+      document.getElementById("feed-url").value = feedUrl;
+    }
+    
+    updateCartCount();
+    
+    // Если данных нет или нужно обновить, загружаем из фида
+    if (products.length === 0 || shouldUpdateFeed()) {
+      loadFromFeed();
+    } else {
+      renderProducts();
+    }
+  }
+
+  function saveProducts() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+  }
+  
+  function saveCart() {
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+  }
+  
+  function saveFavorites() {
+    localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favorites));
+  }
+
   function renderProducts() {
     const grid = document.getElementById("product-grid");
     const title = document.getElementById("products-title");
@@ -1236,13 +961,8 @@ const cloudinaryConfig = {
     let filteredProducts = [...products];
     
     // Фильтрация по категории
-    if(currentFilters.category && currentFilters.category !== 'Всі') {
+    if(currentFilters.category && currentFilters.category !== 'Все') {
       filteredProducts = filteredProducts.filter(p => p.category === currentFilters.category);
-    }
-    
-    // Фильтрация по бренду
-    if(currentFilters.brand) {
-      filteredProducts = filteredProducts.filter(p => p.brand === currentFilters.brand);
     }
     
     // Фильтрация по цене
@@ -1254,28 +974,21 @@ const cloudinaryConfig = {
       filteredProducts = filteredProducts.filter(p => p.price <= currentFilters.maxPrice);
     }
     
-    // Фильтрация по рейтингу
-    if(currentFilters.rating) {
-      const minRating = parseInt(currentFilters.rating);
-      filteredProducts = filteredProducts.filter(p => p.rating >= minRating);
-    }
-    
     // Поиск
     if(currentFilters.search) {
       const searchTerm = currentFilters.search.toLowerCase();
       filteredProducts = filteredProducts.filter(p => 
         p.title.toLowerCase().includes(searchTerm) || 
-        (p.description && p.description.toLowerCase().includes(searchTerm)) ||
-        (p.brand && p.brand.toLowerCase().includes(searchTerm))
+        (p.description && p.description.toLowerCase().includes(searchTerm))
       );
     }
     
     // Показ избранного
     if(showingFavorites) {
       filteredProducts = filteredProducts.filter(p => favorites[p.id]);
-      title.textContent = "Обрані товари";
+      title.textContent = "Избранные товары";
     } else {
-      title.textContent = currentFilters.category ? `Товари: ${currentFilters.category}` : "Всі товари";
+      title.textContent = currentFilters.category ? `Товары: ${currentFilters.category}` : "Все товары";
     }
     
     // Сортировка
@@ -1292,12 +1005,9 @@ const cloudinaryConfig = {
       case 'name-desc':
         filteredProducts.sort((a, b) => b.title.localeCompare(a.title));
         break;
-      case 'rating-desc':
-        filteredProducts.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-        break;
     }
     
-    count.textContent = `Знайдено: ${filteredProducts.length}`;
+    count.textContent = `Найдено: ${filteredProducts.length}`;
     
     grid.innerHTML = "";
     
@@ -1305,8 +1015,8 @@ const cloudinaryConfig = {
       grid.innerHTML = `
         <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #95a5a6;">
           <i class="fas fa-search" style="font-size: 48px; margin-bottom: 15px;"></i>
-          <h3>Товари не знайдено</h3>
-          <p>Спробуйте змінити параметри фільтрації</p>
+          <h3>Товары не найдены</h3>
+          <p>Попробуйте изменить параметры фильтрации</p>
         </div>
       `;
       return;
@@ -1316,22 +1026,12 @@ const cloudinaryConfig = {
       const card = document.createElement("div");
       card.className = "card";
       
-      // Расчет среднего рейтинга
-      const avgRating = p.rating ? p.rating : 0;
-      const ratingStars = getRatingStars(avgRating);
-      
       card.innerHTML = `
-        ${p.featured ? '<div class="card-badge">Хіт</div>' : ''}
+        ${p.featured ? '<div class="card-badge">Хит</div>' : ''}
         <img src="${p.image || 'https://picsum.photos/200'}" alt="${p.title}" onerror="this.src='https://picsum.photos/200'">
         <h3>${p.title}</h3>
-        <p>${p.description || "Опис відсутній"}</p>
-        ${avgRating > 0 ? `
-          <div class="rating">
-            ${ratingStars}
-            <span style="color:#777; font-size:14px;">(${p.reviewCount || 0})</span>
-          </div>
-        ` : ''}
-        <div class="price">${p.price ? p.price + " ₴" : "Ціна за запитом"}</div>
+        <p>${p.description || "Описание отсутствует"}</p>
+        <div class="price">${p.price ? p.price + " ₴" : "Цена по запросу"}</div>
         <div class="card-actions">
           <button class="btn btn-detail" onclick="openDetail('${p.id}')">
             <i class="fas fa-info-circle"></i>
@@ -1343,97 +1043,52 @@ const cloudinaryConfig = {
             <i class="${favorites[p.id] ? 'fas' : 'far'} fa-heart"></i>
           </button>
         </div>
-        ${isAdmin && p.source === 'api_feed' ? `
-          <button class="btn" onclick="updateProductFromFeed('${p.id}', '${p.feedId}')" style="margin-top: 5px; font-size: 12px;">
-            <i class="fas fa-sync"></i> Оновити з фіду
-          </button>
-        ` : ""}
-        ${isAdmin ? `<button class="btn" onclick="removeProduct('${p.id}')" style="margin-top: 10px;">Видалити</button>` : ""}
+        ${adminMode ? `<button class="btn" onclick="removeProduct('${p.id}')" style="margin-top: 10px;">Удалить</button>` : ""}
       `;
       
       grid.appendChild(card);
     });
+    
+    renderCategories();
   }
 
-  // Генерация звезд рейтинга
-  function getRatingStars(rating) {
-    let stars = '';
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
-    
-    for (let i = 1; i <= 5; i++) {
-      if (i <= fullStars) {
-        stars += '<i class="fas fa-star"></i>';
-      } else if (i === fullStars + 1 && hasHalfStar) {
-        stars += '<i class="fas fa-star-half-alt"></i>';
-      } else {
-        stars += '<i class="far fa-star"></i>';
-      }
-    }
-    
-    return stars;
-  }
-
-  // Отображение категорий
   function renderCategories() {
     const select = document.getElementById("category");
-    const cats = ["Всі", ...new Set(products.map(p => p.category || "Без категорії"))];
+    const cats = ["Все", ...new Set(products.map(p => p.category || "Без категории"))];
     select.innerHTML = cats.map(c => `<option value="${c}" ${currentFilters.category === c ? 'selected' : ''}>${c}</option>`).join("");
   }
-
-  // Отображение брендов
-  function renderBrands() {
-    const select = document.getElementById("brand");
-    const brands = ["Всі бренди", ...new Set(products.map(p => p.brand).filter(b => b))];
-    select.innerHTML = brands.map(b => `<option value="${b}" ${currentFilters.brand === b ? 'selected' : ''}>${b}</option>`).join("");
-  }
-
-  // Применение фильтров
+  
   function applyFilters() {
     currentFilters.category = document.getElementById("category").value;
-    currentFilters.brand = document.getElementById("brand").value;
     currentFilters.minPrice = document.getElementById("price-min").value ? parseInt(document.getElementById("price-min").value) : null;
     currentFilters.maxPrice = document.getElementById("price-max").value ? parseInt(document.getElementById("price-max").value) : null;
     currentFilters.sort = document.getElementById("sort").value;
     currentFilters.search = document.getElementById("search").value;
-    currentFilters.rating = document.getElementById("rating").value;
     
     showingFavorites = false;
     renderProducts();
   }
-
-  // Сброс фильтров
+  
   function resetFilters() {
-    document.getElementById("category").value = "Всі";
-    document.getElementById("brand").value = "Всі бренди";
+    document.getElementById("category").value = "Все";
     document.getElementById("price-min").value = "";
     document.getElementById("price-max").value = "";
     document.getElementById("sort").value = "default";
     document.getElementById("search").value = "";
-    document.getElementById("rating").value = "";
     
     currentFilters = {
       category: '',
-      brand: '',
       minPrice: null,
       maxPrice: null,
       sort: 'default',
-      search: '',
-      rating: ''
+      search: ''
     };
     
     showingFavorites = false;
     renderProducts();
   }
-
-  // Переключение избранного
+  
   function toggleFavorites() {
-    if (!currentUser) {
-      openAuthModal('login');
-      showNotification('Увійдіть, щоб переглядати обрані товари');
-      return;
-    }
-    
     showingFavorites = !showingFavorites;
     const btn = document.getElementById("favorites-btn");
     
@@ -1447,60 +1102,26 @@ const cloudinaryConfig = {
     
     renderProducts();
   }
-
-  // Добавление/удаление из избранного
+  
   function toggleFavorite(id) {
-    if (!currentUser) {
-      openAuthModal('login');
-      showNotification('Увійдіть, щоб додавати до обраного');
-      return;
-    }
-    
     if(favorites[id]) {
       delete favorites[id];
     } else {
       favorites[id] = true;
     }
     
-    // Сохранение в Firestore
-    db.collection("users").doc(currentUser.uid).update({
-      favorites: favorites
-    })
-    .then(() => {
-      renderProducts();
-      showNotification("Обрані оновлено");
-    })
-    .catch(error => {
-      console.error("Помилка оновлення обраного:", error);
-      showNotification("Помилка оновлення обраного", true);
-    });
+    saveFavorites();
+    renderProducts();
+    showNotification("Избранное обновлено");
   }
 
-  // Добавление товара в корзину
   function addToCart(id, quantity = 1){
-    if (!currentUser) {
-      openAuthModal('login');
-      showNotification('Увійдіть, щоб додавати товари до кошика');
-      return;
-    }
-    
     cart[id] = (cart[id] || 0) + quantity;
     updateCartCount();
-    
-    // Сохранение в Firestore
-    db.collection("users").doc(currentUser.uid).update({
-      cart: cart
-    })
-    .then(() => {
-      showNotification("Товар додано до кошика");
-    })
-    .catch(error => {
-      console.error("Помилка додавання до кошика:", error);
-      showNotification("Помилка додавання до кошика", true);
-    });
+    saveCart();
+    showNotification("Товар добавлен в корзину");
   }
-
-  // Обновление количества товара в корзине
+  
   function updateCartItem(id, quantity) {
     if(quantity <= 0) {
       delete cart[id];
@@ -1509,11 +1130,7 @@ const cloudinaryConfig = {
     }
     
     updateCartCount();
-    
-    // Сохранение в Firestore
-    db.collection("users").doc(currentUser.uid).update({
-      cart: cart
-    });
+    saveCart();
     
     // Если корзина открыта, обновим её
     if(document.getElementById("modal").classList.contains('active')) {
@@ -1521,26 +1138,18 @@ const cloudinaryConfig = {
     }
   }
 
-  // Обновление счетчика корзины
   function updateCartCount(){
     const count = Object.values(cart).reduce((a, b) => a + b, 0);
     document.getElementById("cart-count").innerText = count;
   }
 
-  // Открытие корзины
   function openCart(){
-    if (!currentUser) {
-      openAuthModal('login');
-      showNotification('Увійдіть, щоб переглядати кошик');
-      return;
-    }
-    
     const modal = document.getElementById("modal");
     const content = document.getElementById("modal-content");
     
     let html = `
       <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
-      <h3><i class="fas fa-shopping-cart"></i> Кошик</h3>
+      <h3><i class="fas fa-shopping-cart"></i> Корзина</h3>
     `;
     
     const cartIds = Object.keys(cart);
@@ -1549,8 +1158,8 @@ const cloudinaryConfig = {
       html += `
         <div class="empty-cart">
           <i class="fas fa-shopping-cart"></i>
-          <h3>Кошик порожній</h3>
-          <p>Додайте товари з каталогу</p>
+          <h3>Корзина пуста</h3>
+          <p>Добавьте товары из каталога</p>
         </div>
       `;
     } else {
@@ -1585,83 +1194,18 @@ const cloudinaryConfig = {
       }
       
       html += `</div>`;
-      html += `<div class="cart-total">Всього: ${total} ₴</div>`;
-      html += `<button onclick="checkout()" class="btn btn-buy" style="width: 100%;">Оформити замовлення</button>`;
+      html += `<div class="cart-total">Итого: ${total} ₴</div>`;
+      html += `<button onclick="checkout()" class="btn btn-buy" style="width: 100%;">Оформить заказ</button>`;
     }
     
     content.innerHTML = html;
     modal.classList.add('active');
   }
 
-  // Оформление заказа
-  function checkout() {
-    if (!currentUser) return;
-    
-    const cartIds = Object.keys(cart);
-    if(cartIds.length === 0) return;
-    
-    let total = 0;
-    const orderItems = [];
-    
-    for(const id of cartIds) {
-      const p = products.find(x => x.id === id);
-      if(p) {
-        const itemTotal = p.price * cart[id];
-        total += itemTotal;
-        orderItems.push({
-          productId: id,
-          title: p.title,
-          price: p.price,
-          quantity: cart[id],
-          image: p.image
-        });
-      }
-    }
-    
-    // Создание заказа в Firestore
-    const orderData = {
-      userId: currentUser.uid,
-      items: orderItems,
-      total: total,
-      status: 'pending',
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      shippingAddress: document.getElementById('profile-address').value || 'Не вказано'
-    };
-    
-    db.collection("orders").add(orderData)
-      .then(docRef => {
-        // Очистка корзины
-        cart = {};
-        updateCartCount();
-        
-        // Обновление корзины пользователя
-        db.collection("users").doc(currentUser.uid).update({
-          cart: {}
-        });
-        
-        showNotification("Замовлення успішно оформлено!");
-        closeModal();
-        
-        // Обновление истории заказов
-        if (document.getElementById('orders-section').classList.contains('active')) {
-          loadUserOrders();
-        }
-      })
-      .catch(error => {
-        console.error("Помилка оформлення замовлення:", error);
-        showNotification("Помилка оформлення замовлення", true);
-      });
-  }
-
-  // Открытие детальной информации о товаре
   function openDetail(id){
     const p = products.find(x => x.id === id);
     const modal = document.getElementById("modal");
     const content = document.getElementById("modal-content");
-    
-    // Расчет среднего рейтинга
-    const avgRating = p.rating ? p.rating : 0;
-    const ratingStars = getRatingStars(avgRating);
     
     content.innerHTML = `
       <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
@@ -1671,232 +1215,38 @@ const cloudinaryConfig = {
         </div>
         <div class="product-info">
           <h3>${p.title}</h3>
-          ${avgRating > 0 ? `
-            <div class="rating">
-              ${ratingStars}
-              <span style="color:#777; font-size:14px;">${avgRating.toFixed(1)} (${p.reviewCount || 0} відгуків)</span>
-            </div>
-          ` : ''}
           <div class="detail-price">${p.price} ₴</div>
-          <div class="product-description">${p.description || "Опис відсутній"}</div>
+          <div class="product-description">${p.description || "Описание отсутствует"}</div>
           <div class="quantity-control">
-            <label>Кількість:</label>
-            <button class="quantity-btn" onclick="document.getElementById('detail-quantity').stepDown()">-</button>
+            <label>Количество:</label>
+            <button class="quantity-btn" onclick="this.nextElementSibling.stepDown();">-</button>
             <input type="number" class="quantity-input" id="detail-quantity" value="1" min="1">
-            <button class="quantity-btn" onclick="document.getElementById('detail-quantity').stepUp()">+</button>
+            <button class="quantity-btn" onclick="this.previousElementSibling.stepUp();">+</button>
           </div>
           <div class="detail-actions">
             <button class="btn btn-buy" onclick="addToCart('${p.id}', parseInt(document.getElementById('detail-quantity').value)); closeModal();">
-              <i class="fas fa-shopping-cart"></i> Додати до кошика
+              <i class="fas fa-shopping-cart"></i> Добавить в корзину
             </button>
             <button class="btn btn-favorite ${favorites[p.id] ? 'active' : ''}" onclick="toggleFavorite('${p.id}')">
               <i class="${favorites[p.id] ? 'fas' : 'far'} fa-heart"></i>
             </button>
           </div>
-          ${currentUser ? `
-            <div style="margin-top:20px; padding-top:20px; border-top:1px solid #eee;">
-              <button class="btn" onclick="openReviewModal('${p.id}')">
-                <i class="fas fa-star"></i> Залишити відгук
-              </button>
-            </div>
-          ` : ''}
-        </div>
-      </div>
-      <div style="margin-top:30px;">
-        <h4>Відгуки</h4>
-        <div id="product-reviews"></div>
-      </div>
-    `;
-    
-    modal.classList.add('active');
-    
-    // Загрузка отзывов
-    loadProductReviews(id);
-  }
-
-  // Загрузка отзывов товара
-  function loadProductReviews(productId) {
-    const reviewsContainer = document.getElementById('product-reviews');
-    reviewsContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner"></i><p>Завантаження відгуків...</p></div>';
-    
-    db.collection("reviews")
-      .where("productId", "==", productId)
-      .orderBy("createdAt", "desc")
-      .get()
-      .then(querySnapshot => {
-        if (querySnapshot.empty) {
-          reviewsContainer.innerHTML = '<p>Відгуків поки немає.</p>';
-          return;
-        }
-        
-        let reviewsHtml = '';
-        querySnapshot.forEach(doc => {
-          const review = doc.data();
-          const date = review.createdAt ? review.createdAt.toDate().toLocaleDateString() : '';
-          
-          reviewsHtml += `
-            <div class="review-item">
-              <div class="review-header">
-                <div class="review-author">${review.userName}</div>
-                <div class="review-date">${date}</div>
-              </div>
-              <div class="review-rating">${getRatingStars(review.rating)}</div>
-              <p>${review.text}</p>
-            </div>
-          `;
-        });
-        
-        reviewsContainer.innerHTML = reviewsHtml;
-      })
-      .catch(error => {
-        console.error("Помилка завантаження відгуків:", error);
-        reviewsContainer.innerHTML = '<p>Помилка завантаження відгуків.</p>';
-      });
-  }
-
-  // Открытие модального окна для отзыва
-  function openReviewModal(productId) {
-    const p = products.find(x => x.id === productId);
-    if (!p) return;
-    
-    currentProductForReview = productId;
-    const modal = document.getElementById("review-modal");
-    const productInfo = document.getElementById("review-product-info");
-    
-    productInfo.innerHTML = `
-      <div style="display:flex; gap:10px; align-items:center;">
-        <img src="${p.image || 'https://picsum.photos/60'}" style="width:60px; height:60px; object-fit:cover; border-radius:6px;" onerror="this.src='https://picsum.photos/60'">
-        <div>
-          <h4 style="margin:0;">${p.title}</h4>
-          <div class="detail-price">${p.price} ₴</div>
         </div>
       </div>
     `;
     
-    // Сброс рейтинга и текста
-    setRating(0);
-    document.getElementById('review-text').value = '';
-    
     modal.classList.add('active');
   }
 
-  // Установка рейтинга
-  function setRating(value) {
-    const stars = document.querySelectorAll('#review-rating i');
-    stars.forEach(star => {
-      const starValue = parseInt(star.getAttribute('data-value'));
-      if (starValue <= value) {
-        star.className = 'fas fa-star';
-      } else {
-        star.className = 'far fa-star';
-      }
-    });
-  }
-
-  // Отправка отзыва
-  function submitReview() {
-    if (!currentUser || !currentProductForReview) return;
-    
-    const stars = document.querySelectorAll('#review-rating i.fas.fa-star');
-    const rating = stars.length;
-    const text = document.getElementById('review-text').value.trim();
-    
-    if (rating === 0) {
-      showNotification('Оберіть оцінку', true);
-      return;
-    }
-    
-    if (!text) {
-      showNotification('Напишіть відгук', true);
-      return;
-    }
-    
-    const reviewData = {
-      productId: currentProductForReview,
-      userId: currentUser.uid,
-      userName: currentUser.displayName || 'Анонім',
-      rating: rating,
-      text: text,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    };
-    
-    // Сохранение отзыва
-    db.collection("reviews").add(reviewData)
-      .then(() => {
-        // Обновление рейтинга товара
-        updateProductRating(currentProductForReview);
-        
-        showNotification('Відгук додано');
-        closeReviewModal();
-        
-        // Обновление отзывов в детальном просмотре
-        if (document.getElementById('modal').classList.contains('active')) {
-          loadProductReviews(currentProductForReview);
-        }
-        
-        // Обновление пользовательских отзывов
-        if (document.getElementById('reviews-section').classList.contains('active')) {
-          loadUserReviews();
-        }
-      })
-      .catch(error => {
-        console.error("Помилка додавання відгуку:", error);
-        showNotification("Помилка додавання відгуку", true);
-      });
-  }
-
-  // Обновление рейтинга товара
-  function updateProductRating(productId) {
-    // Получение всех отзывов товара
-    db.collection("reviews")
-      .where("productId", "==", productId)
-      .get()
-      .then(querySnapshot => {
-        let totalRating = 0;
-        let reviewCount = 0;
-        
-        querySnapshot.forEach(doc => {
-          const review = doc.data();
-          totalRating += review.rating;
-          reviewCount++;
-        });
-        
-        const averageRating = reviewCount > 0 ? totalRating / reviewCount : 0;
-        
-        // Обновление товара
-        db.collection("products").doc(productId).update({
-          rating: averageRating,
-          reviewCount: reviewCount
-        });
-      })
-      .catch(error => {
-        console.error("Помилка оновлення рейтингу:", error);
-      });
-  }
-
-  // Закрытие модального окна отзыва
-  function closeReviewModal() {
-    document.getElementById("review-modal").classList.remove('active');
-    currentProductForReview = null;
-  }
-
-  // Закрытие модального окна
   function closeModal(){ 
     document.getElementById("modal").classList.remove('active');
   }
-
-  // Показ уведомления
-  function showNotification(message, isError = false) {
+  
+  function showNotification(message) {
     const notification = document.getElementById("notification");
     const text = document.getElementById("notification-text");
     
     text.textContent = message;
-    notification.classList.remove('error');
-    
-    if (isError) {
-      notification.classList.add('error');
-    }
-    
     notification.classList.add('show');
     
     setTimeout(() => {
@@ -1904,874 +1254,92 @@ const cloudinaryConfig = {
     }, 3000);
   }
 
-  // Открытие модального окна аутентификации
-  function openAuthModal(tab = 'login') {
-    document.getElementById("auth-modal").classList.add('active');
-    switchAuthTab(tab);
+  function checkout(){ 
+    alert("Заказ принят (демо)."); 
+    cart = {}; 
+    updateCartCount(); 
+    saveCart();
+    closeModal(); 
   }
 
-  // Закрытие модального окна аутентификации
-  function closeAuthModal() {
-    document.getElementById("auth-modal").classList.remove('active');
-  }
-
-  // Переключение вкладок аутентификации
-  function switchAuthTab(tab) {
-    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
-    
-    document.querySelector(`.auth-tab:nth-child(${tab === 'login' ? 1 : tab === 'register' ? 2 : 1})`).classList.add('active');
-    document.getElementById(`${tab}-form`).classList.add('active');
-  }
-
-  // Регистрация
-  function register() {
-    const name = document.getElementById('register-name').value.trim();
-    const email = document.getElementById('register-email').value.trim();
-    const password = document.getElementById('register-password').value;
-    const confirm = document.getElementById('register-confirm').value;
-    
-    if (!name) {
-      showNotification('Введіть ім\'я', true);
-      return;
-    }
-    
-    if (!email) {
-      showNotification('Введіть email', true);
-      return;
-    }
-    
-    if (password.length < 6) {
-      showNotification('Пароль повинен містити не менше 6 символів', true);
-      return;
-    }
-    
-    if (password !== confirm) {
-      showNotification('Паролі не співпадають', true);
-      return;
-    }
-    
-    auth.createUserWithEmailAndPassword(email, password)
-      .then(userCredential => {
-        // Обновление профиля
-        return userCredential.user.updateProfile({
-          displayName: name
-        });
-      })
-      .then(() => {
-        // Создание записи пользователя в Firestore
-        return db.collection("users").doc(auth.currentUser.uid).set({
-          name: name,
-          email: email,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-          cart: {},
-          favorites: {}
-        });
-      })
-      .then(() => {
-        showNotification('Реєстрація успішна!');
-        closeAuthModal();
-      })
-      .catch(error => {
-        console.error("Помилка реєстрації:", error);
-        showNotification(getAuthErrorMessage(error), true);
-      });
-  }
-
-  // Вход
-  function login() {
-    const email = document.getElementById('login-email').value.trim();
-    const password = document.getElementById('login-password').value;
-    
-    if (!email) {
-      showNotification('Введіть email', true);
-      return;
-    }
-    
-    if (!password) {
-      showNotification('Введіть пароль', true);
-      return;
-    }
-    
-    auth.signInWithEmailAndPassword(email, password)
-      .then(() => {
-        showNotification('Вхід виконано!');
-        closeAuthModal();
-      })
-      .catch(error => {
-        console.error("Помилка входу:", error);
-        showNotification(getAuthErrorMessage(error), true);
-      });
-  }
-
-  // Восстановление пароля
-  function resetPassword() {
-    const email = document.getElementById('forgot-email').value.trim();
-    
-    if (!email) {
-      showNotification('Введіть email', true);
-      return;
-    }
-    
-    auth.sendPasswordResetEmail(email)
-      .then(() => {
-        showNotification('Лист для відновлення відправлено на вашу пошту');
-        switchAuthTab('login');
-      })
-      .catch(error => {
-        console.error("Помилка відновлення пароля:", error);
-        showNotification(getAuthErrorMessage(error), true);
-      });
-  }
-
-  // Выход
-  function logout() {
-    auth.signOut()
-      .then(() => {
-        showNotification('Ви вийшли з системи');
-      })
-      .catch(error => {
-        console.error("Помилка виходу:", error);
-        showNotification('Помилка виходу', true);
-      });
-  }
-
-  // Получение понятного сообщения об ошибке аутентификации
-  function getAuthErrorMessage(error) {
-    switch(error.code) {
-      case 'auth/email-already-in-use':
-        return 'Цей email вже використовується';
-      case 'auth/invalid-email':
-        return 'Невірний формат email';
-      case 'auth/operation-not-allowed':
-        return 'Операція не дозволена';
-      case 'auth/weak-password':
-        return 'Пароль занадто простий';
-      case 'auth/user-disabled':
-        return 'Користувач заблокований';
-      case 'auth/user-not-found':
-        return 'Користувач не знайдений';
-      case 'auth/wrong-password':
-        return 'Невірний пароль';
-      default:
-        return 'Сталася помилка';
+  function loginAdmin(){
+    const pass = prompt("Введите пароль администратора:");
+    if(pass === ADMIN_PASSWORD){
+      adminMode = true;
+      document.getElementById("admin-panel").style.display = "block";
+      renderProducts();
+      showNotification("Режим администратора активирован");
+    } else {
+      alert("Неверный пароль!");
     }
   }
 
-  // Загрузка данных пользователя
-  function loadUserData(uid) {
-    db.collection("users").doc(uid).get()
-      .then(doc => {
-        if (doc.exists) {
-          const userData = doc.data();
-          
-          // Загрузка корзины
-          if (userData.cart) {
-            cart = userData.cart;
-            updateCartCount();
-          }
-          
-          // Загрузка избранного
-          if (userData.favorites) {
-            favorites = userData.favorites;
-          }
-          
-          // Заполнение профиля
-          document.getElementById('profile-name').value = userData.name || '';
-          document.getElementById('profile-email').value = currentUser.email;
-          document.getElementById('profile-phone').value = userData.phone || '';
-          document.getElementById('profile-address').value = userData.address || '';
-        }
-      })
-      .catch(error => {
-        console.error("Помилка завантаження даних користувача:", error);
-      });
+  function logoutAdmin(){
+    adminMode = false;
+    document.getElementById("admin-panel").style.display = "none";
+    renderProducts();
+    showNotification("Режим администратора деактивирован");
   }
-
-  // Обновление профиля
-  function updateProfile() {
-    if (!currentUser) return;
-    
-    const name = document.getElementById('profile-name').value.trim();
-    const phone = document.getElementById('profile-phone').value.trim();
-    const address = document.getElementById('profile-address').value.trim();
-    
-    const updates = {};
-    if (name) updates.name = name;
-    if (phone) updates.phone = phone;
-    if (address) updates.address = address;
-    
-    db.collection("users").doc(currentUser.uid).update(updates)
-      .then(() => {
-        // Обновление имени в Auth
-        currentUser.updateProfile({
-          displayName: name
-        });
-        
-        showNotification('Профіль оновлено');
-      })
-      .catch(error => {
-        console.error("Помилка оновлення профілю:", error);
-        showNotification('Помилка оновлення профілю', true);
-      });
-  }
-
-  // Показать раздел профиля
-  function showProfileSection(section) {
-    document.querySelectorAll('.profile-section').forEach(s => s.classList.remove('active'));
-    document.getElementById(`${section}-section`).classList.add('active');
-    
-    // Загрузка данных при необходимости
-    if (section === 'orders') {
-      loadUserOrders();
-    } else if (section === 'reviews') {
-      loadUserReviews();
-    }
-    
-    // Скрытие dropdown
-    document.getElementById('user-dropdown').classList.remove('active');
-  }
-
-  // Загрузка заказов пользователя
-  function loadUserOrders() {
-    if (!currentUser) return;
-    
-    const ordersList = document.getElementById('orders-list');
-    ordersList.innerHTML = '<div class="loading"><i class="fas fa-spinner"></i><p>Завантаження замовлень...</p></div>';
-    
-    db.collection("orders")
-      .where("userId", "==", currentUser.uid)
-      .orderBy("createdAt", "desc")
-      .get()
-      .then(querySnapshot => {
-        if (querySnapshot.empty) {
-          ordersList.innerHTML = `
-            <div class="empty-cart">
-              <i class="fas fa-shopping-bag"></i>
-              <h3>Замовлень поки немає</h3>
-              <p>Зробіть покупки, щоб побачити їх тут</p>
-          </div>
-          `;
-          return;
-        }
-        
-        let ordersHtml = '';
-        querySnapshot.forEach(doc => {
-          const order = doc.data();
-          const date = order.createdAt ? order.createdAt.toDate().toLocaleDateString() : '';
-          const statusClass = getStatusClass(order.status);
-          
-          let productsHtml = '';
-          order.items.forEach(item => {
-            productsHtml += `
-              <div class="order-product">
-                <img src="${item.image || 'https://picsum.photos/50'}" alt="${item.title}" onerror="this.src='https://picsum.photos/50'">
-                <div class="order-product-info">
-                  <div>${item.title}</div>
-                  <div>${item.price} ₴ × ${item.quantity} = ${item.price * item.quantity} ₴</div>
-                </div>
-              </div>
-            `;
-          });
-          
-          ordersHtml += `
-            <div class="order-item">
-              <div class="order-header">
-                <div>Замовлення #${doc.id.substring(0, 8)}</div>
-                <div>${date}</div>
-              </div>
-              <div class="order-status ${statusClass}">${getStatusText(order.status)}</div>
-              <div class="order-products">
-                ${productsHtml}
-              </div>
-              <div class="order-total">Всього: ${order.total} ₴</div>
-            </div>
-          `;
-        });
-        
-        ordersList.innerHTML = ordersHtml;
-      })
-      .catch(error => {
-        console.error("Помилка завантаження замовлень:", error);
-        ordersList.innerHTML = '<p>Помилка завантаження замовлень.</p>';
-      });
-  }
-
-  // Получение текста статуса заказа
-  function getStatusText(status) {
-    switch(status) {
-      case 'pending': return 'В обробці';
-      case 'shipped': return 'Відправлено';
-      case 'delivered': return 'Доставлено';
-      case 'cancelled': return 'Скасовано';
-      default: return status;
-    }
-  }
-
-  // Получение класса для статуса заказа
-  function getStatusClass(status) {
-    switch(status) {
-      case 'delivered': return 'status-delivered';
-      case 'pending': return 'status-pending';
-      case 'cancelled': return 'status-cancelled';
-      default: return '';
-    }
-  }
-
-  // Загрузка отзывов пользователя
-  function loadUserReviews() {
-    if (!currentUser) return;
-    
-    const reviewsContainer = document.getElementById('user-reviews');
-    reviewsContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner"></i><p>Завантаження відгуків...</p></div>';
-    
-    db.collection("reviews")
-      .where("userId", "==", currentUser.uid)
-      .orderBy("createdAt", "desc")
-      .get()
-      .then(querySnapshot => {
-        if (querySnapshot.empty) {
-          reviewsContainer.innerHTML = `
-            <div class="empty-cart">
-              <i class="fas fa-star"></i>
-              <h3>Відгуків поки немає</h3>
-              <p>Залишайте відгуки до товарів, щоб побачити їх тут</p>
-            </div>
-          `;
-          return;
-        }
-        
-        let reviewsHtml = '';
-        querySnapshot.forEach(doc => {
-          const review = doc.data();
-          const date = review.createdAt ? review.createdAt.toDate().toLocaleDateString() : '';
-          const product = products.find(p => p.id === review.productId);
-          
-          if (product) {
-            reviewsHtml += `
-              <div class="review-item">
-                <div class="review-header">
-                  <div class="review-author">${product.title}</div>
-                  <div class="review-date">${date}</div>
-                </div>
-                <div class="review-rating">${getRatingStars(review.rating)}</div>
-                <p>${review.text}</p>
-              </div>
-            `;
-          }
-        });
-        
-        reviewsContainer.innerHTML = reviewsHtml;
-      })
-      .catch(error => {
-        console.error("Помилка завантаження відгуків:", error);
-        reviewsContainer.innerHTML = '<p>Помилка завантаження відгуків.</p>';
-      });
-  }
-
-  // Переключение dropdown пользователя
-  function toggleUserDropdown() {
-    document.getElementById('user-dropdown').classList.toggle('active');
-  }
-
-  // Проверка статуса администратора
-  function checkAdminStatus(uid) {
-    db.collection("admins").doc(uid).get()
-      .then(doc => {
-        if (doc.exists) {
-          isAdmin = true;
-          document.getElementById('admin-menu-item').style.display = 'block';
-        } else {
-          isAdmin = false;
-          document.getElementById('admin-menu-item').style.display = 'none';
-        }
-      })
-      .catch(error => {
-        console.error("Помилка перевірки статусу адміністратора:", error);
-      });
-  }
-
-  // Показать панель администратора
-  function showAdminPanel() {
-    if (!isAdmin) return;
-    
-    document.getElementById('admin-panel').style.display = 'block';
-    document.getElementById('profile-sections').style.display = 'none';
-    document.getElementById('user-dropdown').classList.remove('active');
-    
-    // Загрузка товаров для администрирования
-    loadAdminProducts();
-  }
-
-  // Скрыть панель администратора
-  function hideAdminPanel() {
-    document.getElementById('admin-panel').style.display = 'none';
-    document.getElementById('profile-sections').style.display = 'block';
-  }
-
-  // Переключение вкладок в админ-панели
+  
   function switchTab(tabId) {
     document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
     
-    document.getElementById(tabId.replace('-tab', '')).classList.add('active');
+    document.querySelector(`.tab:nth-child(${tabId === 'import-tab' ? 1 : 2})`).classList.add('active');
     document.getElementById(tabId).classList.add('active');
   }
 
-  // Загрузка товаров для администрирования
-  function loadAdminProducts() {
-    const productsList = document.getElementById('admin-products-list');
-    productsList.innerHTML = '<div class="loading"><i class="fas fa-spinner"></i><p>Завантаження товарів...</p></div>';
-    
-    db.collection("products").get()
-      .then(querySnapshot => {
-        if (querySnapshot.empty) {
-          productsList.innerHTML = '<p>Товарів немає.</p>';
-          return;
-        }
-        
-        let productsHtml = '<div style="display:grid; gap:15px;">';
-        querySnapshot.forEach(doc => {
-          const product = { id: doc.id, ...doc.data() };
-          
-          productsHtml += `
-            <div style="padding:15px; border:1px solid #eee; border-radius:8px;">
-              <div style="display:flex; gap:15px; align-items:center;">
-                <img src="${product.image || 'https://picsum.photos/60'}" style="width:60px; height:60px; object-fit:cover; border-radius:6px;" onerror="this.src='https://picsum.photos/60'">
-                <div style="flex-grow:1;">
-                  <h4 style="margin:0;">${product.title}</h4>
-                  <div>${product.price} ₴</div>
-                  <div style="font-size:14px; color:#777;">${product.category} • ${product.brand || 'Без бренду'}</div>
-                </div>
-                <button class="btn" onclick="removeProduct('${product.id}')">
-                  <i class="fas fa-trash"></i> Видалити
-                </button>
-              </div>
-            </div>
-          `;
-        });
-        
-        productsHtml += '</div>';
-        productsList.innerHTML = productsHtml;
-      })
-      .catch(error => {
-        console.error("Помилка завантаження товарів:", error);
-        productsList.innerHTML = '<p>Помилка завантаження товарів.</p>';
-      });
-  }
-
-  // Удаление товара
   function removeProduct(id){
-    if(!confirm("Видалити товар?")) return;
-    
-    db.collection("products").doc(id).delete()
-      .then(() => {
-        showNotification("Товар видалено");
-        loadProducts();
-        loadAdminProducts();
-      })
-      .catch(error => {
-        console.error("Помилка видалення товару:", error);
-        showNotification("Помилка видалення товару", true);
-      });
-  }
-
-  // Открытие виджета Cloudinary
-  function openCloudinaryWidget() {
-    const widget = cloudinary.createUploadWidget({
-      cloudName: cloudinaryConfig.cloudName,
-      uploadPreset: cloudinaryConfig.uploadPreset,
-      sources: ['local', 'url'],
-      multiple: false,
-      cropping: true,
-      showAdvancedOptions: true,
-      styles: {
-        palette: {
-          window: "#FFFFFF",
-          sourceBg: "#F4F4F5",
-          windowBorder: "#90A0B3",
-          tabIcon: "#000000",
-          inactiveTabIcon: "#555a5f",
-          menuIcons: "#555a5f",
-          link: "#3498db",
-          action: "#3399FF",
-          inProgress: "#3399FF",
-          complete: "#27ae60",
-          error: "#e74c3c",
-          textDark: "#000000",
-          textLight: "#FFFFFF"
-        }
-      }
-    }, (error, result) => {
-      if (!error && result && result.event === "success") {
-        document.getElementById('product-image-url').value = result.info.secure_url;
-        document.getElementById('product-image-preview').innerHTML = `
-          <img src="${result.info.secure_url}" style="max-width:100%; max-height:200px; border-radius:6px;">
-        `;
-      }
-    });
-    
-    widget.open();
-  }
-
-  // Добавление товара
-  function addProduct() {
-    const title = document.getElementById('product-title').value.trim();
-    const description = document.getElementById('product-description').value.trim();
-    const price = parseFloat(document.getElementById('product-price').value);
-    const category = document.getElementById('product-category').value.trim();
-    const brand = document.getElementById('product-brand').value.trim();
-    const image = document.getElementById('product-image-url').value;
-    
-    if (!title) {
-      showNotification('Введіть назву товару', true);
-      return;
-    }
-    
-    if (!price || price <= 0) {
-      showNotification('Введіть коректну ціну', true);
-      return;
-    }
-    
-    if (!category) {
-      showNotification('Введіть категорію', true);
-      return;
-    }
-    
-    const productData = {
-      title: title,
-      description: description,
-      price: price,
-      category: category,
-      brand: brand,
-      image: image,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    };
-    
-    db.collection("products").add(productData)
-      .then(() => {
-        showNotification('Товар додано');
-        
-        // Очистка формы
-        document.getElementById('product-title').value = '';
-        document.getElementById('product-description').value = '';
-        document.getElementById('product-price').value = '';
-        document.getElementById('product-category').value = '';
-        document.getElementById('product-brand').value = '';
-        document.getElementById('product-image-url').value = '';
-        document.getElementById('product-image-preview').innerHTML = '';
-        
-        // Обновление списка товаров
-        loadProducts();
-        loadAdminProducts();
-      })
-      .catch(error => {
-        console.error("Помилка додавання товару:", error);
-        showNotification('Помилка додавання товару', true);
-      });
-  }
-
-  // Показать главную страницу
-  function showHomePage(e) {
-    e.preventDefault();
-    document.getElementById('admin-panel').style.display = 'none';
-    document.getElementById('profile-sections').style.display = 'block';
-    document.querySelectorAll('.profile-section').forEach(s => s.classList.remove('active'));
-  }
-
-  // Загрузка из XML-фида (заглушка)
-  function loadFromFeed() {
-    showNotification('Функція в розробці', true);
-  }
-
-  // Сохранение URL фида (заглушка)
-  function saveFeedUrl() {
-    showNotification('Функція в розробці', true);
-  }
-
-  // Очистка каталога
-  function clearCatalog() {
-    if(!confirm("Очистити каталог? Цю дію не можна скасувати.")) return;
-    
-    // Удаление всех товаров
-    const batch = db.batch();
-    
-    db.collection("products").get()
-      .then(querySnapshot => {
-        querySnapshot.forEach(doc => {
-          batch.delete(doc.ref);
-        });
-        return batch.commit();
-      })
-      .then(() => {
-        showNotification("Каталог очищено");
-        loadProducts();
-        loadAdminProducts();
-      })
-      .catch(error => {
-        console.error("Помилка очищення каталогу:", error);
-        showNotification("Помилка очищення каталогу", true);
-      });
-  }
-
-  // Экспорт в JSON
-  function exportJSON() {
-    db.collection("products").get()
-      .then(querySnapshot => {
-        const productsData = [];
-        querySnapshot.forEach(doc => {
-          productsData.push({ id: doc.id, ...doc.data() });
-        });
-        
-        const blob = new Blob([JSON.stringify(productsData, null, 2)], { type: "application/json" });
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = "products.json";
-        a.click();
-        
-        showNotification("JSON експортовано");
-      })
-      .catch(error => {
-        console.error("Помилка експорту:", error);
-        showNotification("Помилка експорту", true);
-      });
-  }
-
-  // Загрузка товаров из API фида
-  function loadFromApiFeed() {
-    if (!apiFeedUrl) {
-      showNotification('Спочатку збережіть URL фіду', true);
-      return;
-    }
-    
-    const messageEl = document.getElementById('api-feed-message');
-    messageEl.textContent = 'Завантаження...';
-    
-    // Загружаем XML фид
-    fetch(apiFeedUrl)
-      .then(response => response.text())
-      .then(xmlString => {
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(xmlString, "text/xml");
-        
-        // Проверяем на ошибки парсинга
-        const parseError = xmlDoc.getElementsByTagName("parsererror");
-        if (parseError.length) {
-          throw new Error("Помилка парсингу XML");
-        }
-        
-        // Извлекаем товары
-        const items = xmlDoc.getElementsByTagName("item");
-        messageEl.textContent = `Знайдено ${items.length} товарів`;
-        
-        // Ограничиваем количество товаров если нужно
-        const limit = apiFeedLimit > 0 ? Math.min(apiFeedLimit, items.length) : items.length;
-        
-        // Обрабатываем каждый товар
-        let added = 0;
-        let updated = 0;
-        let errors = 0;
-        
-        // Обрабатываем товары последовательно чтобы не перегружать Firestore
-        processItems(0, limit, items, added, updated, errors, messageEl);
-      })
-      .catch(error => {
-        console.error("Помилка завантаження фіду:", error);
-        messageEl.textContent = 'Помилка завантаження фіду: ' + error.message;
-      });
-  }
-
-  // Рекурсивная обработка товаров
-  function processItems(index, limit, items, added, updated, errors, messageEl) {
-    if (index >= limit) {
-      messageEl.textContent = `Готово! Додано: ${added}, Оновлено: ${updated}, Помилок: ${errors}`;
-      // Обновляем список товаров
-      loadProducts();
-      loadAdminProducts();
-      return;
-    }
-    
-    const item = items[index];
-    const product = parseProductFromApiFeed(item);
-    
-    if (product) {
-      // Проверяем, существует ли товар с таким feedId
-      db.collection("products")
-        .where("feedId", "==", product.feedId)
-        .get()
-        .then(querySnapshot => {
-          if (querySnapshot.empty) {
-            // Добавляем новый товар
-            return db.collection("products").add(product)
-              .then(() => {
-                added++;
-                messageEl.textContent = `Оброблено: ${index+1}/${limit}, Додано: ${added}, Оновлено: ${updated}, Помилок: ${errors}`;
-                processItems(index+1, limit, items, added, updated, errors, messageEl);
-              })
-              .catch(error => {
-                console.error("Помилка додавання товару:", error);
-                errors++;
-                messageEl.textContent = `Оброблено: ${index+1}/${limit}, Додано: ${added}, Оновлено: ${updated}, Помилок: ${errors}`;
-                processItems(index+1, limit, items, added, updated, errors, messageEl);
-              });
-          } else {
-            // Обновляем существующий товар
-            const doc = querySnapshot.docs[0];
-            return db.collection("products").doc(doc.id).update(product)
-              .then(() => {
-                updated++;
-                messageEl.textContent = `Оброблено: ${index+1}/${limit}, Додано: ${added}, Оновлено: ${updated}, Помилок: ${errors}`;
-                processItems(index+1, limit, items, added, updated, errors, messageEl);
-              })
-              .catch(error => {
-                console.error("Помилка оновлення товару:", error);
-                errors++;
-                messageEl.textContent = `Оброблено: ${index+1}/${limit}, Додано: ${added}, Оновлено: ${updated}, Помилок: ${errors}`;
-                processItems(index+1, limit, items, added, updated, errors, messageEl);
-              });
-          }
-        })
-        .catch(error => {
-          console.error("Помилка перевірки наявності товару:", error);
-          errors++;
-          messageEl.textContent = `Оброблено: ${index+1}/${limit}, Додано: ${added}, Оновлено: ${updated}, Помилок: ${errors}`;
-          processItems(index+1, limit, items, added, updated, errors, messageEl);
-        });
-    } else {
-      errors++;
-      messageEl.textContent = `Оброблено: ${index+1}/${limit}, Додано: ${added}, Оновлено: ${updated}, Помилок: ${errors}`;
-      processItems(index+1, limit, items, added, updated, errors, messageEl);
+    if(confirm("Удалить товар?")){ 
+      products = products.filter(p => p.id !== id); 
+      saveProducts(); 
+      renderProducts(); 
+      showNotification("Товар удален");
     }
   }
 
-  // Парсинг товара из API фида
-  function parseProductFromApiFeed(item) {
-    // Функция для получения значения из XML
-    const getValue = (tagName, namespace = null) => {
-      let element;
-      if (namespace) {
-        element = item.getElementsByTagNameNS(namespace, tagName)[0];
-      } else {
-        element = item.getElementsByTagName(tagName)[0];
-      }
-      return element ? element.textContent : '';
-    };
-    
-    try {
-      // Получаем данные из фида (адаптируйте под структуру вашего фида)
-      const title = getValue('title') || '';
-      const description = getValue('description') || '';
-      const priceText = getValue('price') || '0';
-      const price = parseFloat(priceText.replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
-      const image = getValue('image') || getValue('image_link') || '';
-      const brand = getValue('brand') || '';
-      const feedId = getValue('id') || '';
-      
-      if (!title || !feedId) {
-        return null;
-      }
-      
-      return {
-        title: title,
-        description: description,
-        price: price,
-        category: apiFeedCategory,
-        brand: brand,
-        image: image,
-        feedId: feedId,
-        source: 'api_feed',
-        featured: Math.random() < 0.1, // 10% товаров отмечаем как хиты
-        rating: Math.random() * 2 + 3, // Случайный рейтинг от 3 до 5
-        reviewCount: Math.floor(Math.random() * 50),
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      };
-    } catch (error) {
-      console.error("Помилка парсингу товару:", error);
-      return null;
-    }
+  function clearCatalog(){ 
+    if(confirm("Очистить каталог?")){ 
+      products=[]; 
+      saveProducts(); 
+      renderProducts(); 
+      showNotification("Каталог очищен");
+    } 
   }
 
-  // Удаление товаров из API фида
-  function clearApiProducts() {
-    if (!confirm("Видалити всі товари, завантажені з API фіду?")) return;
-    
-    const messageEl = document.getElementById('api-feed-message');
-    messageEl.textContent = 'Видалення...';
-    
-    db.collection("products")
-      .where("source", "==", "api_feed")
-      .get()
-      .then(querySnapshot => {
-        const batch = db.batch();
-        querySnapshot.forEach(doc => {
-          batch.delete(doc.ref);
-        });
-        return batch.commit();
-      })
-      .then(() => {
-        messageEl.textContent = 'Товари з API фіду видалено';
-        showNotification("Товари з API фіду видалено");
-        loadProducts();
-        loadAdminProducts();
-      })
-      .catch(error => {
-        console.error("Помилка видалення товарів з API фіду:", error);
-        messageEl.textContent = 'Помилка видалення товарів';
-        showNotification("Помилка видалення товарів з API фіду", true);
-      });
+  function exportJSON(){
+    const blob = new Blob([JSON.stringify(products,null,2)],{type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); 
+    a.download = "products.json"; 
+    a.click();
+    showNotification("JSON экспортирован");
   }
 
-  // Обновление отдельного товара из фида
-  function updateProductFromFeed(productId, feedId) {
-    if (!apiFeedUrl) {
-      showNotification('Спочатку збережіть URL фіду', true);
-      return;
-    }
-    
-    showNotification('Оновлення товару з фіду...');
-    
-    // Загружаем XML фид
-    fetch(apiFeedUrl)
-      .then(response => response.text())
-      .then(xmlString => {
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(xmlString, "text/xml");
-        
-        // Ищем товар с нужным feedId
-        const items = xmlDoc.getElementsByTagName("item");
-        let productData = null;
-        
-        for (let i = 0; i < items.length; i++) {
-          const item = items[i];
-          const itemId = item.getElementsByTagName("id")[0]?.textContent || '';
-          if (itemId === feedId) {
-            productData = parseProductFromApiFeed(item);
-            break;
-          }
-        }
-        
-        if (productData) {
-          // Обновляем товар
-          return db.collection("products").doc(productId).update(productData)
-            .then(() => {
-              showNotification('Товар оновлено з фіду');
-              loadProducts();
-              loadAdminProducts();
-            })
-            .catch(error => {
-              console.error("Помилка оновлення товару:", error);
-              showNotification("Помилка оновлення товару", true);
-            });
-        } else {
-          showNotification('Товар не знайдено в фіді', true);
-        }
-      })
-      .catch(error => {
-        console.error("Помилка завантаження фіду:", error);
-        showNotification("Помилка завантаження фіду", true);
-      });
-  }
+  document.getElementById("search").addEventListener("input", function() {
+    currentFilters.search = this.value;
+    renderProducts();
+  });
+  
+  document.getElementById("category").addEventListener("change", function() {
+    currentFilters.category = this.value;
+    renderProducts();
+  });
+  
+  document.getElementById("sort").addEventListener("change", function() {
+    currentFilters.sort = this.value;
+    renderProducts();
+  });
+
+  document.getElementById("year").innerText = new Date().getFullYear();
+
+  // Закрытие модального окна при клике вне его
+  document.getElementById("modal").addEventListener("click", function(e) {
+    if(e.target === this) closeModal();
+  });
+
+  // Инициализация
+  loadProducts();
 </script>
 </body>
-</html> 
+</html>
