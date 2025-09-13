@@ -1110,6 +1110,10 @@
       <i class="fas fa-user"></i> Войти
     </button>
     
+    <button onclick="promptAdminPassword()" class="btn btn-admin" id="admin-access-btn" style="display: none;">
+      <i class="fas fa-crown"></i> Админ
+    </button>
+    
     <button onclick="openCart()" class="btn btn-cart">
       <i class="fas fa-shopping-cart"></i>
       <span class="cart-count" id="cart-count">0</span>
@@ -1344,6 +1348,7 @@
   const FEED_URL_KEY = "electrotools_feed_url";
   const FEED_UPDATE_TIME_KEY = "electrotools_feed_update";
   const VIEW_MODE_KEY = "electrotools_view_mode";
+  const ADMINS_STORAGE_KEY = "electrotools_admins";
   
   let products = [];
   let cart = {};
@@ -1371,6 +1376,7 @@
         currentUser = user;
         document.getElementById('login-btn').style.display = 'none';
         document.getElementById('user-menu').style.display = 'inline-block';
+        document.getElementById('admin-access-btn').style.display = 'inline-block';
         document.getElementById('user-name').textContent = user.displayName || user.email;
         
         // Проверяем, является ли пользователь администратором
@@ -1379,6 +1385,7 @@
         currentUser = null;
         document.getElementById('login-btn').style.display = 'inline-block';
         document.getElementById('user-menu').style.display = 'none';
+        document.getElementById('admin-access-btn').style.display = 'none';
         document.getElementById("admin-panel").style.display = "none";
         adminMode = false;
       }
@@ -1559,7 +1566,7 @@
   async function uploadToCloudinary(imageUrl, productId) {
     return new Promise((resolve, reject) => {
       // Формируем URL для загрузки через Cloudinary
-      const uploadUrl = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`;
+      const uploadUrl = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOAD_NAME}/upload`;
       
       // Создаем форму данных для загрузки
       const formData = new FormData();
@@ -1916,7 +1923,7 @@
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
     
     updateCartCount();
-    showNotification("Товар добавлен в корзину");
+    showNotification("Твой товар добавлен в корзину");
   }
 
   // Обновление счетчика корзины
@@ -2193,235 +2200,298 @@
           </div>
         </div>
         <div class="form-group">
-          <label>Email</label>
-          <input type="email" required value="${currentUser.email || ''}">
-        </div>
-        <div class="form-group">
-          <label>Адрес доставки</label>
-          <textarea required></textarea>
-        </div>
-        <div class="form-group">
-          <label>Способ оплаты</label>
-          <select required>
-            <option value="">Выберите способ оплаты</option>
-            <option value="cash">Наличными при получении</option>
-            <option value="card">Онлайн-оплата картой</option>
-          </select>
-        </div>
-        <button type="submit" class="btn btn-buy">Подтвердить заказ</button>
-      </form>
-    `;
-  }
-
-  // Размещение заказа
-  function placeOrder(event) {
-    event.preventDefault();
-    
-    const order = {
-      userId: currentUser.uid,
-      items: cart,
-      total: Object.entries(cart).reduce((sum, [productId, quantity]) => {
-        const product = products.find(p => p.id === productId);
-        return sum + (product ? product.price * quantity : 0);
-      }, 0),
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      status: 'new'
-    };
-    
-    db.collection("orders").add(order)
-      .then(() => {
-        // Очищаем корзину
-        cart = {};
-        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
-        updateCartCount();
-        
-        showNotification("Заказ успешно оформлен");
-        closeModal();
-      })
-      .catch(error => {
-        console.error("Ошибка оформления заказа: ", error);
-        showNotification("Ошибка оформления заказа", "error");
-      });
-  }
-
-  // Открытие модального окна
-  function openModal() {
-    document.getElementById("modal").classList.add("active");
-  }
-
-  // Закрытие модального окна
-  function closeModal() {
-    document.getElementById("modal").classList.remove("active");
-  }
-
-  // Открытие модального окна авторизации
-  function openAuthModal() {
-    const modalContent = document.getElementById("modal-content");
-    modalContent.innerHTML = `
-      <h3>Вход в систему</h3>
-      <div class="auth-tabs">
-        <div class="auth-tab active" onclick="switchAuthTab('login')">Вход</div>
-        <div class="auth-tab" onclick="switchAuthTab('register')">Регистрация</div>
-      </div>
-      <form id="login-form" onsubmit="login(event)">
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" required>
-        </div>
-        <div class="form-group">
-          <label>Пароль</label>
-          <input type="password" required>
-        </div>
-        <button type="submit" class="btn btn-detail">Войти</button>
-      </form>
-      <form id="register-form" style="display:none;" onsubmit="register(event)">
-        <div class="form-group">
-          <label>Имя</label>
-          <input type="text" required>
-        </div>
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" required>
-        </div>
-        <div class="form-group">
-          <label>Пароль</label>
-          <input type="password" required minlength="6">
-        </div>
-        <button type="submit" class="btn btn-detail">Зарегистрироваться</button>
-      </form>
-    `;
-    
-    openModal();
-  }
-
-  // Переключение вкладок авторизации
-  function switchAuthTab(tab) {
-    const loginForm = document.getElementById("login-form");
-    const registerForm = document.getElementById("register-form");
-    const tabs = document.querySelectorAll(".auth-tab");
-    
-    if (tab === 'login') {
-      loginForm.style.display = 'block';
-      registerForm.style.display = 'none';
-      tabs[0].classList.add('active');
-      tabs[1].classList.remove('active');
-    } else {
-      loginForm.style.display = 'none';
-      registerForm.style.display = 'block';
-      tabs[0].classList.remove('active');
-      tabs[1].classList.add('active');
+            <label>Email</label>
+            <input type="email" required value="${currentUser.email || ''}">
+          </div>
+          <div class="form-group">
+            <label>Адрес доставки</label>
+            <textarea required></textarea>
+          </div>
+          <div class="form-group">
+            <label>Способ оплата</label>
+            <select required>
+              <option value="">Выберите способ оплаты</option>
+              <option value="cash">Наличными при получении</option>
+              <option value="card">Онлайн-оплата картой</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-buy">Подтвердить заказ</button>
+        </form>
+      `;
     }
-  }
-
-  // Вход в систему
-  function login(event) {
-    event.preventDefault();
-    const email = event.target.querySelector('input[type="email"]').value;
-    const password = event.target.querySelector('input[type="password"]').value;
     
-    auth.signInWithEmailAndPassword(email, password)
-      .then(() => {
-        showNotification("Вход выполнен успешно");
-        closeModal();
-      })
-      .catch(error => {
-        console.error("Ошибка входа: ", error);
-        showNotification("Ошибка входа: " + error.message, "error");
-      });
-  }
-
-  // Регистрация
-  function register(event) {
-    event.preventDefault();
-    const name = event.target.querySelector('input[type="text"]').value;
-    const email = event.target.querySelector('input[type="email"]').value;
-    const password = event.target.querySelector('input[type="password"]').value;
-    
-    auth.createUserWithEmailAndPassword(email, password)
-      .then((userCredential) => {
-        // Обновляем профиль пользователя
-        return userCredential.user.updateProfile({
-          displayName: name
+    // Размещение заказа
+    function placeOrder(event) {
+      event.preventDefault();
+      
+      const order = {
+        userId: currentUser.uid,
+        items: cart,
+        total: Object.entries(cart).reduce((sum, [productId, quantity]) => {
+          const product = products.find(p => p.id === productId);
+          return sum + (product ? product.price * quantity : 0);
+        }, 0),
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        status: 'new'
+      };
+      
+      db.collection("orders").add(order)
+        .then(() => {
+          // Очищаем корзину
+          cart = {};
+          localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+          updateCartCount();
+          
+          showNotification("Заказ успешно оформлен");
+          closeModal();
+        })
+        .catch(error => {
+          console.error("Ошибка оформления заказа: ", error);
+          showNotification("Ошибка оформления заказа", "error");
         });
-      })
-      .then(() => {
-        showNotification("Регистрация выполнена успешно");
+    }
+    
+    // Открытие модального окна
+    function openModal() {
+      document.getElementById("modal").classList.add("active");
+    }
+    
+    // Закрытие модального окна
+    function closeModal() {
+      document.getElementById("modal").classList.remove("active");
+    }
+    
+    // Открытие модального окна авторизации
+    function openAuthModal() {
+      const modalContent = document.getElementById("modal-content");
+      modalContent.innerHTML = `
+        <h3>Вход в систему</h3>
+        <div class="auth-tabs">
+          <div class="auth-tab active" onclick="switchAuthTab('login')">Вход</div>
+          <div class="auth-tab" onclick="switchAuthTab('register')">Регистрация</div>
+          <div class="auth-tab" onclick="switchAuthTab('admin')">Администратор</div>
+        </div>
+        <form id="login-form" onsubmit="login(event)">
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" required>
+          </div>
+          <div class="form-group">
+            <label>Пароль</label>
+            <input type="password" required>
+          </div>
+          <button type="submit" class="btn btn-detail">Войти</button>
+        </form>
+        <form id="register-form" style="display:none;" onsubmit="register(event)">
+          <div class="form-group">
+            <label>Имя</label>
+            <input type="text" required>
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" required>
+          </div>
+          <div class="form-group">
+            <label>Пароль</label>
+            <input type="password" required minlength="6">
+          </div>
+          <button type="submit" class="btn btn-detail">Зарегистрироваться</button>
+        </form>
+        <div id="admin-auth-form" style="display:none;">
+          <p>Для доступа к панели администратора введите пароль:</p>
+          <div class="form-group">
+            <label>Пароль администратора</label>
+            <input type="password" id="admin-password" required>
+          </div>
+          <button class="btn btn-admin" onclick="verifyAdminPassword()">Получить права администратора</button>
+        </div>
+      `;
+      
+      openModal();
+    }
+    
+    // Переключение вкладок авторизации
+    function switchAuthTab(tab) {
+      const loginForm = document.getElementById("login-form");
+      const registerForm = document.getElementById("register-form");
+      const adminForm = document.getElementById("admin-auth-form");
+      const tabs = document.querySelectorAll(".auth-tab");
+      
+      tabs.forEach(t => t.classList.remove('active'));
+      
+      if (tab === 'login') {
+        loginForm.style.display = 'block';
+        registerForm.style.display = 'none';
+        adminForm.style.display = 'none';
+        tabs[0].classList.add('active');
+      } else if (tab === 'register') {
+        loginForm.style.display = 'none';
+        registerForm.style.display = 'block';
+        adminForm.style.display = 'none';
+        tabs[1].classList.add('active');
+      } else if (tab === 'admin') {
+        loginForm.style.display = 'none';
+        registerForm.style.display = 'none';
+        adminForm.style.display = 'block';
+        tabs[2].classList.add('active');
+      }
+    }
+    
+    // Вход в систему
+    function login(event) {
+      event.preventDefault();
+      const email = event.target.querySelector('input[type="email"]').value;
+      const password = event.target.querySelector('input[type="password"]').value;
+      
+      auth.signInWithEmailAndPassword(email, password)
+        .then(() => {
+          showNotification("Вход выполнен успешно");
+          closeModal();
+        })
+        .catch(error => {
+          console.error("Ошибка входа: ", error);
+          showNotification("Ошибка входа: " + error.message, "error");
+        });
+    }
+    
+    // Регистрация
+    function register(event) {
+      event.preventDefault();
+      const name = event.target.querySelector('input[type="text"]').value;
+      const email = event.target.querySelector('input[type="email"]').value;
+      const password = event.target.querySelector('input[type="password"]').value;
+      
+      auth.createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          // Обновляем профиль пользователя
+          return userCredential.user.updateProfile({
+            displayName: name
+          });
+        })
+        .then(() => {
+          showNotification("Регистрация выполнена успешно");
+          closeModal();
+        })
+        .catch(error => {
+          console.error("Ошибка регистрации: ", error);
+          showNotification("Ошибка регистрации: " + error.message, "error");
+        });
+    }
+    
+    // Функция проверки пароля администратора
+    function verifyAdminPassword() {
+      const password = document.getElementById("admin-password").value;
+      if (password === ADMIN_PASSWORD) {
+        if (!currentUser) {
+          showNotification("Сначала войдите в систему", "error");
+          switchAuthTab('login');
+          return;
+        }
+        
+        // Сохраняем пользователя как администратора
+        const admins = JSON.parse(localStorage.getItem(ADMINS_STORAGE_KEY) || '{}');
+        admins[currentUser.uid] = true;
+        localStorage.setItem(ADMINS_STORAGE_KEY, JSON.stringify(admins));
+        
+        document.getElementById("admin-panel").style.display = "block";
+        adminMode = true;
+        showNotification("Права администратора получены");
         closeModal();
-      })
-      .catch(error => {
-        console.error("Ошибка регистрации: ", error);
-        showNotification("Ошибка регистрации: " + error.message, "error");
-      });
-  }
-
-  // Выход из системы
-  function logout() {
-    auth.signOut()
-      .then(() => {
-        showNotification("Выход выполнен успешно");
-      })
-      .catch(error => {
-        console.error("Ошибка выхода: ", error);
-        showNotification("Ошибка выхода", "error");
-      });
-  }
-
-  // Проверка статуса администратора
-  function checkAdminStatus(userId) {
-    // Здесь должна быть логика проверки, является ли пользователь администратором
-    // Для демонстрации используем простую проверку по UID
-    const adminUids = ['admin_uid_1', 'admin_uid_2']; // Замените на реальные UID администраторов
-    
-    if (adminUids.includes(userId)) {
-      document.getElementById("admin-panel").style.display = "block";
-      adminMode = true;
+      } else {
+        showNotification("Неверный пароль администратора", "error");
+      }
     }
-  }
-
-  // Переключение вкладок в админ-панели
-  function switchTab(tabId) {
-    const tabs = document.querySelectorAll(".tab");
-    const tabContents = document.querySelectorAll(".tab-content");
     
-    tabs.forEach(tab => tab.classList.remove("active"));
-    tabContents.forEach(content => content.classList.remove("active"));
-    
-    document.querySelector(`.tab[onclick="switchTab('${tabId}')"]`).classList.add("active");
-    document.getElementById(tabId).classList.add("active");
-  }
-
-  // Сохранение URL фида
-  function saveFeedUrl() {
-    const feedUrl = document.getElementById("feed-url").value;
-    localStorage.setItem(FEED_URL_KEY, feedUrl);
-    showNotification("URL фида сохранен");
-  }
-
-  // Очистка каталога
-  function clearCatalog() {
-    if (confirm("Вы уверены, что хотите очистить каталог? Это действие нельзя отменить.")) {
-      // Здесь должна быть логика очистки каталога
-      showNotification("Каталог очищен");
+    // Функция для ввода пароля администратора
+    function promptAdminPassword() {
+      const password = prompt("Введите пароль администратора:");
+      if (password === ADMIN_PASSWORD) {
+        if (!currentUser) {
+          showNotification("Сначала войдите в систему", "error");
+          openAuthModal();
+          return;
+        }
+        
+        // Сохраняем пользователя как администратора
+        const admins = JSON.parse(localStorage.getItem(ADMINS_STORAGE_KEY) || '{}');
+        admins[currentUser.uid] = true;
+        localStorage.setItem(ADMINS_STORAGE_KEY, JSON.stringify(admins));
+        
+        document.getElementById("admin-panel").style.display = "block";
+        adminMode = true;
+        showNotification("Права администратора получены");
+      } else if (password) {
+        showNotification("Неверный пароль администратора", "error");
+      }
     }
-  }
-
-  // Экспорт в JSON
-  function exportJSON() {
-    const dataStr = JSON.stringify(products, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
     
-    const exportFileDefaultName = 'products.json';
+    // Проверка статуса администратора
+    function checkAdminStatus(userId) {
+      // Проверяем, есть ли пользователь в списке администраторов в LocalStorage
+      const admins = JSON.parse(localStorage.getItem(ADMINS_STORAGE_KEY) || '{}');
+      if (admins[userId]) {
+        document.getElementById("admin-panel").style.display = "block";
+        adminMode = true;
+      }
+    }
     
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
+    // Выход из системы
+    function logout() {
+      // Не удаляем права администратора при выходе, чтобы не вводить пароль каждый раз
+      auth.signOut()
+        .then(() => {
+          showNotification("Выход выполнен успешно");
+        })
+        .catch(error => {
+          console.error("Ошибка выхода: ", error);
+          showNotification("Ошибка выхода", "error");
+        });
+    }
     
-    showNotification("Данные экспортированы в JSON");
-  }
-
-  // Инициализация приложения после загрузки DOM
-  document.addEventListener('DOMContentLoaded', initApp);
-</script>
+    // Переключение вкладок в админ-панели
+    function switchTab(tabId) {
+      const tabs = document.querySelectorAll(".tab");
+      const tabContents = document.querySelectorAll(".tab-content");
+      
+      tabs.forEach(tab => tab.classList.remove("active"));
+      tabContents.forEach(content => content.classList.remove("active"));
+      
+      document.querySelector(`.tab[onclick="switchTab('${tabId}')"]`).classList.add("active");
+      document.getElementById(tabId).classList.add("active");
+    }
+    
+    // Сохранение URL фида
+    function saveFeedUrl() {
+      const feedUrl = document.getElementById("feed-url").value;
+      localStorage.setItem(FEED_URL_KEY, feedUrl);
+      showNotification("URL фида сохранен");
+    }
+    
+    // Очистка каталога
+    function clearCatalog() {
+      if (confirm("Вы уверены, что хотите очистить каталог? Это действие нельзя отменить.")) {
+        // Здесь должна быть логика очистки каталога
+        showNotification("Каталог очищен");
+      }
+    }
+    
+    // Экспорт в JSON
+    function exportJSON() {
+      const dataStr = JSON.stringify(products, null, 2);
+      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+      
+      const exportFileDefaultName = 'products.json';
+      
+      const linkElement = document.createElement('a');
+      linkElement.setAttribute('href', dataUri);
+      linkElement.setAttribute('download', exportFileDefaultName);
+      linkElement.click();
+      
+      showNotification("Данные экспортированы в JSON");
+    }
+    
+    // Инициализация приложения после загрузки DOM
+    document.addEventListener('DOMContentLoaded', initApp);
+  </script>
 </body>
 </html>
