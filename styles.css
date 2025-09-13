@@ -1107,3 +1107,133 @@ footer {
     gap: 15px;
   }
 }
+
+/* Стили для оформления заказа */
+.checkout-form {
+  max-height: 80vh;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.delivery-section, .payment-section {
+  margin-bottom: 20px;
+  padding: 15px;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+.delivery-options, .payment-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.delivery-option, .payment-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.delivery-option:hover, .payment-option:hover {
+  border-color: var(--primary);
+  background: #f0f8ff;
+}
+
+.delivery-option input, .payment-option input {
+  margin: 0;
+}
+
+.delivery-details {
+  display: none;
+}
+
+.delivery-details.active {
+  display: block;
+}
+
+.order-summary {
+  margin: 20px 0;
+  padding: 15px;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+.order-items {
+  margin-bottom: 15px;
+}
+
+.order-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.order-total {
+  border-top: 2px solid #ddd;
+  padding-top: 10px;
+}
+
+.total-line {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.final-total {
+  font-weight: bold;
+  font-size: 1.2em;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #ddd;
+}
+
+/* Подтверждение заказа */
+.order-confirmation {
+  text-align: center;
+}
+
+.confirmation-header {
+  color: var(--success);
+  margin-bottom: 20px;
+}
+
+.confirmation-header i {
+  font-size: 3em;
+  margin-bottom: 10px;
+}
+
+.confirmation-details {
+  text-align: left;
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.confirmation-details p {
+  margin: 8px 0;
+}
+
+.confirmation-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .confirmation-actions {
+    flex-direction: column;
+  }
+  
+  .delivery-options, .payment-options {
+    flex-direction: column;
+  }
+}

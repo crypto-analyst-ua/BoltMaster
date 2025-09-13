@@ -357,7 +357,7 @@ async function uploadToCloudinary(imageUrl, productId) {
     // Формируем URL для загрузки через Cloudinary
     const uploadUrl = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`;
     
-    // Среаем форму данных для загрузки
+    // Создаем форму данных для загрузки
     const formData = new FormData();
     formData.append('file', imageUrl);
     formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
@@ -889,9 +889,13 @@ function openCart() {
     
     modalContent.innerHTML = `
       <h3>Корзина</h3>
-      ${cartItemsHTML}
-      <div class="cart-total">Итого: ${formatPrice(total)} ₴</div>
-      <button class="btn btn-buy" onclick="checkout()">Оформить заказ</button>
+      <div class="cart-items">
+        ${cartItemsHTML}
+      </div>
+      <div class="cart-footer">
+        <div class="cart-total">Итого: ${formatPrice(total)} ₴</div>
+        <button class="btn btn-buy" onclick="checkout()">Оформить заказ</button>
+      </div>
     `;
   }
   
@@ -941,76 +945,100 @@ function checkout() {
     <form class="checkout-form" onsubmit="placeOrder(event)">
       <div class="form-row">
         <div class="form-group">
-          <label>Имя</label>
+          <label>Имя и фамилия*</label>
           <input type="text" id="order-name" required value="${currentUser.displayName || ''}">
         </div>
         <div class="form-group">
-          <label>Телефон</label>
-          <input type="tel" id="order-phone" required>
+          <label>Телефон*</label>
+          <input type="tel" id="order-phone" required placeholder="+38 (0__) ___ __ __">
         </div>
       </div>
       <div class="form-group">
-        <label>Email</label>
+        <label>Email*</label>
         <input type="email" id="order-email" required value="${currentUser.email || ''}">
       </div>
       
-      <div class="delivery-options">
+      <div class="delivery-section">
         <h4>Способ доставки</h4>
-        <div class="delivery-option" onclick="selectDelivery('nova-poshta')">
-          <input type="radio" name="delivery" id="nova-poshta" value="nova-poshta">
-          <label for="nova-poshta">Новая Почта</label>
+        <div class="delivery-options">
+          <label class="delivery-option">
+            <input type="radio" name="delivery" value="nova-poshta" checked onchange="toggleDeliveryDetails('nova-poshta')">
+            <span>Новая Почта</span>
+          </label>
+          <label class="delivery-option">
+            <input type="radio" name="delivery" value="ukr-poshta" onchange="toggleDeliveryDetails('ukr-poshta')">
+            <span>Укрпочта</span>
+          </label>
+          <label class="delivery-option">
+            <input type="radio" name="delivery" value="courier" onchange="toggleDeliveryDetails('courier')">
+            <span>Курьерская доставка</span>
+          </label>
         </div>
-        <div class="delivery-option" onclick="selectDelivery('ukr-poshta')">
-          <input type="radio" name="delivery" id="ukr-poshta" value="ukr-poshta">
-          <label for="ukr-poshta">Укрпочта</label>
+        
+        <div id="nova-poshta-details" class="delivery-details active">
+          <div class="form-group">
+            <label>Город*</label>
+            <input type="text" id="np-city" required placeholder="Введите ваш город">
+          </div>
+          <div class="form-group">
+            <label>Отделение Новой Почты*</label>
+            <input type="text" id="np-warehouse" required placeholder="Номер отделения">
+          </div>
         </div>
-        <div class="delivery-option" onclick="selectDelivery('courier')">
-          <input type="radio" name="delivery" id="courier" value="courier">
-          <label for="courier">Курьерская доставка</label>
+        
+        <div id="ukr-poshta-details" class="delivery-details">
+          <div class="form-group">
+            <label>Город*</label>
+            <input type="text" id="up-city" placeholder="Введите ваш город">
+          </div>
+          <div class="form-group">
+            <label>Отделение Укрпочты*</label>
+            <input type="text" id="up-warehouse" placeholder="Номер отделения">
+          </div>
+        </div>
+        
+        <div id="courier-details" class="delivery-details">
+          <div class="form-group">
+            <label>Адрес доставки*</label>
+            <textarea id="courier-address" required placeholder="Улица, дом, квартира"></textarea>
+          </div>
         </div>
       </div>
       
-      <div id="nova-poshta-details" class="delivery-details">
-        <div class="city-search">
-          <label>Город</label>
-          <input type="text" id="np-city" placeholder="Начните вводить название города" oninput="searchCities(this.value, 'nova-poshta')">
-          <div id="np-city-suggestions" class="suggestions"></div>
-        </div>
-        <div class="form-group">
-          <label>Отделение</label>
-          <div id="np-warehouses" class="warehouses-list"></div>
-        </div>
-      </div>
-      
-      <div id="ukr-poshta-details" class="delivery-details">
-        <div class="city-search">
-          <label>Город</label>
-          <input type="text" id="up-city" placeholder="Начните вводить название города" oninput="searchCities(this.value, 'ukr-poshta')">
-          <div id="up-city-suggestions" class="suggestions"></div>
-        </div>
-        <div class="form-group">
-          <label>Отделение</label>
-          <div id="up-warehouses" class="warehouses-list"></div>
+      <div class="payment-section">
+        <h4>Способ оплаты</h4>
+        <div class="payment-options">
+          <label class="payment-option">
+            <input type="radio" name="payment" value="cash" checked>
+            <span>Наличными при получении</span>
+          </label>
+          <label class="payment-option">
+            <input type="radio" name="payment" value="card">
+            <span>Онлайн-оплата картой</span>
+          </label>
         </div>
       </div>
       
-      <div id="courier-details" class="delivery-details">
-        <div class="form-group">
-          <label>Адрес доставки</label>
-          <textarea id="courier-address" required placeholder="Улица, дом, квартира"></textarea>
+      <div class="order-summary">
+        <h4>Ваш заказ</h4>
+        <div class="order-items">
+          ${generateOrderSummary()}
+        </div>
+        <div class="order-total">
+          <div class="total-line">
+            <span>Сумма заказа:</span>
+            <span>${formatPrice(calculateCartTotal())} ₴</span>
+          </div>
+          <div class="total-line">
+            <span>Доставка:</span>
+            <span>бесплатно</span>
+          </div>
+          <div class="total-line final-total">
+            <span>Итого:</span>
+            <span>${formatPrice(calculateCartTotal())} ₴</span>
+          </div>
         </div>
       </div>
-      
-      <div class="form-group">
-        <label>Способ оплаты</label>
-        <select id="payment-method" required>
-          <option value="">Выберите способ оплаты</option>
-          <option value="cash">Наличными при получении</option>
-          <option value="card">Онлайн-оплата картой</option>
-        </select>
-      </div>
-      
-      <div class="cart-total">Итого: ${formatPrice(calculateCartTotal())} ₴</div>
       
       <button type="submit" class="btn btn-buy">Подтвердить заказ</button>
     </form>
@@ -1019,128 +1047,34 @@ function checkout() {
   openModal();
 }
 
-// Выбор способа доставки
-function selectDelivery(method) {
-  // Устанавливаем выбранный radio
-  document.getElementById(method).checked = true;
-  
-  // Убираем выделение со всех вариантов
-  document.querySelectorAll('.delivery-option').forEach(option => {
-    option.classList.remove('selected');
+// Переключение деталей доставки
+function toggleDeliveryDetails(method) {
+  // Скрываем все блоки с деталями
+  document.querySelectorAll('.delivery-details').forEach(detail => {
+    detail.classList.remove('active');
   });
   
-  // Добавляем выделение к выбранному варианту
-  document.querySelector(`.delivery-option[onclick="selectDelivery('${method}')"]`).classList.add('selected');
-  
-  // Скрываем все блоки с деталями доставки
-  document.querySelectorAll('.delivery-details').forEach(details => {
-    details.classList.remove('active');
-  });
-  
-  // Показываем только выбранный блок
+  // Показываем нужный блок
   document.getElementById(`${method}-details`).classList.add('active');
 }
 
-// Поиск городов для Новой Почты и Укрпочты
-async function searchCities(query, service) {
-  if (query.length < 2) {
-    document.getElementById(`${service}-city-suggestions`).innerHTML = '';
-    document.getElementById(`${service}-city-suggestions`).classList.remove('active');
-    return;
+// Генерация сводки заказа
+function generateOrderSummary() {
+  let summaryHTML = '';
+  
+  for (const [productId, quantity] of Object.entries(cart)) {
+    const product = products.find(p => p.id === productId);
+    if (product) {
+      summaryHTML += `
+        <div class="order-item">
+          <span>${product.title} x${quantity}</span>
+          <span>${formatPrice(product.price * quantity)} ₴</span>
+        </div>
+      `;
+    }
   }
   
-  try {
-    // В реальном приложении здесь должен быть запрос к API службы доставки
-    // Для демонстрации используем заглушку
-    let cities = [];
-    
-    if (service === 'nova-poshta') {
-      // Заглушка для Новой Почты
-      cities = [
-        'Киев', 'Харьков', 'Одесса', 'Днепр', 'Львов', 
-        'Запорожье', 'Винница', 'Херсон', 'Полтава'
-      ].filter(city => city.toLowerCase().includes(query.toLowerCase()));
-    } else if (service === 'ukr-poshta') {
-      // Заглушка для Укрпочты
-      cities = [
-        'Киев', 'Харьков', 'Одесса', 'Днепр', 'Львов',
-        'Запорожье', 'Винница', 'Херсон', 'Полтава', 'Чернигов'
-      ].filter(city => city.toLowerCase().includes(query.toLowerCase()));
-    }
-    
-    const suggestions = document.getElementById(`${service}-city-suggestions`);
-    suggestions.innerHTML = '';
-    
-    if (cities.length > 0) {
-      cities.forEach(city => {
-        const item = document.createElement('div');
-        item.className = 'suggestion-item';
-        item.textContent = city;
-        item.onclick = () => {
-          document.getElementById(`${service}-city`).value = city;
-          suggestions.innerHTML = '';
-          suggestions.classList.remove('active');
-          // Загружаем отделения для выбранного города
-          loadWarehouses(city, service);
-        };
-        suggestions.appendChild(item);
-      });
-      suggestions.classList.add('active');
-    } else {
-      suggestions.classList.remove('active');
-    }
-  } catch (error) {
-    console.error('Ошибка при поиске городов:', error);
-  }
-}
-
-// Загрузка отделений для выбранного города
-async function loadWarehouses(city, service) {
-  try {
-    // В реальном приложении здесь должен быть запрос к API службы доставки
-    // Для демонстрации используем заглушку
-    let warehouses = [];
-    
-    if (service === 'nova-poshta') {
-      // Заглушка для отделений Новой Почты
-      warehouses = [
-        `Отделение №1, ул. Главная, 123`,
-        `Отделение №2, ул. Центральная, 45`,
-        `Отделение №3, пр. Победы, 67`
-      ];
-    } else if (service === 'ukr-poshta') {
-      // Заглушка для отделений Укрпочты
-      warehouses = [
-        `Отделение №101, ул. Школьная, 10`,
-        `Отделение №102, ул. Садовая, 25`,
-        `Отделение №103, пр. Мира, 89`
-      ];
-    }
-    
-    const warehousesList = document.getElementById(`${service}-warehouses`);
-    warehousesList.innerHTML = '';
-    
-    warehouses.forEach(warehouse => {
-      const item = document.createElement('div');
-      item.className = 'warehouse-item';
-      item.textContent = warehouse;
-      item.onclick = () => {
-        // Сохраняем выбранное отделение
-        document.getElementById(`${service}-warehouses`).setAttribute('data-selected', warehouse);
-        
-        // Подсвечиваем выбранное отделение
-        document.querySelectorAll(`#${service}-warehouses .warehouse-item`).forEach(el => {
-          el.style.backgroundColor = '';
-        });
-        item.style.backgroundColor = '#e8f4fd';
-      };
-      warehousesList.appendChild(item);
-    });
-    
-    warehousesList.classList.add('active');
-  } catch (error) {
-    console.error('Ошибка при загрузке отделений:', error);
-  }
+  return summaryHTML;
 }
 
 // Расчет общей стоимости корзины
@@ -1159,18 +1093,19 @@ function placeOrder(event) {
   const name = document.getElementById('order-name').value;
   const phone = document.getElementById('order-phone').value;
   const email = document.getElementById('order-email').value;
-  const paymentMethod = document.getElementById('payment-method').value;
+  const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
   
-  // Проверяем выбранный способ доставки
+  // Получаем выбранный способ доставки
   const deliveryMethod = document.querySelector('input[name="delivery"]:checked').value;
   let deliveryDetails = {};
   
+  // Получаем детали доставки в зависимости от выбранного способа
   if (deliveryMethod === 'nova-poshta') {
     const city = document.getElementById('np-city').value;
-    const warehouse = document.getElementById('np-warehouses').getAttribute('data-selected');
+    const warehouse = document.getElementById('np-warehouse').value;
     
     if (!city || !warehouse) {
-      showNotification('Выберите город и отделение Новой Почты', 'error');
+      showNotification('Заполните все поля для доставки Новой Почтой', 'error');
       return;
     }
     
@@ -1181,10 +1116,10 @@ function placeOrder(event) {
     };
   } else if (deliveryMethod === 'ukr-poshta') {
     const city = document.getElementById('up-city').value;
-    const warehouse = document.getElementById('up-warehouses').getAttribute('data-selected');
+    const warehouse = document.getElementById('up-warehouse').value;
     
     if (!city || !warehouse) {
-      showNotification('Выберите город и отделение Укрпочты', 'error');
+      showNotification('Заполните все поля для доставки Укрпочтой', 'error');
       return;
     }
     
@@ -1213,7 +1148,7 @@ function placeOrder(event) {
     userName: name,
     userPhone: phone,
     userEmail: email,
-    items: cart,
+    items: {...cart}, // копируем объект корзины
     total: calculateCartTotal(),
     delivery: deliveryDetails,
     paymentMethod,
@@ -1230,18 +1165,47 @@ function placeOrder(event) {
       localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
       updateCartCount();
       
-      showNotification("Заказ успешно оформлен. Номер вашего заказа: " + docRef.id);
+      showNotification(`Заказ успешно оформлен. Номер вашего заказа: ${docRef.id}`);
+      
+      // Закрываем модальное окно
       closeModal();
       
-      // Если администратор, обновляем список заказов
-      if (adminMode) {
-        loadAdminOrders();
-      }
+      // Показываем страницу подтверждения заказа
+      showOrderConfirmation(docRef.id, order);
     })
     .catch(error => {
       console.error("Ошибка оформления заказа: ", error);
       showNotification("Ошибка оформления заказа", "error");
     });
+}
+
+// Показ подтверждения заказа
+function showOrderConfirmation(orderId, order) {
+  const modalContent = document.getElementById("modal-content");
+  
+  modalContent.innerHTML = `
+    <div class="order-confirmation">
+      <div class="confirmation-header">
+        <i class="fas fa-check-circle"></i>
+        <h3>Заказ успешно оформлен!</h3>
+      </div>
+      <div class="confirmation-details">
+        <p><strong>Номер заказа:</strong> ${orderId}</p>
+        <p><strong>Имя:</strong> ${order.userName}</p>
+        <p><strong>Телефон:</strong> ${order.userPhone}</p>
+        <p><strong>Email:</strong> ${order.userEmail}</p>
+        <p><strong>Способ доставки:</strong> ${order.delivery.service}</p>
+        <p><strong>Способ оплаты:</strong> ${order.paymentMethod === 'cash' ? 'Наличными при получении' : 'Онлайн-оплата картой'}</p>
+        <p><strong>Общая сумма:</strong> ${formatPrice(order.total)} ₴</p>
+      </div>
+      <div class="confirmation-actions">
+        <button class="btn btn-detail" onclick="closeModal()">Продолжить покупки</button>
+        <button class="btn" onclick="viewOrders()">Мои заказы</button>
+      </div>
+    </div>
+  `;
+  
+  openModal();
 }
 
 // Открытие модального окна
@@ -2082,4 +2046,4 @@ function viewOrders() {
 }
 
 // Инициализация приложения после загрузки DOM
-document.addEventListener('DOMContentLoaded', initApp); 
+document.addEventListener('DOMContentLoaded', initApp);
