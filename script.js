@@ -14,11 +14,6 @@ const db = firebase.firestore();
 const auth = firebase.auth();
 const storage = firebase.storage();
 
-// Конфигурация Cloudinary
-const CLOUDINARY_CLOUD_NAME = "dhfkb6xv2";
-const CLOUDINARY_UPLOAD_PRESET = "unsigned_preset";
-const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
-
 const ADMIN_PASSWORD = "12345";
 
 let products = [];
