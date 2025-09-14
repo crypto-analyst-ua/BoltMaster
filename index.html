@@ -1307,19 +1307,25 @@
 <script>
   // Конфигурация Firebase
   const firebaseConfig = {
-    apiKey: "AIzaSyCxAEDkZ57_yu1RDZ6xAEl7KkBgVli00b0",
-    authDomain: "boltmaster-2025.firebaseapp.com",
-    projectId: "boltmaster-2025",
-    storageBucket: "boltmaster-2025.firebasestorage.app",
-    messagingSenderId: "995027194761",
-    appId: "1:995027194761:web:d3464fefcc6eb41129c758"
-  };
+  apiKey: "AIzaSyCxAEDkZ57_yu1RDZ6xAEl7KkBgVli00b0",
+  authDomain: "boltmaster-2025.firebaseapp.com",
+  projectId: "boltmaster-2025",
+  storageBucket: "boltmaster-2025.firebasestorage.app",
+  messagingSenderId: "995027194761",
+  appId: "1:995027194761:web:d3464fefcc6eb41129c758"
+};
   
   // Инициализация Firebase
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
   const auth = firebase.auth();
   const storage = firebase.storage();
+  
+    // Конфигурация Cloudinary
+  const CLOUDINARY_CLOUD_NAME = "dhfkb6xv2";
+  const CLOUDINARY_UPLOAD_PRESET = "unsigned_preset";
+  const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
+  
   
   const ADMIN_PASSWORD = "12345";
   
