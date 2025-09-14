@@ -1,1256 +1,264 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BoltMaster - Інструменти для дому та автомобіля</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-firestore-compat.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-storage-compat.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            color: #333;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 30px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        }
-
-        .logo {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .logo h1 {
-            color: #2c3e50;
-            font-size: 2.5rem;
-            font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .logo p {
-            color: #666;
-            margin-top: 5px;
-            font-size: 1.1rem;
-        }
-
-        .nav {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        .nav button {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            border: none;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
-        }
-
-        .nav button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
-        }
-
-        .nav button.active {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
-        }
-
-        .section {
-            display: none;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        }
-
-        .section.active {
-            display: block;
-        }
-
-        .search-bar {
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        .search-bar input {
-            width: 60%;
-            max-width: 400px;
-            padding: 15px 20px;
-            border: 2px solid #e0e0e0;
-            border-radius: 25px;
-            font-size: 16px;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-
-        .search-bar input:focus {
-            border-color: #3498db;
-            box-shadow: 0 0 20px rgba(52, 152, 219, 0.2);
-        }
-
-        .filters {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-
-        .filters select {
-            padding: 10px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 15px;
-            outline: none;
-            font-size: 14px;
-        }
-
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 25px;
-            margin-top: 30px;
-        }
-
-        .product-card {
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
-        }
-
-        .product-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 2px;
-            background: linear-gradient(90deg, #3498db, #e74c3c);
-            transition: left 0.3s ease;
-        }
-
-        .product-card:hover::before {
-            left: 0;
-        }
-
-        .product-image {
-            width: 100%;
-            height: 200px;
-            background: #f8f9fa;
-            border-radius: 15px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        .product-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 15px;
-        }
-
-        .product-title {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: #2c3e50;
-            line-height: 1.3;
-        }
-
-        .product-price {
-            font-size: 20px;
-            font-weight: bold;
-            color: #e74c3c;
-            margin-bottom: 15px;
-        }
-
-        .product-description {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 15px;
-            line-height: 1.4;
-        }
-
-        .add-to-cart {
-            width: 100%;
-            background: linear-gradient(135deg, #2ecc71, #27ae60);
-            border: none;
-            color: white;
-            padding: 12px;
-            border-radius: 15px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .add-to-cart:hover {
-            background: linear-gradient(135deg, #27ae60, #229954);
-            transform: scale(1.02);
-        }
-
-        .cart-icon {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: linear-gradient(135deg, #f39c12, #e67e22);
-            color: white;
-            border: none;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 20px;
-            box-shadow: 0 8px 25px rgba(243, 156, 18, 0.3);
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
-
-        .cart-icon:hover {
-            transform: scale(1.1);
-            box-shadow: 0 12px 30px rgba(243, 156, 18, 0.4);
-        }
-
-        .cart-count {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #e74c3c;
-            color: white;
-            border-radius: 50%;
-            width: 25px;
-            height: 25px;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .admin-section {
-            background: linear-gradient(135deg, #34495e, #2c3e50);
-            color: white;
-        }
-
-        .admin-form {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            font-size: 14px;
-            outline: none;
-        }
-
-        .form-group input::placeholder,
-        .form-group textarea::placeholder {
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus,
-        .form-group select:focus {
-            border-color: #3498db;
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            border: none;
-            color: white;
-            padding: 15px 30px;
-            border-radius: 15px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            width: 100%;
-            margin-top: 10px;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            border: none;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .btn-danger:hover {
-            background: linear-gradient(135deg, #c0392b, #a93226);
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            font-size: 18px;
-            color: #666;
-        }
-
-        .message {
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px 0;
-            text-align: center;
-        }
-
-        .message.success {
-            background: rgba(46, 204, 113, 0.1);
-            border: 1px solid #2ecc71;
-            color: #27ae60;
-        }
-
-        .message.error {
-            background: rgba(231, 76, 60, 0.1);
-            border: 1px solid #e74c3c;
-            color: #c0392b;
-        }
-
-        .login-form {
-            max-width: 400px;
-            margin: 0 auto;
-            text-align: center;
-        }
-
-        .cart-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .cart-item-info {
-            flex: 1;
-        }
-
-        .cart-item-title {
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .cart-item-price {
-            color: #e74c3c;
-            font-weight: bold;
-        }
-
-        .cart-item-quantity {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin: 0 15px;
-        }
-
-        .quantity-btn {
-            background: #f0f0f0;
-            border: none;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .quantity-btn:hover {
-            background: #e0e0e0;
-        }
-
-        .remove-from-cart {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .remove-from-cart:hover {
-            background: #c0392b;
-        }
-
-        .empty-cart {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-        }
-
-        .checkout-form {
-            max-width: 600px;
-            margin: 30px auto 0;
-            background: #f9f9f9;
-            padding: 20px;
-            border-radius: 15px;
-        }
-
-        .order-success {
-            text-align: center;
-            padding: 40px;
-        }
-
-        .order-success h3 {
-            color: #2ecc71;
-            margin-bottom: 20px;
-        }
-
-        .xml-urls-container {
-            margin: 20px 0;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-        }
-
-        .xml-url-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .xml-url-item:last-child {
-            border-bottom: none;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-
-            .logo h1 {
-                font-size: 2rem;
-            }
-
-            .nav {
-                gap: 10px;
-            }
-
-            .nav button {
-                padding: 10px 16px;
-                font-size: 12px;
-            }
-
-            .search-bar input {
-                width: 90%;
-            }
-
-            .products-grid {
-                grid-template-columns: 1fr;
-                gap: 15px;
-            }
-
-            .filters {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .cart-item {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .cart-item-quantity {
-                margin: 10px 0;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>ElectroTools — Интернет-магазин инструментов</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Добавляем необходимые Firebase скрипты -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+  <!-- Cloudinary SDK -->
+  <script src="https://upload-widget.cloudinary.com/global/all.js"></script>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <button class="cart-icon" onclick="showSection('cart')">
-        🛒
-        <span class="cart-count" id="cartCount">0</span>
-    </button>
 
-    <div class="container">
-        <div class="header">
-            <div class="logo">
-                <h1>🔧 BoltMaster</h1>
-                <p>Інструменти для дому та автомобіля</p>
-            </div>
-            <div class="nav">
-                <button onclick="showSection('catalog')" class="active">📦 Каталог</button>
-                <button onclick="showSection('cart')">🛒 Кошик</button>
-                <button onclick="showSection('admin')">⚙️ Адміністратор</button>
-            </div>
-        </div>
-
-        <!-- Каталог товарів -->
-        <div id="catalog" class="section active">
-            <div class="search-bar">
-                <input type="text" id="searchInput" placeholder="🔍 Пошук інструментів..." onkeyup="filterProducts()">
-            </div>
-            
-            <div class="filters">
-                <select id="categoryFilter" onchange="filterProducts()">
-                    <option value="">Всі категорії</option>
-                    <option value="Ключі">Ключі</option>
-                    <option value="Інструменти">Інструменти</option>
-                    <option value="Автотовари">Автотовари</option>
-                    <option value="Для дому">Для дому</option>
-                </select>
-                
-                <select id="priceFilter" onchange="filterProducts()">
-                    <option value="">Всі ціни</option>
-                    <option value="0-500">До 500 грн</option>
-                    <option value="500-1000">500-1000 грн</option>
-                    <option value="1000-2000">1000-2000 грн</option>
-                    <option value="2000+">Понад 2000 грн</option>
-                </select>
-
-                <select id="sortFilter" onchange="filterProducts()">
-                    <option value="">Сортування</option>
-                    <option value="price-asc">Ціна (зростання)</option>
-                    <option value="price-desc">Ціна (спадання)</option>
-                    <option value="name-asc">Назва (А-Я)</option>
-                    <option value="name-desc">Назва (Я-А)</option>
-                </select>
-            </div>
-
-            <div id="loadingProducts" class="loading">
-                🔄 Завантаження товарів...
-            </div>
-            
-            <div id="productsGrid" class="products-grid"></div>
-        </div>
-
-        <!-- Кошик -->
-        <div id="cart" class="section">
-            <h2>🛒 Ваш кошик</h2>
-            <div id="cartItems"></div>
-            <div id="cartTotal" style="text-align: right; font-size: 24px; font-weight: bold; margin-top: 20px; color: #e74c3c;"></div>
-            
-            <div id="checkoutSection" style="display: none;">
-                <div class="checkout-form">
-                    <h3>📋 Оформлення замовлення</h3>
-                    <div class="form-group">
-                        <label>Ім'я</label>
-                        <input type="text" id="customerName" placeholder="Введіть ваше ім'я">
-                    </div>
-                    <div class="form-group">
-                        <label>Телефон</label>
-                        <input type="tel" id="customerPhone" placeholder="Введіть ваш телефон">
-                    </div>
-                    <div class="form-group">
-                        <label>Адреса доставки</label>
-                        <textarea id="customerAddress" placeholder="Введіть адресу доставки" rows="3"></textarea>
-                    </div>
-                    <button class="btn-primary" onclick="placeOrder()">
-                        ✅ Підтвердити замовлення
-                    </button>
-                </div>
-            </div>
-
-            <div id="orderSuccess" class="order-success" style="display: none;">
-                <h3>✅ Замовлення успішно оформлено!</h3>
-                <p>Дякуємо за ваше замовлення. Найближчим часом з вами зв'яжеться наш менеджер.</p>
-                <button class="btn-primary" onclick="showSection('catalog')">
-                    🛍️ Продовжити покупки
-                </button>
-            </div>
-        </div>
-
-        <!-- Панель адміністратора -->
-        <div id="admin" class="section admin-section">
-            <div id="adminLogin" class="login-form">
-                <h2>🔐 Вхід адміністратора</h2>
-                <div class="form-group">
-                    <input type="email" id="adminEmail" placeholder="Email">
-                </div>
-                <div class="form-group">
-                    <input type="password" id="adminPassword" placeholder="Пароль">
-                </div>
-                <button class="btn-primary" onclick="adminLogin()">Увійти</button>
-            </div>
-
-            <div id="adminPanel" style="display: none;">
-                <h2>⚙️ Панель адміністратора</h2>
-                
-                <div class="admin-form">
-                    <h3>📥 Завантаження товарів з XML</h3>
-                    
-                    <div class="form-group">
-                        <label>URL XML фіду</label>
-                        <input type="url" id="xmlFeedUrl" placeholder="https://api.dropshipping.ua/api/feeds/2091.xml">
-                    </div>
-                    
-                    <button class="btn-primary" onclick="addXmlUrl()">
-                        ➕ Додати URL
-                    </button>
-                    
-                    <div id="xmlUrlsList" class="xml-urls-container">
-                        <h4>Збережені XML URLs:</h4>
-                        <div id="xmlUrls"></div>
-                    </div>
-                    
-                    <button class="btn-primary" onclick="loadProductsFromAllXml()">
-                        🔄 Завантажити товари з усіх XML
-                    </button>
-                    
-                    <div id="xmlLoadStatus"></div>
-                    
-                    <hr style="margin: 30px 0; border: 1px solid rgba(255,255,255,0.2);">
-                    
-                    <h3>➕ Додати товар вручну</h3>
-                    <div class="form-group">
-                        <label>Назва товару</label>
-                        <input type="text" id="productName" placeholder="Введіть назву товару">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Опис</label>
-                        <textarea id="productDescription" placeholder="Введіть опис товару" rows="4"></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Ціна (грн)</label>
-                        <input type="number" id="productPrice" placeholder="0" min="0" step="0.01">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Категорія</label>
-                        <select id="productCategory">
-                            <option value="Ключі">Ключі</option>
-                            <option value="Інструменти">Інструменти</option>
-                            <option value="Автотовари">Автотовари</option>
-                            <option value="Для дому">Для дому</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>URL зображення</label>
-                        <input type="url" id="productImage" placeholder="https://example.com/image.jpg">
-                    </div>
-                    
-                    <button class="btn-primary" onclick="addProduct()">
-                        ➕ Додати товар
-                    </button>
-                </div>
-
-                <div id="adminProducts" style="margin-top: 30px;">
-                    <h3>📋 Управління товарами</h3>
-                    <div id="adminProductsList"></div>
-                </div>
-
-                <button class="btn-danger" onclick="adminLogout()" style="margin-top: 30px; width: auto;">
-                    🚪 Вийти
-                </button>
-            </div>
-        </div>
+<header>
+  <div class="logo">
+    <i class="fas fa-tools"></i>
+    <h1>ElectroTools — магазин инструментов</h1>
+  </div>
+  <div class="header-controls">
+    <div class="search-container">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" id="search" placeholder="Поиск...">
     </div>
+    <select id="category">
+      <option value="">Все категории</option>
+    </select>
+    <button onclick="toggleFavorites()" class="btn" id="favorites-btn">
+      <i class="far fa-heart"></i>
+    </button>
+    
+    <div class="user-menu" id="user-menu" style="display: none;">
+      <div class="user-btn">
+        <i class="fas fa-user"></i>
+        <span id="user-name"></span>
+      </div>
+      <div class="user-dropdown">
+        <a href="#" onclick="openProfile(); return false;">Профиль</a>
+        <a href="#" onclick="viewOrders(); return false;">Мои заказы</a>
+        <a href="#" onclick="logout(); return false;">Выйти</a>
+      </div>
+    </div>
+    
+    <button onclick="openAuthModal()" class="btn btn-admin" id="login-btn">
+      <i class="fas fa-user"></i> Войти
+    </button>
+    
+    <button onclick="promptAdminPassword()" class="btn btn-admin" id="admin-access-btn" style="display: none;">
+      <i class="fas fa-crown"></i> Админ
+    </button>
+    
+    <button onclick="openCart()" class="btn btn-cart">
+      <i class="fas fa-shopping-cart"></i>
+      <span class="cart-count" id="cart-count">0</span>
+    </button>
+  </div>
+</header>
 
-    <script>
-        // Firebase конфігурація
-        const firebaseConfig = {
-            apiKey: "AIzaSyCxAEDkZ57_yu1RDZ6xAEl7KkBgVli00b0",
-            authDomain: "boltmaster-2025.firebaseapp.com",
-            projectId: "boltmaster-2025",
-            storageBucket: "boltmaster-2025.firebasestorage.app",
-            messagingSenderId: "995027194761",
-            appId: "1:995027194761:web:d3464fefcc6eb41129c758"
-        };
+<main>
+  <aside class="filters">
+    <h3>Фильтры</h3>
+    <div class="filter-group">
+      <label>Цена, ₴</label>
+      <div class="price-range">
+        <input type="number" id="price-min" placeholder="от" min="0">
+        <span>-</span>
+        <input type="number" id="price-max" placeholder="до" min="0">
+      </div>
+    </div>
+    <div class="filter-group">
+      <label>Бренд</label>
+      <select id="brand">
+        <option value="">Все бренды</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Наличие</label>
+      <select id="availability">
+        <option value="">Все товары</option>
+        <option value="in-stock">В наличии</option>
+        <option value="out-of-stock">Нет в наличии</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Сортировка</label>
+      <select id="sort">
+        <option value="default">По умолчанию</option>
+        <option value="price-asc">Цена (по возрастанию)</option>
+        <option value="price-desc">Цена (по убыванию)</option>
+        <option value="name-asc">Название (А-Я)</option>
+        <option value="name-desc">Название (Я-А)</option>
+        <option value="popular">По популярности</option>
+      </select>
+    </div>
+    <div class="filter-buttons">
+      <button onclick="applyFilters()" class="btn btn-detail">Применить</button>
+      <button onclick="resetFilters()" class="btn">Сбросить</button>
+    </div>
+  </aside>
 
-        // Ініціалізація Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const auth = firebase.auth();
-        const storage = firebase.storage();
+  <section>
+    <div class="products-header">
+      <h2 id="products-title">Все товары</h2>
+      <div>
+        <span id="products-count"></span>
+        <div class="view-options">
+          <button class="view-btn active" id="grid-view" onclick="setViewMode('grid')"><i class="fas fa-th"></i></button>
+          <button class="view-btn" id="list-view" onclick="setViewMode('list')"><i class="fas fa-list"></i></button>
+        </div>
+      </div>
+    </div>
+    <div id="product-grid" class="grid">
+      <!-- Skeleton loading -->
+      <div class="card">
+        <div class="skeleton-img"></div>
+        <div class="skeleton-title"></div>
+        <div class="skeleton-text"></div>
+        <div class="skeleton-text" style="width: 80%;"></div>
+        <div class="skeleton-price"></div>
+        <div class="skeleton-text" style="height: 36px; margin-top: 15px;"></div>
+      </div>
+      <div class="card">
+        <div class="skeleton-img"></div>
+        <div class="skeleton-title"></div>
+        <div class="skeleton-text"></div>
+        <div class="skeleton-text" style="width: 80%;"></div>
+        <div class="skeleton-price"></div>
+        <div class="skeleton-text" style="height: 36px; margin-top: 15px;"></div>
+      </div>
+      <div class="card">
+        <div class="skeleton-img"></div>
+        <div class="skeleton-title"></div>
+        <div class="skeleton-text"></div>
+        <div class="skeleton-text" style="width: 80%;"></div>
+        <div class="skeleton-price"></div>
+        <div class="skeleton-text" style="height: 36px; margin-top: 15px;"></div>
+      </div>
+      <div class="card">
+        <div class="skeleton-img"></div>
+        <div class="skeleton-title"></div>
+        <div class="skeleton-text"></div>
+        <div class="skeleton-text" style="width: 80%;"></div>
+        <div class="skeleton-price"></div>
+        <div class="skeleton-text" style="height: 36px; margin-top: 15px;"></div>
+      </div>
+    </div>
+    
+    <div class="pagination" id="pagination">
+      <button onclick="changePage(1)" class="active">1</button>
+      <button onclick="changePage(2)">2</button>
+      <button onclick="changePage(3)">3</button>
+    </div>
+  </section>
 
-        // Глобальні змінні
-        let products = [];
-        let cart = JSON.parse(localStorage.getItem('cart')) || [];
-        let isAdminLoggedIn = false;
-        let xmlUrls = JSON.parse(localStorage.getItem('xmlUrls')) || [];
+  <aside>
+    <h3>Популярные товары</h3>
+    <div class="featured-products" id="featured-products">
+      <div class="featured-item">
+        <div class="skeleton-img" style="width: 60px; height: 60px;"></div>
+        <div class="featured-item-info">
+          <div class="skeleton-text" style="width: 80%; height: 14px;"></div>
+          <div class="skeleton-text" style="width: 40%; height: 16px; margin-top: 5px;"></div>
+        </div>
+      </div>
+      <div class="featured-item">
+        <div class="skeleton-img" style="width: 60px; height: 60px;"></div>
+        <div class="featured-item-info">
+          <div class="skeleton-text" style="width: 80%; height: 14px;"></div>
+          <div class="skeleton-text" style="width: 40%; height: 16px; margin-top: 5px;"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="admin-panel" class="admin-panel" style="display:none;">
+      <h4>Админ-панель</h4>
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('import-tab')">Импорт</div>
+        <div class="tab" onclick="switchTab('products-tab')">Товары</div>
+        <div class="tab" onclick="switchTab('orders-tab')">Заказы</div>
+      </div>
+      
+      <div id="import-tab" class="tab-content active">
+        <div class="filter-group">
+          <label>URL XML-фида:</label>
+          <input type="text" id="feed-url" placeholder="https://api.dropshipping.ua/api/feeds/2091.xml">
+          <button onclick="saveFeedUrl()" class="btn" style="margin-top: 10px;">Сохранить URL</button>
+        </div>
+        <button onclick="loadFromFeed()" class="btn btn-detail">Обновить из фида</button>
+        <p id="feed-message" style="font-size:12px; color:#555; margin-top: 10px;"></p>
+        <button onclick="clearCatalog()" class="btn">Очистить каталог</button>
+        <button onclick="exportJSON()" class="btn">Экспорт JSON</button>
+      </div>
+      
+      <div id="products-tab" class="tab-content">
+        <button onclick="openAddProductModal()" class="btn btn-detail">Добавить товар</button>
+        <div id="admin-products-list"></div>
+      </div>
+      
+      <div id="orders-tab" class="tab-content">
+        <div id="admin-orders-list"></div>
+      </div>
+    </div>
+  </aside>
+</main>
 
-        // Ініціалізація додатку
-        document.addEventListener('DOMContentLoaded', function() {
-            loadProductsFromFirestore();
-            updateCartCount();
-            checkAdminStatus();
-            displayXmlUrls();
-        });
+<footer>
+  <div class="footer-content">
+    <div class="footer-section">
+      <h4>О магазине</h4>
+      <p>ElectroTools — это современный интернет-магазин инструментов и оборудования с быстрой доставкой по всей стране.</p>
+    </div>
+    
+    <div class="footer-section">
+      <h4>Категории</h4>
+      <a href="#">Электроинструменты</a>
+      <a href="#">Ручные инструменты</a>
+      <a href="#">Садовая техника</a>
+      <a href="#">Измерительные инструменты</a>
+    </div>
+    
+    <div class="footer-section">
+      <h4>Помощь</h4>
+      <a href="#">Доставка и оплата</a>
+      <a href="#">Гарантия</a>
+      <a href="#">Возврат товара</a>
+      <a href="#">Контакты</a>
+    </div>
+    
+    <div class="footer-section">
+      <h4>Контакты</h4>
+      <p>+38 (012) 345-67-89</p>
+      <p>info@electrotools.com</p>
+      <div class="social-links">
+        <a href="#"><i class="fab fa-facebook"></i></a>
+        <a href="#"><i class="fab fa-instagram"></i></a>
+        <a href="#"><i class="fab fa-telegram"></i></a>
+        <a href="#"><i class="fab fa-youtube"></i></a>
+      </div>
+    </div>
+    
+    <div class="copyright">
+      © <span id="year"></span> ElectroTools. Все права защищены.
+    </div>
+  </div>
+</footer>
 
-        // Навігація
-        function showSection(sectionId) {
-            document.querySelectorAll('.section').forEach(section => {
-                section.classList.remove('active');
-            });
-            document.querySelectorAll('.nav button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            document.getElementById(sectionId).classList.add('active');
-            
-            // Знаходимо кнопку навігації, яка відповідає розділу
-            const navButtons = document.querySelectorAll('.nav button');
-            for (let btn of navButtons) {
-                if (btn.textContent.includes(getButtonText(sectionId))) {
-                    btn.classList.add('active');
-                    break;
-                }
-            }
+<div id="modal" class="modal">
+  <div class="modal-content" id="modal-content">
+    <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+  </div>
+</div>
 
-            if (sectionId === 'cart') {
-                updateCartDisplay();
-            } else if (sectionId === 'admin' && isAdminLoggedIn) {
-                loadAdminProducts();
-            }
-        }
+<div id="notification" class="notification">
+  <i class="fas fa-check-circle"></i>
+  <span id="notification-text"></span>
+</div>
 
-        function getButtonText(sectionId) {
-            switch(sectionId) {
-                case 'catalog': return 'Каталог';
-                case 'cart': return 'Кошик';
-                case 'admin': return 'Адміністратор';
-                default: return '';
-            }
-        }
-
-        // Завантаження товарів з Firestore
-        function loadProductsFromFirestore() {
-            document.getElementById('loadingProducts').style.display = 'block';
-            
-            db.collection('products').get()
-                .then(querySnapshot => {
-                    products = [];
-                    querySnapshot.forEach(doc => {
-                        products.push({ id: doc.id, ...doc.data() });
-                    });
-                    document.getElementById('loadingProducts').style.display = 'none';
-                    displayProducts(products);
-                })
-                .catch(error => {
-                    console.error('Помилка завантаження товарів:', error);
-                    document.getElementById('loadingProducts').innerHTML = 'Помилка завантаження товарів';
-                });
-        }
-
-        // Додавання XML URL
-        function addXmlUrl() {
-            const url = document.getElementById('xmlFeedUrl').value.trim();
-            
-            if (!url) {
-                alert('Будь ласка, введіть URL XML фіду');
-                return;
-            }
-            
-            if (!xmlUrls.includes(url)) {
-                xmlUrls.push(url);
-                localStorage.setItem('xmlUrls', JSON.stringify(xmlUrls));
-                displayXmlUrls();
-                document.getElementById('xmlFeedUrl').value = '';
-            } else {
-                alert('Цей URL вже додано');
-            }
-        }
-
-        // Відображення XML URLs
-        function displayXmlUrls() {
-            const container = document.getElementById('xmlUrls');
-            
-            if (xmlUrls.length === 0) {
-                container.innerHTML = '<p>Немає збережених URL</p>';
-                return;
-            }
-            
-            container.innerHTML = xmlUrls.map((url, index) => `
-                <div class="xml-url-item">
-                    <span>${url}</span>
-                    <button class="btn-danger" onclick="removeXmlUrl(${index})">Видалити</button>
-                </div>
-            `).join('');
-        }
-
-        // Видалення XML URL
-        function removeXmlUrl(index) {
-            xmlUrls.splice(index, 1);
-            localStorage.setItem('xmlUrls', JSON.stringify(xmlUrls));
-            displayXmlUrls();
-        }
-
-        // Завантаження товарів з усіх XML
-        async function loadProductsFromAllXml() {
-            const statusDiv = document.getElementById('xmlLoadStatus');
-            
-            if (xmlUrls.length === 0) {
-                statusDiv.innerHTML = '<div class="message error">❌ Немає URL для завантаження</div>';
-                return;
-            }
-            
-            statusDiv.innerHTML = '<div class="message">🔄 Завантаження товарів з XML...</div>';
-            
-            let totalLoaded = 0;
-            
-            for (const url of xmlUrls) {
-                try {
-                    const loaded = await loadProductsFromSingleXml(url);
-                    totalLoaded += loaded;
-                } catch (error) {
-                    console.error('Помилка завантаження з XML:', error);
-                }
-            }
-            
-            statusDiv.innerHTML = `<div class="message success">✅ Успішно завантажено ${totalLoaded} товарів з ${xmlUrls.length} джерел!</div>`;
-            loadProductsFromFirestore();
-        }
-
-        // Завантаження товарів з одного XML
-        async function loadProductsFromSingleXml(xmlUrl) {
-            return new Promise(async (resolve, reject) => {
-                try {
-                    // Використовуємо CORS proxy для обходу обмежень
-                    const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
-                    const response = await fetch(proxyUrl + xmlUrl);
-                    
-                    if (!response.ok) {
-                        throw new Error('Помилка завантаження XML');
-                    }
-
-                    const xmlText = await response.text();
-                    const parser = new DOMParser();
-                    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-                    
-                    const items = xmlDoc.getElementsByTagName('item');
-                    let loadedCount = 0;
-
-                    for (let item of items) {
-                        try {
-                            const product = {
-                                name: item.getElementsByTagName('title')[0]?.textContent || 'Товар без назви',
-                                description: item.getElementsByTagName('description')[0]?.textContent || 'Опис відсутній',
-                                price: parseFloat(item.getElementsByTagName('price')[0]?.textContent || '0'),
-                                category: item.getElementsByTagName('categoryId')[0]?.textContent || 'Інструменти',
-                                image: item.getElementsByTagName('picture')[0]?.textContent || 'https://via.placeholder.com/200x200?text=Товар',
-                                available: item.getElementsByTagName('available')[0]?.textContent === 'true'
-                            };
-
-                            if (product.available && product.price > 0) {
-                                // Перевіряємо, чи товар вже існує
-                                const existingProduct = products.find(p => 
-                                    p.name === product.name && p.price === product.price
-                                );
-                                
-                                if (!existingProduct) {
-                                    await db.collection('products').add(product);
-                                    loadedCount++;
-                                }
-                            }
-                        } catch (e) {
-                            console.error('Помилка обробки товару:', e);
-                        }
-                    }
-                    
-                    resolve(loadedCount);
-                } catch (error) {
-                    console.error('Помилка завантаження XML:', error);
-                    reject(error);
-                }
-            });
-        }
-
-        // Додавання товару вручну
-        async function addProduct() {
-            const name = document.getElementById('productName').value.trim();
-            const description = document.getElementById('productDescription').value.trim();
-            const price = parseFloat(document.getElementById('productPrice').value) || 0;
-            const category = document.getElementById('productCategory').value;
-            const image = document.getElementById('productImage').value.trim() || 'https://via.placeholder.com/200x200?text=Товар';
-
-            if (!name || !description || price <= 0) {
-                alert('Будь ласка, заповніть всі поля коректно!');
-                return;
-            }
-
-            const product = {
-                name,
-                description,
-                price,
-                category,
-                image
-            };
-
-            try {
-                await db.collection('products').add(product);
-                
-                // Очищаємо форму
-                document.getElementById('productName').value = '';
-                document.getElementById('productDescription').value = '';
-                document.getElementById('productPrice').value = '';
-                document.getElementById('productImage').value = '';
-                
-                alert('✅ Товар успішно додано!');
-                loadProductsFromFirestore();
-                loadAdminProducts();
-                
-            } catch (error) {
-                console.error('Помилка додавання товару:', error);
-                alert('❌ Помилка додавання товару!');
-            }
-        }
-
-        // Видалення товару
-        function deleteProduct(productId) {
-            if (confirm('Ви впевнені, що хочете видалити цей товар?')) {
-                db.collection('products').doc(productId).delete()
-                    .then(() => {
-                        loadProductsFromFirestore();
-                        loadAdminProducts();
-                    })
-                    .catch(error => {
-                        console.error('Помилка видалення товару:', error);
-                        alert('❌ Помилка видалення товару!');
-                    });
-            }
-        }
-
-        // Відображення товарів
-        function displayProducts(productsToShow) {
-            const grid = document.getElementById('productsGrid');
-            
-            if (productsToShow.length === 0) {
-                grid.innerHTML = '<div class="loading">😔 Товари не знайдено</div>';
-                return;
-            }
-
-            grid.innerHTML = productsToShow.map(product => `
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/200x200?text=Товар'">
-                    </div>
-                    <div class="product-title">${product.name}</div>
-                    <div class="product-price">${product.price.toFixed(2)} грн</div>
-                    <div class="product-description">${product.description}</div>
-                    <button class="add-to-cart" onclick="addToCart('${product.id}')">
-                        🛒 Додати в кошик
-                    </button>
-                </div>
-            `).join('');
-        }
-
-        // Фільтрація товарів
-        function filterProducts() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const categoryFilter = document.getElementById('categoryFilter').value;
-            const priceFilter = document.getElementById('priceFilter').value;
-            const sortFilter = document.getElementById('sortFilter').value;
-
-            let filtered = products.filter(product => {
-                // Пошук по назві та опису
-                const matchesSearch = product.name.toLowerCase().includes(searchTerm) || 
-                                    product.description.toLowerCase().includes(searchTerm);
-                
-                // Фільтр по категорії
-                const matchesCategory = !categoryFilter || product.category === categoryFilter;
-                
-                // Фільтр по ціні
-                let matchesPrice = true;
-                if (priceFilter) {
-                    if (priceFilter === '0-500') {
-                        matchesPrice = product.price <= 500;
-                    } else if (priceFilter === '500-1000') {
-                        matchesPrice = product.price > 500 && product.price <= 1000;
-                    } else if (priceFilter === '1000-2000') {
-                        matchesPrice = product.price > 1000 && product.price <= 2000;
-                    } else if (priceFilter === '2000+') {
-                        matchesPrice = product.price > 2000;
-                    }
-                }
-                
-                return matchesSearch && matchesCategory && matchesPrice;
-            });
-
-            // Сортування
-            if (sortFilter) {
-                if (sortFilter === 'price-asc') {
-                    filtered.sort((a, b) => a.price - b.price);
-                } else if (sortFilter === 'price-desc') {
-                    filtered.sort((a, b) => b.price - a.price);
-                } else if (sortFilter === 'name-asc') {
-                    filtered.sort((a, b) => a.name.localeCompare(b.name));
-                } else if (sortFilter === 'name-desc') {
-                    filtered.sort((a, b) => b.name.localeCompare(a.name));
-                }
-            }
-
-            displayProducts(filtered);
-        }
-
-        // Робота з кошиком
-        function addToCart(productId) {
-            const product = products.find(p => p.id === productId);
-            if (!product) return;
-
-            const existingItem = cart.find(item => item.productId === productId);
-            
-            if (existingItem) {
-                existingItem.quantity++;
-            } else {
-                cart.push({
-                    productId: productId,
-                    product: product,
-                    quantity: 1
-                });
-            }
-
-            localStorage.setItem('cart', JSON.stringify(cart));
-            updateCartCount();
-            alert(`✅ "${product.name}" додано до кошика!`);
-        }
-
-        function removeFromCart(productId) {
-            cart = cart.filter(item => item.productId !== productId);
-            localStorage.setItem('cart', JSON.stringify(cart));
-            updateCartDisplay();
-            updateCartCount();
-        }
-
-        function updateCartQuantity(productId, change) {
-            const item = cart.find(item => item.productId === productId);
-            if (!item) return;
-
-            item.quantity += change;
-            
-            if (item.quantity <= 0) {
-                removeFromCart(productId);
-            } else {
-                localStorage.setItem('cart', JSON.stringify(cart));
-                updateCartDisplay();
-                updateCartCount();
-            }
-        }
-
-        function updateCartCount() {
-            const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
-            document.getElementById('cartCount').textContent = totalItems;
-        }
-
-        function updateCartDisplay() {
-            const cartItems = document.getElementById('cartItems');
-            const cartTotal = document.getElementById('cartTotal');
-            const checkoutSection = document.getElementById('checkoutSection');
-            const orderSuccess = document.getElementById('orderSuccess');
-            
-            // Сховати повідомлення про успішне замовлення
-            orderSuccess.style.display = 'none';
-            
-            if (cart.length === 0) {
-                cartItems.innerHTML = '<div class="empty-cart">😔 Ваш кошик порожній</div>';
-                cartTotal.textContent = '';
-                checkoutSection.style.display = 'none';
-                return;
-            }
-
-            let total = 0;
-            cartItems.innerHTML = cart.map(item => {
-                const itemTotal = item.product.price * item.quantity;
-                total += itemTotal;
-                
-                return `
-                    <div class="cart-item">
-                        <div class="cart-item-info">
-                            <div class="cart-item-title">${item.product.name}</div>
-                            <div class="cart-item-price">${item.product.price.toFixed(2)} грн/шт</div>
-                        </div>
-                        <div class="cart-item-quantity">
-                            <button class="quantity-btn" onclick="updateCartQuantity('${item.productId}', -1)">-</button>
-                            <span>${item.quantity}</span>
-                            <button class="quantity-btn" onclick="updateCartQuantity('${item.productId}', 1)">+</button>
-                        </div>
-                        <div class="cart-item-total">${itemTotal.toFixed(2)} грн</div>
-                        <button class="remove-from-cart" onclick="removeFromCart('${item.productId}')">Видалити</button>
-                    </div>
-                `;
-            }).join('');
-
-            cartTotal.textContent = `Загальна сума: ${total.toFixed(2)} грн`;
-            checkoutSection.style.display = 'block';
-        }
-
-        function placeOrder() {
-            const name = document.getElementById('customerName').value.trim();
-            const phone = document.getElementById('customerPhone').value.trim();
-            const address = document.getElementById('customerAddress').value.trim();
-
-            if (!name || !phone || !address) {
-                alert('Будь ласка, заповніть всі поля для оформлення замовлення!');
-                return;
-            }
-
-            const order = {
-                date: new Date().toLocaleString('uk-UA'),
-                items: [...cart],
-                total: cart.reduce((total, item) => total + (item.product.price * item.quantity), 0),
-                customer: { name, phone, address },
-                status: 'Нове'
-            };
-
-            // Зберігаємо замовлення в Firebase
-            db.collection('orders').add(order)
-                .then(docRef => {
-                    // Очищаємо кошик
-                    cart = [];
-                    localStorage.setItem('cart', JSON.stringify(cart));
-                    updateCartCount();
-                    
-                    // Показуємо повідомлення про успішне замовлення
-                    document.getElementById('checkoutSection').style.display = 'none';
-                    document.getElementById('cartItems').style.display = 'none';
-                    document.getElementById('cartTotal').style.display = 'none';
-                    document.getElementById('orderSuccess').style.display = 'block';
-                })
-                .catch(error => {
-                    console.error('Помилка збереження замовлення:', error);
-                    alert('❌ Помилка оформлення замовлення!');
-                });
-        }
-
-        // Адміністрування
-        function checkAdminStatus() {
-            // Перевіряємо, чи адмін вже ввійшов в систему
-            if (localStorage.getItem('isAdminLoggedIn') === 'true') {
-                isAdminLoggedIn = true;
-                document.getElementById('adminLogin').style.display = 'none';
-                document.getElementById('adminPanel').style.display = 'block';
-                loadAdminProducts();
-            }
-        }
-
-        function adminLogin() {
-            const email = document.getElementById('adminEmail').value;
-            const password = document.getElementById('adminPassword').value;
-
-            // Аутентифікація через Firebase
-            auth.signInWithEmailAndPassword(email, password)
-                .then(userCredential => {
-                    isAdminLoggedIn = true;
-                    localStorage.setItem('isAdminLoggedIn', 'true');
-                    document.getElementById('adminLogin').style.display = 'none';
-                    document.getElementById('adminPanel').style.display = 'block';
-                    loadAdminProducts();
-                })
-                .catch(error => {
-                    console.error('Помилка входу:', error);
-                    alert('Невірний email або пароль!');
-                });
-        }
-
-        function adminLogout() {
-            auth.signOut()
-                .then(() => {
-                    isAdminLoggedIn = false;
-                    localStorage.removeItem('isAdminLoggedIn');
-                    document.getElementById('adminLogin').style.display = 'block';
-                    document.getElementById('adminPanel').style.display = 'none';
-                })
-                .catch(error => {
-                    console.error('Помилка виходу:', error);
-                });
-        }
-
-        function loadAdminProducts() {
-            const adminProductsList = document.getElementById('adminProductsList');
-            
-            if (products.length === 0) {
-                adminProductsList.innerHTML = '<div class="message">😔 Немає товарів для відображення</div>';
-                return;
-            }
-
-            adminProductsList.innerHTML = `
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-                        <thead>
-                            <tr style="background: rgba(255,255,255,0.1);">
-                                <th style="padding: 12px; text-align: left;">Назва</th>
-                                <th style="padding: 12px; text-align: left;">Категорія</th>
-                                <th style="padding: 12px; text-align: right;">Ціна</th>
-                                <th style="padding: 12px; text-align: center;">Дії</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${products.map(product => `
-                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                                    <td style="padding: 12px;">${product.name}</td>
-                                    <td style="padding: 12px;">${product.category}</td>
-                                    <td style="padding: 12px; text-align: right;">${product.price.toFixed(2)} грн</td>
-                                    <td style="padding: 12px; text-align: center;">
-                                        <button class="btn-danger" onclick="deleteProduct('${product.id}')">
-                                            Видалити
-                                        </button>
-                                    </td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-        }
-    </script>
+<script src="script.js"></script>
 </body>
 </html>
