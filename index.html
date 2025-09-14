@@ -5,14 +5,11 @@
   <title>ElectroTools — Интернет-магазин инструментов</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Добавляем необходимые Firebase скрипты -->
+  <link rel="stylesheet" href="styles.css">
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-  <!-- Cloudinary SDK -->
-  <script src="https://upload-widget.cloudinary.com/global/all.js"></script>
-  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -32,27 +29,16 @@
     <button onclick="toggleFavorites()" class="btn" id="favorites-btn">
       <i class="far fa-heart"></i>
     </button>
-    
-    <div class="user-menu" id="user-menu" style="display: none;">
-      <div class="user-btn">
-        <i class="fas fa-user"></i>
-        <span id="user-name"></span>
-      </div>
-      <div class="user-dropdown">
-        <a href="#" onclick="openProfile(); return false;">Профиль</a>
-        <a href="#" onclick="viewOrders(); return false;">Мои заказы</a>
-        <a href="#" onclick="logout(); return false;">Выйти</a>
-      </div>
-    </div>
-    
-    <button onclick="openAuthModal()" class="btn btn-admin" id="login-btn">
+    <button onclick="toggleCompare()" class="btn" id="compare-btn">
+      <i class="fas fa-balance-scale"></i>
+      <span class="cart-count" id="compare-count">0</span>
+    </button>
+    <button id="login-btn" onclick="openLoginModal()" class="btn btn-login">
       <i class="fas fa-user"></i> Войти
     </button>
-    
-    <button onclick="promptAdminPassword()" class="btn btn-admin" id="admin-access-btn" style="display: none;">
-      <i class="fas fa-crown"></i> Админ
+    <button onclick="loginAdmin()" class="btn btn-admin" id="admin-btn">
+      <i class="fas fa-user-cog"></i> Админ
     </button>
-    
     <button onclick="openCart()" class="btn btn-cart">
       <i class="fas fa-shopping-cart"></i>
       <span class="cart-count" id="cart-count">0</span>
@@ -72,18 +58,19 @@
       </div>
     </div>
     <div class="filter-group">
-      <label>Бренд</label>
-      <select id="brand">
-        <option value="">Все бренды</option>
+      <label>Рейтинг</label>
+      <select id="rating-filter">
+        <option value="">Любой рейтинг</option>
+        <option value="4">4+ звезды</option>
+        <option value="3">3+ звезды</option>
       </select>
     </div>
     <div class="filter-group">
       <label>Наличие</label>
-      <select id="availability">
-        <option value="">Все товары</option>
-        <option value="in-stock">В наличии</option>
-        <option value="out-of-stock">Нет в наличии</option>
-      </select>
+      <div>
+        <input type="checkbox" id="in-stock" checked>
+        <label for="in-stock">В наличии</label>
+      </div>
     </div>
     <div class="filter-group">
       <label>Сортировка</label>
@@ -93,7 +80,7 @@
         <option value="price-desc">Цена (по убыванию)</option>
         <option value="name-asc">Название (А-Я)</option>
         <option value="name-desc">Название (Я-А)</option>
-        <option value="popular">По популярности</option>
+        <option value="rating-desc">По рейтингу</option>
       </select>
     </div>
     <div class="filter-buttons">
@@ -105,75 +92,34 @@
   <section>
     <div class="products-header">
       <h2 id="products-title">Все товары</h2>
-      <div>
-        <span id="products-count"></span>
-        <div class="view-options">
-          <button class="view-btn active" id="grid-view" onclick="setViewMode('grid')"><i class="fas fa-th"></i></button>
-          <button class="view-btn" id="list-view" onclick="setViewMode('list')"><i class="fas fa-list"></i></button>
-        </div>
+      <div class="view-options">
+        <span class="view-option active" onclick="changeView('grid')"><i class="fas fa-th"></i></span>
+        <span class="view-option" onclick="changeView('list')"><i class="fas fa-list"></i></span>
       </div>
+      <span id="products-count"></span>
+      <select class="sort-select" id="sort-mobile">
+        <option value="default">По умолчанию</option>
+        <option value="price-asc">Цена (по возрастанию)</option>
+        <option value="price-desc">Цена (по убыванию)</option>
+        <option value="name-asc">Название (А-Я)</option>
+        <option value="name-desc">Название (Я-А)</option>
+        <option value="rating-desc">По рейтингу</option>
+      </select>
     </div>
     <div id="product-grid" class="grid">
-      <!-- Skeleton loading -->
-      <div class="card">
-        <div class="skeleton-img"></div>
-        <div class="skeleton-title"></div>
-        <div class="skeleton-text"></div>
-        <div class="skeleton-text" style="width: 80%;"></div>
-        <div class="skeleton-price"></div>
-        <div class="skeleton-text" style="height: 36px; margin-top: 15px;"></div>
+      <div class="loading">
+        <i class="fas fa-spinner"></i>
+        <h3>Загрузка товаров...</h3>
       </div>
-      <div class="card">
-        <div class="skeleton-img"></div>
-        <div class="skeleton-title"></div>
-        <div class="skeleton-text"></div>
-        <div class="skeleton-text" style="width: 80%;"></div>
-        <div class="skeleton-price"></div>
-        <div class="skeleton-text" style="height: 36px; margin-top: 15px;"></div>
-      </div>
-      <div class="card">
-        <div class="skeleton-img"></div>
-        <div class="skeleton-title"></div>
-        <div class="skeleton-text"></div>
-        <div class="skeleton-text" style="width: 80%;"></div>
-        <div class="skeleton-price"></div>
-        <div class="skeleton-text" style="height: 36px; margin-top: 15px;"></div>
-      </div>
-      <div class="card">
-        <div class="skeleton-img"></div>
-        <div class="skeleton-title"></div>
-        <div class="skeleton-text"></div>
-        <div class="skeleton-text" style="width: 80%;"></div>
-        <div class="skeleton-price"></div>
-        <div class="skeleton-text" style="height: 36px; margin-top: 15px;"></div>
-      </div>
-    </div>
-    
-    <div class="pagination" id="pagination">
-      <button onclick="changePage(1)" class="active">1</button>
-      <button onclick="changePage(2)">2</button>
-      <button onclick="changePage(3)">3</button>
     </div>
   </section>
 
   <aside>
-    <h3>Популярные товары</h3>
-    <div class="featured-products" id="featured-products">
-      <div class="featured-item">
-        <div class="skeleton-img" style="width: 60px; height: 60px;"></div>
-        <div class="featured-item-info">
-          <div class="skeleton-text" style="width: 80%; height: 14px;"></div>
-          <div class="skeleton-text" style="width: 40%; height: 16px; margin-top: 5px;"></div>
-        </div>
-      </div>
-      <div class="featured-item">
-        <div class="skeleton-img" style="width: 60px; height: 60px;"></div>
-        <div class="featured-item-info">
-          <div class="skeleton-text" style="width: 80%; height: 14px;"></div>
-          <div class="skeleton-text" style="width: 40%; height: 16px; margin-top: 5px;"></div>
-        </div>
-      </div>
-    </div>
+    <h3>Недавно просмотренные</h3>
+    <div id="recently-viewed"></div>
+    
+    <h3>О магазине</h3>
+    <p>Каталог электроинструментов, наборов и автоключей и то что нужно для дома.</p>
     
     <div id="admin-panel" class="admin-panel" style="display:none;">
       <h4>Админ-панель</h4>
@@ -181,6 +127,8 @@
         <div class="tab active" onclick="switchTab('import-tab')">Импорт</div>
         <div class="tab" onclick="switchTab('products-tab')">Товары</div>
         <div class="tab" onclick="switchTab('orders-tab')">Заказы</div>
+        <div class="tab" onclick="switchTab('reviews-tab')">Отзывы</div>
+        <div class="tab" onclick="switchTab('images-tab')">Изображения</div>
       </div>
       
       <div id="import-tab" class="tab-content active">
@@ -196,56 +144,34 @@
       </div>
       
       <div id="products-tab" class="tab-content">
-        <button onclick="openAddProductModal()" class="btn btn-detail">Добавить товар</button>
         <div id="admin-products-list"></div>
       </div>
       
       <div id="orders-tab" class="tab-content">
         <div id="admin-orders-list"></div>
       </div>
+      
+      <div id="reviews-tab" class="tab-content">
+        <div id="admin-reviews-list"></div>
+      </div>
+      
+      <div id="images-tab" class="tab-content">
+        <h4>Загрузка изображений</h4>
+        <div class="form-group">
+          <label>Выберите изображение:</label>
+          <input type="file" id="imageInput" accept="image/*">
+        </div>
+        <button onclick="uploadImage()" class="btn btn-detail">Загрузить изображение</button>
+        <div id="gallery" style="margin-top: 20px;"></div>
+      </div>
+      
+      <button onclick="logoutAdmin()" class="btn" style="margin-top: 20px;">Выйти</button>
     </div>
   </aside>
 </main>
 
 <footer>
-  <div class="footer-content">
-    <div class="footer-section">
-      <h4>О магазине</h4>
-      <p>ElectroTools — это современный интернет-магазин инструментов и оборудования с быстрой доставкой по всей стране.</p>
-    </div>
-    
-    <div class="footer-section">
-      <h4>Категории</h4>
-      <a href="#">Электроинструменты</a>
-      <a href="#">Ручные инструменты</a>
-      <a href="#">Садовая техника</a>
-      <a href="#">Измерительные инструменты</a>
-    </div>
-    
-    <div class="footer-section">
-      <h4>Помощь</h4>
-      <a href="#">Доставка и оплата</a>
-      <a href="#">Гарантия</a>
-      <a href="#">Возврат товара</a>
-      <a href="#">Контакты</a>
-    </div>
-    
-    <div class="footer-section">
-      <h4>Контакты</h4>
-      <p>+38 (012) 345-67-89</p>
-      <p>info@electrotools.com</p>
-      <div class="social-links">
-        <a href="#"><i class="fab fa-facebook"></i></a>
-        <a href="#"><i class="fab fa-instagram"></i></a>
-        <a href="#"><i class="fab fa-telegram"></i></a>
-        <a href="#"><i class="fab fa-youtube"></i></a>
-      </div>
-    </div>
-    
-    <div class="copyright">
-      © <span id="year"></span> ElectroTools. Все права защищены.
-    </div>
-  </div>
+  © <span id="year"></span> ElectroTools 2025.
 </footer>
 
 <div id="modal" class="modal">
@@ -257,6 +183,11 @@
 <div id="notification" class="notification">
   <i class="fas fa-check-circle"></i>
   <span id="notification-text"></span>
+</div>
+
+<div class="compare-container" id="compare-container">
+  <div class="compare-items" id="compare-items"></div>
+  <button onclick="openCompare()" class="btn btn-detail" id="compare-button">Сравнить</button>
 </div>
 
 <script src="script.js"></script>
