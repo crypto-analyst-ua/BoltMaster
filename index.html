@@ -8,6 +8,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   <style>
     /* Обновленные стили с улучшениями */
@@ -671,6 +672,11 @@
     
     .checkout-form {
       margin-top: 20px;
+      display: none;
+    }
+    
+    .checkout-form.active {
+      display: block;
     }
     
     .form-group {
@@ -776,7 +782,7 @@
     
     .admin-panel h4 {
       margin-top: 0;
-      }
+    }
     
     .tabs {
       display: flex;
@@ -1300,19 +1306,6 @@
 </div>
 
 <script>
-  const ADMIN_PASSWORD = "12345";
-  const STORAGE_KEY = "electrotools_products";
-  const CART_STORAGE_KEY = "electrotools_cart";
-  const FAVORITES_STORAGE_KEY = "electrotools_favorites";
-  const COMPARE_STORAGE_KEY = "electrotools_compare";
-  const RECENTLY_VIEWED_KEY = "electrotools_recently_viewed";
-  const REVIEWS_STORAGE_KEY = "electrotools_reviews";
-  const FEED_URL_KEY = "electrotools_feed_url";
-  const FEED_UPDATE_TIME_KEY = "electrotools_feed_update";
-  const ORDERS_STORAGE_KEY = "electrotools_orders";
-  const USERS_STORAGE_KEY = "electrotools_users";
-  const CURRENT_USER_KEY = "electrotools_current_user";
-  
   // Конфигурация Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyCxAEDkZ57_yu1RDZ6xAEl7KkBgVli00b0",
@@ -1327,11 +1320,26 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
   const auth = firebase.auth();
+  const storage = firebase.storage();
   
   // Конфигурация Cloudinary
   const CLOUDINARY_CLOUD_NAME = "dhfkb6xv2";
   const CLOUDINARY_UPLOAD_PRESET = "unsigned_preset";
   const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
+  
+  const ADMIN_PASSWORD = "12345";
+  
+  // Ключи для локального хранилища (используются как fallback)
+  const CART_STORAGE_KEY = "electrotools_cart";
+  const FAVORITES_STORAGE_KEY = "electrotools_favorites";
+  const COMPARE_STORAGE_KEY = "electrotools_compare";
+  const RECENTLY_VIEWED_KEY = "electrotools_recently_viewed";
+  const REVIEWS_STORAGE_KEY = "electrotools_reviews";
+  const FEED_URL_KEY = "electrotools_feed_url";
+  const FEED_UPDATE_TIME_KEY = "electrotools_feed_update";
+  const ORDERS_STORAGE_KEY = "electrotools_orders";
+  const USERS_STORAGE_KEY = "electrotools_users";
+  const CURRENT_USER_KEY = "electrotools_current_user";
   
   let products = [];
   let cart = {};
@@ -1357,165 +1365,695 @@
 
   // Инициализация
   function init() {
-    loadUsers();
-    loadOrders();
-    loadProducts();
-    loadRecentlyViewed();
-    checkLoginStatus();
-    setupEventListeners();
-    
-    // Аутентификация Firebase
-    auth.onAuthStateChanged(user => {
+    // Проверяем статус аутентификации
+    auth.onAuthStateChanged(async (user) => {
       if (user) {
+        // Пользователь вошел в систему
+        currentUser = user;
+        await loadUserData();
+        updateLoginUI();
+        
+        // Загружаем изображения
         loadImages();
       } else {
+        // Анонимная аутентификация
         auth.signInAnonymously().catch(error => {
           console.error('Anonymous auth failed:', error);
         });
       }
     });
+    
+    loadProducts();
+    loadRecentlyViewed();
+    setupEventListeners();
+    
+    document.getElementById("year").innerText = new Date().getFullYear();
   }
 
-  // Загрузка пользователей
-  function loadUsers() {
-    const data = localStorage.getItem(USERS_STORAGE_KEY);
-    if (data) {
-      users = JSON.parse(data);
+  // Загрузка данных пользователя
+  async function loadUserData() {
+    if (!currentUser) return;
+    
+    try {
+      // Загрузка корзины
+      const cartDoc = await db.collection('carts').doc(currentUser.uid).get();
+      if (cartDoc.exists) {
+        cart = cartDoc.data().items || {};
+      } else {
+        // Загружаем из localStorage как fallback
+        const cartData = localStorage.getItem(CART_STORAGE_KEY);
+        if(cartData) cart = JSON.parse(cartData);
+      }
+      updateCartCount();
+      
+      // Загрузка избранного
+      const favDoc = await db.collection('favorites').doc(currentUser.uid).get();
+      if (favDoc.exists) {
+        favorites = favDoc.data().items || {};
+      } else {
+        const favoritesData = localStorage.getItem(FAVORITES_STORAGE_KEY);
+        if(favoritesData) favorites = JSON.parse(favoritesData);
+      }
+      
+      // Загрузка сравнения
+      const compDoc = await db.collection('comparisons').doc(currentUser.uid).get();
+      if (compDoc.exists) {
+        compare = compDoc.data().items || {};
+      } else {
+        const compareData = localStorage.getItem(COMPARE_STORAGE_KEY);
+        if(compareData) compare = JSON.parse(compareData);
+      }
+      updateCompareCount();
+      renderCompareItems();
+      
+      // Загрузка недавно просмотренных
+      const recentDoc = await db.collection('recentlyViewed').doc(currentUser.uid).get();
+      if (recentDoc.exists) {
+        recentlyViewed = recentDoc.data().items || [];
+      } else {
+        const recentlyViewedData = localStorage.getItem(RECENTLY_VIEWED_KEY);
+        if(recentlyViewedData) recentlyViewed = JSON.parse(recentlyViewedData);
+      }
+      renderRecentlyViewed();
+    } catch (error) {
+      console.error("Ошибка загрузки данных пользователя:", error);
     }
   }
 
-  // Сохранение пользователей
-  function saveUsers() {
-    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
-  }
-
-  // Загрузка заказов
-  function loadOrders() {
-    const data = localStorage.getItem(ORDERS_STORAGE_KEY);
-    if (data) {
-      orders = JSON.parse(data);
+  // Сохранение данных пользователя
+  async function saveUserData() {
+    if (!currentUser) {
+      // Сохраняем в localStorage если пользователь не аутентифицирован
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+      localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favorites));
+      localStorage.setItem(COMPARE_STORAGE_KEY, JSON.stringify(compare));
+      localStorage.setItem(RECENTLY_VIEWED_KEY, JSON.stringify(recentlyViewed));
+      return;
+    }
+    
+    try {
+      // Сохранение корзины
+      await db.collection('carts').doc(currentUser.uid).set({
+        items: cart,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      
+      // Сохранение избранного
+      await db.collection('favorites').doc(currentUser.uid).set({
+        items: favorites,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      
+      // Сохранение сравнения
+      await db.collection('comparisons').doc(currentUser.uid).set({
+        items: compare,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      
+      // Сохранение недавно просмотренных
+      await db.collection('recentlyViewed').doc(currentUser.uid).set({
+        items: recentlyViewed,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    } catch (error) {
+      console.error("Ошибка сохранения данных пользователя:", error);
+      // Fallback to localStorage
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+      localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favorites));
+      localStorage.setItem(COMPARE_STORAGE_KEY, JSON.stringify(compare));
+      localStorage.setItem(RECENTLY_VIEWED_KEY, JSON.stringify(recentlyViewed));
     }
   }
 
-  // Сохранение заказов
-  function saveOrders() {
-    localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(orders));
+  // Загрузка продуктов из Firestore
+  async function loadProducts() {
+    try {
+      const snapshot = await db.collection('products').get();
+      if (snapshot.empty) {
+        // Если нет продуктов в Firestore, загружаем из localStorage
+        const data = localStorage.getItem("electrotools_products");
+        if(data) {
+          products = JSON.parse(data);
+          renderProducts();
+        } else {
+          // Загружаем из фида если нет локальных данных
+          loadFromFeed();
+        }
+        return;
+      }
+      
+      products = [];
+      snapshot.forEach(doc => {
+        products.push({ id: doc.id, ...doc.data() });
+      });
+      updateCartCount();
+      renderProducts();
+    } catch (error) {
+      console.error("Ошибка загрузки продуктов:", error);
+      // Fallback to localStorage
+      const data = localStorage.getItem("electrotools_products");
+      if(data) {
+        products = JSON.parse(data);
+        renderProducts();
+      }
+    }
   }
 
-  // Проверка статуса входа
-  function checkLoginStatus() {
-    const userData = localStorage.getItem(CURRENT_USER_KEY);
-    if (userData) {
-      currentUser = JSON.parse(userData);
+  // Сохранение продуктов в Firestore
+  async function saveProducts() {
+    try {
+      const batch = db.batch();
+      const productsRef = db.collection('products');
+      
+      // Удаляем старые продукты
+      const snapshot = await productsRef.get();
+      snapshot.forEach(doc => {
+        batch.delete(doc.ref);
+      });
+      
+      // Добавляем новые продукты
+      products.forEach(product => {
+        const { id, ...productData } = product;
+        const ref = productsRef.doc(id);
+        batch.set(ref, productData);
+      });
+      
+      await batch.commit();
+      showNotification("Продукты сохранены в Firebase");
+      
+      // Также сохраняем в localStorage как резервную копию
+      localStorage.setItem("electrotools_products", JSON.stringify(products));
+    } catch (error) {
+      console.error("Ошибка сохранения продуктов:", error);
+      // Fallback to localStorage
+      localStorage.setItem("electrotools_products", JSON.stringify(products));
+      showNotification("Продукты сохранены локально", "error");
+    }
+  }
+
+  // Загрузка недавно просмотренных товаров
+  async function loadRecentlyViewed() {
+    if (!currentUser) {
+      const data = localStorage.getItem(RECENTLY_VIEWED_KEY);
+      if (data) {
+        recentlyViewed = JSON.parse(data);
+        renderRecentlyViewed();
+      }
+      return;
+    }
+    
+    try {
+      const doc = await db.collection('recentlyViewed').doc(currentUser.uid).get();
+      if (doc.exists) {
+        recentlyViewed = doc.data().items || [];
+        renderRecentlyViewed();
+      }
+    } catch (error) {
+      console.error("Ошибка загрузки недавно просмотренных:", error);
+      const data = localStorage.getItem(RECENTLY_VIEWED_KEY);
+      if (data) {
+        recentlyViewed = JSON.parse(data);
+        renderRecentlyViewed();
+      }
+    }
+  }
+
+  // Сохранение недавно просмотренных товаров
+  async function saveRecentlyViewed() {
+    if (!currentUser) {
+      localStorage.setItem(RECENTLY_VIEWED_KEY, JSON.stringify(recentlyViewed));
+      return;
+    }
+    
+    try {
+      await db.collection('recentlyViewed').doc(currentUser.uid).set({
+        items: recentlyViewed,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    } catch (error) {
+      console.error("Ошибка сохранения недавно просмотренных:", error);
+      localStorage.setItem(RECENTLY_VIEWED_KEY, JSON.stringify(recentlyViewed));
+    }
+  }
+
+  // Добавление товара в недавно просмотренные
+  async function addToRecentlyViewed(productId) {
+    recentlyViewed = recentlyViewed.filter(id => id !== productId);
+    recentlyViewed.unshift(productId);
+    
+    if (recentlyViewed.length > 5) {
+      recentlyViewed = recentlyViewed.slice(0, 5);
+    }
+    
+    await saveRecentlyViewed();
+    renderRecentlyViewed();
+  }
+
+  // Загрузка отзывов из Firestore
+  async function loadReviews() {
+    try {
+      const snapshot = await db.collection('reviews').get();
+      reviews = {};
+      snapshot.forEach(doc => {
+        reviews[doc.id] = doc.data().reviews || [];
+      });
+    } catch (error) {
+      console.error("Ошибка загрузки отзывов:", error);
+      const data = localStorage.getItem(REVIEWS_STORAGE_KEY);
+      if (data) {
+        reviews = JSON.parse(data);
+      }
+    }
+  }
+
+  // Сохранение отзывов в Firestore
+  async function saveReviews() {
+    try {
+      const batch = db.batch();
+      const reviewsRef = db.collection('reviews');
+      
+      for (const productId in reviews) {
+        const ref = reviewsRef.doc(productId);
+        batch.set(ref, { reviews: reviews[productId] });
+      }
+      
+      await batch.commit();
+      
+      // Также сохраняем в localStorage
+      localStorage.setItem(REVIEWS_STORAGE_KEY, JSON.stringify(reviews));
+    } catch (error) {
+      console.error("Ошибка сохранения отзывов:", error);
+      localStorage.setItem(REVIEWS_STORAGE_KEY, JSON.stringify(reviews));
+    }
+  }
+
+  // Добавление отзыва
+  async function addReview(productId, reviewData) {
+    if (!reviews[productId]) {
+      reviews[productId] = [];
+    }
+    
+    const review = {
+      id: Date.now().toString(),
+      date: new Date().toLocaleDateString('ru-RU'),
+      ...reviewData
+    };
+    
+    reviews[productId].push(review);
+    
+    await saveReviews();
+    showNotification('Отзыв добавлен');
+    return review;
+  }
+
+  // Получение рейтинга товара
+  function getProductRating(productId) {
+    if (!reviews[productId] || reviews[productId].length === 0) {
+      return 0;
+    }
+    
+    const sum = reviews[productId].reduce((total, review) => total + review.rating, 0);
+    return sum / reviews[productId].length;
+  }
+
+  // Загрузка сравнения товаров
+  async function loadCompare() {
+    if (!currentUser) {
+      const data = localStorage.getItem(COMPARE_STORAGE_KEY);
+      if (data) {
+        compare = JSON.parse(data);
+        updateCompareCount();
+        renderCompareItems();
+      }
+      return;
+    }
+    
+    try {
+      const doc = await db.collection('comparisons').doc(currentUser.uid).get();
+      if (doc.exists) {
+        compare = doc.data().items || {};
+        updateCompareCount();
+        renderCompareItems();
+      }
+    } catch (error) {
+      console.error("Ошибка загрузки сравнения:", error);
+      const data = localStorage.getItem(COMPARE_STORAGE_KEY);
+      if (data) {
+        compare = JSON.parse(data);
+        updateCompareCount();
+        renderCompareItems();
+      }
+    }
+  }
+
+  // Сохранение сравнения товаов
+  async function saveCompare() {
+    if (!currentUser) {
+      localStorage.setItem(COMPARE_STORAGE_KEY, JSON.stringify(compare));
+      return;
+    }
+    
+    try {
+      await db.collection('comparisons').doc(currentUser.uid).set({
+        items: compare,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    } catch (error) {
+      console.error("Ошибка сохранения сравнения:", error);
+      localStorage.setItem(COMPARE_STORAGE_KEY, JSON.stringify(compare));
+    }
+  }
+
+  // Обновление счетчика сравнения
+  function updateCompareCount() {
+    const count = Object.keys(compare).length;
+    document.getElementById("compare-count").innerText = count;
+    
+    if (count > 0) {
+      document.getElementById("compare-container").classList.add('active');
+    } else {
+      document.getElementById("compare-container").classList.remove('active');
+    }
+  }
+
+  // Добавление/удаление товара для сравнения
+  async function toggleCompare(productId) {
+    if (compare[productId]) {
+      delete compare[productId];
+      showNotification('Товар удален из сравнения');
+    } else {
+      if (Object.keys(compare).length >= 4) {
+        showNotification('Можно сравнивать не более 4 товаров', 'error');
+        return;
+      }
+      
+      compare[productId] = true;
+      showNotification('Товар добавлен в сравнение');
+    }
+    
+    await saveCompare();
+    updateCompareCount();
+    renderCompareItems();
+    renderProducts();
+  }
+
+  // Отображение товаров для сравнения
+  function renderCompareItems() {
+    const container = document.getElementById("compare-items");
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    Object.keys(compare).forEach(id => {
+      const product = products.find(p => p.id === id);
+      if (product) {
+        const item = document.createElement('div');
+        item.className = 'compare-item';
+        item.innerHTML = `
+          <img src="${product.image || 'https://picsum.photos/30/30'}" alt="${product.title}" onerror="this.src='https://picsum.photos/30/30'">
+          <span>${product.title}</span>
+          <button class="compare-item-remove" onclick="toggleCompare('${product.id}')">
+            <i class="fas fa-times"></i>
+          </button>
+        `;
+        container.appendChild(item);
+      }
+    });
+  }
+
+  // Загрузка заказов из Firestore
+  async function loadOrders() {
+    try {
+      let query = db.collection('orders');
+      
+      // Если не админ, загружаем только свои заказы
+      if (!adminMode && currentUser) {
+        query = query.where('userId', '==', currentUser.uid);
+      }
+      
+      const snapshot = await query.orderBy('date', 'desc').get();
+      orders = [];
+      snapshot.forEach(doc => {
+        orders.push({ id: doc.id, ...doc.data() });
+      });
+    } catch (error) {
+      console.error("Ошибка загрузки заказов:", error);
+      const data = localStorage.getItem(ORDERS_STORAGE_KEY);
+      if (data) {
+        orders = JSON.parse(data);
+      }
+    }
+  }
+
+  // Сохранение заказов в Firestore
+  async function saveOrders() {
+    try {
+      const batch = db.batch();
+      const ordersRef = db.collection('orders');
+      
+      for (const order of orders) {
+        const { id, ...orderData } = order;
+        const ref = id ? ordersRef.doc(id) : ordersRef.doc();
+        batch.set(ref, orderData);
+      }
+      
+      await batch.commit();
+      
+      // Также сохраняем в localStorage
+      localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(orders));
+    } catch (error) {
+      console.error("Ошибка сохранения заказов:", error);
+      localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(orders));
+    }
+  }
+
+  // Добавление товара в корзину
+  async function addToCart(id, quantity = 1) {
+    cart[id] = (cart[id] || 0) + quantity;
+    updateCartCount();
+    await saveUserData();
+    showNotification("Товар добавлен в корзину");
+  }
+
+  // Обновление количества товара в корзине
+  async function updateCartItem(id, quantity) {
+    if (quantity <= 0) {
+      delete cart[id];
+    } else {
+      cart[id] = quantity;
+    }
+    
+    updateCartCount();
+    await saveUserData();
+    
+    if (document.getElementById("modal").classList.contains('active')) {
+      openCart();
+    }
+  }
+
+  // Обновление счетчика корзины
+  function updateCartCount() {
+    const count = Object.values(cart).reduce((a, b) => a + b, 0);
+    document.getElementById("cart-count").innerText = count;
+  }
+
+  // Оформление заказа
+  async function checkout() {
+    const name = document.getElementById("checkout-name").value;
+    const phone = document.getElementById("checkout-phone").value;
+    const email = document.getElementById("checkout-email").value;
+    const address = document.getElementById("checkout-address").value;
+    
+    if (!name || !phone || !email || !address) {
+      showNotification("Заполните все поля формы", "error");
+      return;
+    }
+    
+    // Создаем заказ
+    const order = {
+      userId: currentUser ? currentUser.uid : 'guest',
+      userName: name,
+      userPhone: phone,
+      userEmail: email,
+      userAddress: address,
+      items: [],
+      total: 0,
+      date: new Date().toISOString(),
+      status: 'новый'
+    };
+    
+    // Добавляем товары в заказ
+    let total = 0;
+    for (const id of Object.keys(cart)) {
+      const product = products.find(p => p.id === id);
+      if (product) {
+        const itemTotal = product.price * cart[id];
+        total += itemTotal;
+        
+        order.items.push({
+          id: product.id,
+          title: product.title,
+          price: product.price,
+          quantity: cart[id],
+          total: itemTotal
+        });
+      }
+    }
+    
+    order.total = total;
+    
+    try {
+      // Сохраняем заказ в Firestore
+      await db.collection('orders').add(order);
+      orders.push(order);
+      await saveOrders();
+      
+      // Очищаем корзину
+      cart = {};
+      updateCartCount();
+      await saveUserData();
+      
+      showNotification("Заказ принят! Спасибо за покупку.");
+      closeModal();
+      
+      // Если админ вошел в систему, обновляем список заказов
+      if (adminMode) {
+        await loadOrders();
+        renderAdminOrders();
+      }
+    } catch (error) {
+      console.error("Ошибка оформления заказа:", error);
+      showNotification("Ошибка оформления заказа", "error");
+    }
+  }
+
+  // Загрузка изображений из Firebase Storage
+  async function loadImages() {
+    const gallery = document.getElementById('gallery');
+    if (!gallery) return;
+    
+    gallery.innerHTML = '';
+    
+    try {
+      const storageRef = storage.ref('images');
+      const result = await storageRef.listAll();
+      
+      if (result.items.length === 0) {
+        gallery.innerHTML = '<p>Нет загруженных изображений</p>';
+        return;
+      }
+      
+      for (const itemRef of result.items) {
+        const url = await itemRef.getDownloadURL();
+        const img = document.createElement('img');
+        img.src = url;
+        img.style.width = '200px';
+        img.style.height = '200px';
+        img.style.objectFit = 'cover';
+        img.style.margin = '10px';
+        img.style.borderRadius = '8px';
+        gallery.appendChild(img);
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки изображений:', error);
+      gallery.innerHTML = '<p>Ошибка загрузки изображений</p>';
+    }
+  }
+
+  // Загрузка изображения в Firebase Storage
+  async function uploadImage() {
+    const file = document.getElementById('imageInput').files[0];
+    if (!file) {
+      showNotification('Выберите изображение', 'error');
+      return;
+    }
+    
+    try {
+      const storageRef = storage.ref();
+      const imageRef = storageRef.child(`images/${Date.now()}_${file.name}`);
+      await imageRef.put(file);
+      
+      showNotification('Изображение успешно загружено!');
+      loadImages();
+    } catch (error) {
+      console.error('Ошибка загрузки изображения:', error);
+      showNotification('Ошибка загрузки изображения', 'error');
+    }
+  }
+
+  // Регистрация пользователя
+  async function registerUser() {
+    const username = document.getElementById("login-username").value.trim();
+    const password = document.getElementById("login-password").value;
+    const email = document.getElementById("register-email").value.trim();
+    
+    if (!username || !password || !email) {
+      showNotification("Заполните все поля", "error");
+      return;
+    }
+    
+    try {
+      // Создаем пользователя с email и паролем
+      const credential = await auth.createUserWithEmailAndPassword(email, password);
+      const user = credential.user;
+      
+      // Сохраняем дополнительную информацию о пользователе
+      await db.collection('users').doc(user.uid).set({
+        username,
+        email,
+        createdAt: new Date().toISOString()
+      });
+      
+      showNotification("Регистрация успешна. Теперь вы можете войти.");
+      
+      // Автоматически входим после регистрации
+      await loginUser();
+    } catch (error) {
+      showNotification("Ошибка регистрации: " + error.message, "error");
+    }
+  }
+
+  // Вход пользователя
+  async function loginUser() {
+    const email = document.getElementById("login-email").value;
+    const password = document.getElementById("login-password").value;
+    
+    if (!email || !password) {
+      showNotification("Заполните email и пароль", "error");
+      return;
+    }
+    
+    try {
+      await auth.signInWithEmailAndPassword(email, password);
+      showNotification("Вход выполнен успешно");
+      closeModal();
+    } catch (error) {
+      showNotification("Ошибка входа: " + error.message, "error");
+    }
+  }
+
+  // Выход пользователя
+  async function logoutUser() {
+    try {
+      await auth.signOut();
+      currentUser = null;
       updateLoginUI();
+      showNotification("Вы вышли из системы");
+    } catch (error) {
+      console.error("Ошибка выхода:", error);
     }
   }
 
   // Обновление UI в зависимости от статуса входа
   function updateLoginUI() {
     const loginBtn = document.getElementById("login-btn");
-    if (currentUser) {
-      loginBtn.innerHTML = '<i class="fas fa-user"></i> ' + currentUser.username;
+    if (currentUser && currentUser.email) {
+      loginBtn.innerHTML = '<i class="fas fa-user"></i> ' + currentUser.email;
       loginBtn.onclick = () => openUserProfile();
     } else {
       loginBtn.innerHTML = '<i class="fas fa-user"></i> Войти';
       loginBtn.onclick = () => openLoginModal();
     }
-  }
-
-  // Открытие модального окна входа/регистрации
-  function openLoginModal() {
-    const modal = document.getElementById("modal");
-    const content = document.getElementById("modal-content");
-    
-    content.innerHTML = `
-      <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
-      <h3>Вход / Регистрация</h3>
-      <div class="form-group">
-        <label>Имя пользователя</label>
-        <input type="text" id="login-username" placeholder="Введите имя пользователя">
-      </div>
-      <div class="form-group">
-        <label>Пароль</label>
-        <input type="password" id="login-password" placeholder="Введите пароль">
-      </div>
-      <div class="form-group">
-        <label>Email (для регистрации)</label>
-        <input type="email" id="register-email" placeholder="Введите email (для регистрации)">
-      </div>
-      <div style="display: flex; gap: 10px; margin-top: 20px;">
-        <button class="btn btn-detail" onclick="loginUser()">Войти</button>
-        <button class="btn btn-buy" onclick="registerUser()">Зарегистрироваться</button>
-      </div>
-    `;
-    
-    modal.classList.add('active');
-  }
-
-  // Регистрация пользователя
-  function registerUser() {
-    const username = document.getElementById("login-username").value.trim();
-    const password = document.getElementById("login-password").value;
-    const email = document.getElementById("register-email").value.trim();
-    
-    if (!username || !password) {
-      showNotification("Заполните имя пользователя и пароль", "error");
-      return;
-    }
-    
-    if (users[username]) {
-      showNotification("Пользователь с таким именем уже существует", "error");
-      return;
-    }
-    
-    users[username] = {
-      username,
-      password, // В реальном приложении пароль должен быть хеширован!
-      email,
-      createdAt: new Date().toISOString()
-    };
-    
-    saveUsers();
-    showNotification("Регистрация успешна. Теперь вы можете войти.");
-    
-    // Автоматически входим после регистрации
-    loginUser();
-  }
-
-  // Вход пользователя
-  function loginUser() {
-    const username = document.getElementById("login-username").value.trim();
-    const password = document.getElementById("login-password").value;
-    
-    if (!username || !password) {
-      showNotification("Заполните имя пользователя и пароль", "error");
-      return;
-    }
-    
-    const user = users[username];
-    
-    if (!user || user.password !== password) {
-      showNotification("Неверное имя пользователя или пароль", "error");
-      return;
-    }
-    
-    currentUser = {
-      username: user.username,
-      email: user.email
-    };
-    
-    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(currentUser));
-    updateLoginUI();
-    closeModal();
-    showNotification("Вход выполнен успешно");
-  }
-
-  // Выход пользователя
-  function logoutUser() {
-    currentUser = null;
-    localStorage.removeItem(CURRENT_USER_KEY);
-    updateLoginUI();
-    showNotification("Вы вышли из системы");
   }
 
   // Открытие профиля пользователя
@@ -1527,14 +2065,39 @@
       <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
       <h3>Профиль пользователя</h3>
       <div class="form-group">
-        <label>Имя пользователя</label>
-        <input type="text" value="${currentUser.username}" disabled>
-      </div>
-      <div class="form-group">
         <label>Email</label>
         <input type="email" value="${currentUser.email || ''}" disabled>
       </div>
       <button class="btn btn-detail" onclick="logoutUser()">Выйти</button>
+    `;
+    
+    modal.classList.add('active');
+  }
+
+  // Открытие модального окна входа/регистрации
+  function openLoginModal() {
+    const modal = document.getElementById("modal");
+    const content = document.getElementById("modal-content");
+    
+    content.innerHTML = `
+      <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+      <h3>Вход / Регистрация</h3>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="Введите email">
+      </div>
+      <div class="form-group">
+        <label>Пароль</label>
+        <input type="password" id="login-password" placeholder="Введите пароль">
+      </div>
+      <div class="form-group">
+        <label>Имя пользователя (для регистрации)</label>
+        <input type="text" id="register-username" placeholder="Введите имя пользователя">
+      </div>
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button class="btn btn-detail" onclick="loginUser()">Войти</button>
+        <button class="btn btn-buy" onclick="registerUser()">Зарегистрироваться</button>
+      </div>
     `;
     
     modal.classList.add('active');
@@ -1572,43 +2135,10 @@
       renderProducts();
     });
 
-    document.getElementById("year").innerText = new Date().getFullYear();
-
     // Закрытие модального окна при клике вне его
     document.getElementById("modal").addEventListener("click", function(e) {
       if(e.target === this) closeModal();
     });
-  }
-
-  // Загрузка недавно просмотренных товаров
-  function loadRecentlyViewed() {
-    const data = localStorage.getItem(RECENTLY_VIEWED_KEY);
-    if (data) {
-      recentlyViewed = JSON.parse(data);
-      renderRecentlyViewed();
-    }
-  }
-
-  // Сохранение недавно просмотренных товаров
-  function saveRecentlyViewed() {
-    localStorage.setItem(RECENTLY_VIEWED_KEY, JSON.stringify(recentlyViewed));
-  }
-
-  // Добавление товара в недавно просмотренные
-  function addToRecentlyViewed(productId) {
-    // Удаляем товар, если он уже есть в списке
-    recentlyViewed = recentlyViewed.filter(id => id !== productId);
-    
-    // Добавляем товар в начало списка
-    recentlyViewed.unshift(productId);
-    
-    // Ограничиваем список 5 товарами
-    if (recentlyViewed.length > 5) {
-      recentlyViewed = recentlyViewed.slice(0, 5);
-    }
-    
-    saveRecentlyViewed();
-    renderRecentlyViewed();
   }
 
   // Отображение недавно просмотренных товаров
@@ -1639,232 +2169,6 @@
     });
     
     container.innerHTML = html;
-  }
-
-  // Загрузка отзывов
-  function loadReviews() {
-    const data = localStorage.getItem(REVIEWS_STORAGE_KEY);
-    if (data) {
-      reviews = JSON.parse(data);
-    }
-  }
-
-  // Сохранение отзывов
-  function saveReviews() {
-    localStorage.setItem(REVIEWS_STORAGE_KEY, JSON.stringify(reviews));
-  }
-
-  // Добавление отзыва
-  function addReview(productId, review) {
-    if (!reviews[productId]) {
-      reviews[productId] = [];
-    }
-    
-    review.id = Date.now().toString();
-    review.date = new Date().toLocaleDateString('ru-RU');
-    reviews[productId].push(review);
-    
-    saveReviews();
-    showNotification('Отзыв добавлен');
-  }
-
-  // Получение рейтинга товара
-  function getProductRating(productId) {
-    if (!reviews[productId] || reviews[productId].length === 0) {
-      return 0;
-    }
-    
-    const sum = reviews[productId].reduce((total, review) => total + review.rating, 0);
-    return sum / reviews[productId].length;
-  }
-
-  // Загрузка сравнения товаров
-  function loadCompare() {
-    const data = localStorage.getItem(COMPARE_STORAGE_KEY);
-    if (data) {
-      compare = JSON.parse(data);
-      updateCompareCount();
-      renderCompareItems();
-    }
-  }
-
-  // Сохранение сравнения товаров
-  function saveCompare() {
-    localStorage.setItem(COMPARE_STORAGE_KEY, JSON.stringify(compare));
-  }
-
-  // Обновление счетчика сравнения
-  function updateCompareCount() {
-    const count = Object.keys(compare).length;
-    document.getElementById("compare-count").innerText = count;
-    
-    if (count > 0) {
-      document.getElementById("compare-container").classList.add('active');
-    } else {
-      document.getElementById("compare-container").classList.remove('active');
-    }
-  }
-
-  // Добавление/удаление товара для сравнения
-  function toggleCompare(productId) {
-    if (compare[productId]) {
-      delete compare[productId];
-      showNotification('Товар удален из сравнения');
-    } else {
-      // Ограничиваем количество товаров для сравнения
-      if (Object.keys(compare).length >= 4) {
-        showNotification('Можно сравнивать не более 4 товаров', 'error');
-        return;
-      }
-      
-      compare[productId] = true;
-      showNotification('Товар добавлен в сравнение');
-    }
-    
-    saveCompare();
-    updateCompareCount();
-    renderCompareItems();
-    renderProducts();
-  }
-
-  // Отображение товаров для сравнения
-  function renderCompareItems() {
-    const container = document.getElementById("compare-items");
-    if (!container) return;
-    
-    container.innerHTML = '';
-    
-    Object.keys(compare).forEach(id => {
-      const product = products.find(p => p.id === id);
-      if (product) {
-        const item = document.createElement('div');
-        item.className = 'compare-item';
-        item.innerHTML = `
-          <img src="${product.image || 'https://picsum.photos/30/30'}" alt="${product.title}" onerror="this.src='https://picsum.photos/30/30'">
-          <span>${product.title}</span>
-          <button class="compare-item-remove" onclick="toggleCompare('${product.id}')">
-            <i class="fas fa-times"></i>
-          </button>
-        `;
-        container.appendChild(item);
-      }
-    });
-  }
-
-  // Открытие страницы сравнения
-  function openCompare() {
-    const compareIds = Object.keys(compare);
-    if (compareIds.length < 2) {
-      showNotification('Выберите хотя бы 2 товара для сравнения', 'error');
-      return;
-    }
-    
-    const modal = document.getElementById("modal");
-    const content = document.getElementById("modal-content");
-    
-    let html = `
-      <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
-      <h3><i class="fas fa-balance-scale"></i> Сравнение товаров</h3>
-      <div style="overflow-x: auto;">
-        <table style="width: 100%; border-collapse: collapse; min-width: 600px;">
-          <thead>
-            <tr>
-              <th style="text-align: left; padding: 10px; border-bottom: 1px solid #ddd;">Характеристика</th>
-    `;
-    
-    // Заголовки товаров
-    compareIds.forEach(id => {
-      const product = products.find(p => p.id === id);
-      if (product) {
-        html += `<th style="text-align: left; padding: 10px; border-bottom: 1px solid #ddd;">${product.title}</th>`;
-      }
-    });
-    
-    html += `</tr></thead><tbody>`;
-    
-    // Строка с изображениями
-    html += `
-      <tr>
-        <td style="padding: 10px; border-bottom: 1px solid #eee;">Изображение</td>
-    `;
-    compareIds.forEach(id => {
-      const product = products.find(p => p.id === id);
-      html += `
-        <td style="padding: 10px; border-bottom: 1px solid #eee;">
-          <img src="${product.image || 'https://picsum.photos/100/100'}" alt="${product.title}" style="width: 100px; height: 100px; object-fit: cover;" onerror="this.src='https://picsum.photos/100/100'">
-        </td>
-      `;
-    });
-    html += `</tr>`;
-    
-    // Строка с ценами
-    html += `
-      <tr>
-        <td style="padding: 10px; border-bottom: 1px solid #eee;">Цена</td>
-    `;
-    compareIds.forEach(id => {
-      const product = products.find(p => p.id === id);
-      html += `<td style="padding: 10px; border-bottom: 1px solid #eee;">${product.price} ₴</td>`;
-    });
-    html += `</tr>`;
-    
-    // Строка с рейтингом
-    html += `
-      <tr>
-        <td style="padding: 10px; border-bottom: 1px solid #eee;">Рейтинг</td>
-    `;
-    compareIds.forEach(id => {
-      const rating = getProductRating(id);
-      html += `
-        <td style="padding: 10px; border-bottom: 1px solid #eee;">
-          <div class="rating">
-            <div class="rating-stars">${getStarsHTML(rating)}</div>
-            <div class="rating-count">${rating.toFixed(1)}</div>
-          </div>
-        </td>
-      `;
-    });
-    html += `</tr>`;
-    
-    // Строка с описанием
-    html += `
-      <tr>
-        <td style="padding: 10px; border-bottom: 1px solid #eee;">Описание</td>
-    `;
-    compareIds.forEach(id => {
-      const product = products.find(p => p.id === id);
-      html += `<td style="padding: 10px; border-bottom: 1px solid #eee;">${product.description || "Нет описания"}</td>`;
-    });
-    html += `</tr>`;
-    
-    // Строка с действиями
-    html += `
-      <tr>
-        <td style="padding: 10px; border-bottom: 1px solid #eee;">Действия</td>
-    `;
-    compareIds.forEach(id => {
-      html += `
-        <td style="padding: 10px; border-bottom: 1px solid #eee;">
-          <button class="btn btn-buy" onclick="addToCart('${id}', 1);">В корзину</button>
-          <button class="btn btn-detail" onclick="openDetail('${id}')">Подробнее</button>
-        </td>
-      `;
-    });
-    html += `</tr>`;
-    
-    html += `</tbody></table></div>`;
-    
-    content.innerHTML = html;
-    modal.classList.add('active');
-  }
-
-  // Переключение режима сравнения
-  function toggleCompare() {
-    if (Object.keys(compare).length > 0) {
-      openCompare();
-    } else {
-      showNotification('Добавьте товары для сравнения', 'error');
-    }
   }
 
   // Генерация HTML для звезд рейтинга
@@ -1976,8 +2280,7 @@
           image,
           category,
           fromFeed: true,
-          inStock: true,
-          rating: Math.random() * 2 + 3 // Случайный рейтинг от 3 до 5 для демонстрации
+          inStock: true
         });
       }
       
@@ -2029,53 +2332,6 @@
     const oneDay = 24 * 60 * 60 * 1000; // 24 часа в миллисекундах
     
     return (now - lastUpdate) > oneDay;
-  }
-
-  function loadProducts() {
-    // Загружаем данные из localStorage
-    const data = localStorage.getItem(STORAGE_KEY);
-    if(data) {
-      products = JSON.parse(data);
-      updateCartCount();
-      renderProducts();
-    }
-    
-    // Загружаем корзину, избранное, сравнение и отзывы
-    const cartData = localStorage.getItem(CART_STORAGE_KEY);
-    if(cartData) cart = JSON.parse(cartData);
-    
-    const favoritesData = localStorage.getItem(FAVORITES_STORAGE_KEY);
-    if(favoritesData) favorites = JSON.parse(favoritesData);
-    
-    loadCompare();
-    loadReviews();
-    
-    // Загружаем сохраненный URL фида
-    const feedUrl = localStorage.getItem(FEED_URL_KEY);
-    if (feedUrl) {
-      document.getElementById("feed-url").value = feedUrl;
-    }
-    
-    updateCartCount();
-    
-    // Если данных нет или нужно обновить, загружаем из фида
-    if (products.length === 0 || shouldUpdateFeed()) {
-      loadFromFeed();
-    } else {
-      renderProducts();
-    }
-  }
-
-  function saveProducts() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-  }
-  
-  function saveCart() {
-    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
-  }
-  
-  function saveFavorites() {
-    localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favorites));
   }
 
   function renderProducts() {
@@ -2261,7 +2517,7 @@
     renderProducts();
   }
   
-  function toggleFavorite(id) {
+  async function toggleFavorite(id) {
     if(favorites[id]) {
       delete favorites[id];
       showNotification("Товар удален из избранного");
@@ -2270,36 +2526,8 @@
       showNotification("Товар добавлен в избранное");
     }
     
-    saveFavorites();
+    await saveUserData();
     renderProducts();
-  }
-
-  function addToCart(id, quantity = 1){
-    cart[id] = (cart[id] || 0) + quantity;
-    updateCartCount();
-    saveCart();
-    showNotification("Товар добавлен в корзину");
-  }
-  
-  function updateCartItem(id, quantity) {
-    if(quantity <= 0) {
-      delete cart[id];
-    } else {
-      cart[id] = quantity;
-    }
-    
-    updateCartCount();
-    saveCart();
-    
-    // Если корзина открыта, обновим её
-    if(document.getElementById("modal").classList.contains('active')) {
-      openCart();
-    }
-  }
-
-  function updateCartCount(){
-    const count = Object.values(cart).reduce((a, b) => a + b, 0);
-    document.getElementById("cart-count").innerText = count;
   }
 
   function openCart(){
@@ -2318,7 +2546,7 @@
         <div class="empty-cart">
           <i class="fas fa-shopping-cart"></i>
           <h3>Корзина пуста</h3>
-          <p>Добавьте товары из каталог</p>
+          <p>Добавьте товары из каталога</p>
         </div>
       `;
     } else {
@@ -2355,7 +2583,7 @@
       html += `</div>`;
       html += `<div class="cart-total">Итого: ${total} ₴</div>`;
       html += `
-        <div class="checkout-form">
+        <div class="checkout-form active">
           <h4>Оформление заказа</h4>
           <div class="form-group">
             <label>Имя</label>
@@ -2382,7 +2610,7 @@
     modal.classList.add('active');
   }
 
-  function openDetail(id){
+  async function openDetail(id){
     const p = products.find(x => x.id === id);
     const modal = document.getElementById("modal");
     const content = document.getElementById("modal-content");
@@ -2410,7 +2638,7 @@
           <div class="quantity-control">
             <label>Количество:</label>
             <button class="quantity-btn" onclick="this.nextElementSibling.stepDown();">-</button>
-            <input type="number" class="quantity-input" id="detail-quantity" value="极" min="1">
+            <input type="number" class="quantity-input" id="detail-quantity" value="1" min="1">
             <button class="quantity-btn" onclick="this.previousElementSibling.stepUp();">+</button>
           </div>
           <div class="detail-actions">
@@ -2463,7 +2691,7 @@
             <label>Отзыв</label>
             <textarea id="review-text" rows="3"></textarea>
           </div>
-          <button class="btn btn-detail" onclick="addReview('${p.id}')">Добавить отзыв</button>
+          <button class="btn btn-detail" onclick="submitReview('${p.id}')">Добавить отзыв</button>
         </div>
       </div>
     `;
@@ -2471,7 +2699,7 @@
     modal.classList.add('active');
   }
 
-  function addReview(productId) {
+  async function submitReview(productId) {
     const author = document.getElementById('review-author').value.trim();
     const rating = parseInt(document.getElementById('review-rating').value);
     const text = document.getElementById('review-text').value.trim();
@@ -2481,7 +2709,7 @@
       return;
     }
     
-    addReview(productId, { author, rating, text });
+    await addReview(productId, { author, rating, text });
     openDetail(productId); // Перезагружаем страницу товара чтобы показать новый отзыв
   }
 
@@ -2500,67 +2728,6 @@
     setTimeout(() => {
       notification.classList.remove('show');
     }, 3000);
-  }
-
-  function checkout(){ 
-    const name = document.getElementById("checkout-name").value;
-    const phone = document.getElementById("checkout-phone").value;
-    const email = document.getElementById("checkout-email").value;
-    const address = document.getElementById("checkout-address").value;
-    
-    if (!name || !phone || !email || !address) {
-      showNotification("Заполните все поля формы", "error");
-      return;
-    }
-    
-    // Создаем заказ
-    const order = {
-      id: Date.now().toString(),
-      userId: currentUser ? currentUser.username : 'guest',
-      userName: name,
-      userPhone: phone,
-      userEmail: email,
-      userAddress: address,
-      items: [],
-      total: 0,
-      date: new Date().toLocaleString('ru-RU'),
-      status: 'новый'
-    };
-    
-    // Добавляем товары в заказ
-    let total = 0;
-    for(const id of Object.keys(cart)) {
-      const product = products.find(p => p.id === id);
-      if(product) {
-        const itemTotal = product.price * cart[id];
-        total += itemTotal;
-        
-        order.items.push({
-          id: product.id,
-          title: product.title,
-          price: product.price,
-          quantity: cart[id],
-          total: itemTotal
-        });
-      }
-    }
-    
-    order.total = total;
-    orders.push(order);
-    saveOrders();
-    
-    // Очищаем корзину
-    cart = {};
-    updateCartCount();
-    saveCart();
-    
-    alert("Заказ принят! Спасибо за покупку."); 
-    closeModal();
-    
-    // Если админ вошел в систему, обновляем список заказов
-    if (adminMode) {
-      renderAdminOrders();
-    }
   }
 
   function loginAdmin(){
@@ -2608,9 +2775,11 @@
   }
 
   // Отображение заказов в админ-панели
-  function renderAdminOrders() {
+  async function renderAdminOrders() {
     const container = document.getElementById("admin-orders-list");
     if (!container) return;
+    
+    await loadOrders();
     
     if (orders.length === 0) {
       container.innerHTML = '<p>Заказов нет</p>';
@@ -2628,7 +2797,7 @@
           <div class="order-header">
             <div>
               <strong>Заказ #${order.id}</strong>
-              <div>Дата: ${order.date}</div>
+              <div>Дата: ${new Date(order.date).toLocaleString('ru-RU')}</div>
               <div>Статус: <span class="order-status" data-status="${order.status}">${order.status}</span></div>
             </div>
             <div>
@@ -2669,23 +2838,29 @@
   }
 
   // Изменение статуса заказа
-  function changeOrderStatus(orderId, status) {
+  async function changeOrderStatus(orderId, status) {
     const order = orders.find(o => o.id === orderId);
     if (order) {
       order.status = status;
-      saveOrders();
+      await saveOrders();
       renderAdminOrders();
       showNotification(`Статус заказа #${orderId} изменен на "${status}"`);
     }
   }
 
   // Удаление заказа
-  function deleteOrder(orderId) {
+  async function deleteOrder(orderId) {
     if (confirm("Вы уверены, что хотите удалить этот заказ? Это действие нельзя отменить.")) {
-      orders = orders.filter(order => order.id !== orderId);
-      saveOrders();
-      renderAdminOrders();
-      showNotification("Заказ успешно удален");
+      try {
+        await db.collection('orders').doc(orderId).delete();
+        orders = orders.filter(order => order.id !== orderId);
+        await saveOrders();
+        renderAdminOrders();
+        showNotification("Заказ успешно удален");
+      } catch (error) {
+        console.error("Ошибка удаления заказа:", error);
+        showNotification("Ошибка удаления заказа", "error");
+      }
     }
   }
 
@@ -2716,69 +2891,119 @@
     showNotification("JSON экспортирован");
   }
 
-  // Функция загрузки изображения в Cloudinary и сохранения в Firestore
-  async function uploadImage() {
-    const file = document.getElementById('imageInput').files[0];
-    if (!file) {
-      showNotification('Выберите изображение', 'error');
+  // Открытие страницы сравнения
+  function openCompare() {
+    const compareIds = Object.keys(compare);
+    if (compareIds.length < 2) {
+      showNotification('Выберите хотя бы 2 товара для сравнения', 'error');
       return;
     }
-
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-
-    try {
-      // Загрузка на Cloudinary
-      const response = await axios.post(CLOUDINARY_URL, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-
-      // Сохранение в Firestore
-      await db.collection('images').add({
-        url: response.data.secure_url,
-        public_id: response.data.public_id,
-        created_at: firebase.firestore.FieldValue.serverTimestamp()
-      });
-
-      showNotification('Изображение успешно загружено!');
-      loadImages();
-    } catch (error) {
-      console.error('Ошибка загрузки изображения:', error);
-      showNotification('Ошибка загрузки изображения', 'error');
-    }
+    
+    const modal = document.getElementById("modal");
+    const content = document.getElementById("modal-content");
+    
+    let html = `
+      <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+      <h3><i class="fas fa-balance-scale"></i> Сравнение товаров</h3>
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; min-width: 600px;">
+          <thead>
+            <tr>
+              <th style="text-align: left; padding: 10px; border-bottom: 1px solid #ddd;">Характеристика</th>
+    `;
+    
+    // Заголовки товаров
+    compareIds.forEach(id => {
+      const product = products.find(p => p.id === id);
+      if (product) {
+        html += `<th style="text-align: left; padding: 10px; border-bottom: 1px solid #ddd;">${product.title}</th>`;
+      }
+    });
+    
+    html += `</tr></thead><tbody>`;
+    
+    // Строка с изображениями
+    html += `
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #eee;">Изображение</td>
+    `;
+    compareIds.forEach(id => {
+      const product = products.find(p => p.id === id);
+      html += `
+        <td style="padding: 10px; border-bottom: 1px solid #eee;">
+          <img src="${product.image || 'https://picsum.photos/100/100'}" alt="${product.title}" style="width: 100px; height: 100px; object-fit: cover;" onerror="this.src='https://picsum.photos/100/100'">
+        </td>
+      `;
+    });
+    html += `</tr>`;
+    
+    // Строка с ценами
+    html += `
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #eee;">Цена</td>
+    `;
+    compareIds.forEach(id => {
+      const product = products.find(p => p.id === id);
+      html += `<td style="padding: 10px; border-bottom: 1px solid #eee;">${product.price} ₴</td>`;
+    });
+    html += `</tr>`;
+    
+    // Строка с рейтингом
+    html += `
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #eee;">Рейтинг</td>
+    `;
+    compareIds.forEach(id => {
+      const rating = getProductRating(id);
+      html += `
+        <td style="padding: 10px; border-bottom: 1px solid #eee;">
+          <div class="rating">
+            <div class="rating-stars">${getStarsHTML(rating)}</div>
+            <div class="rating-count">${rating.toFixed(1)}</div>
+          </div>
+        </td>
+      `;
+    });
+    html += `</tr>`;
+    
+    // Строка с описанием
+    html += `
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #eee;">Описание</td>
+    `;
+    compareIds.forEach(id => {
+      const product = products.find(p => p.id === id);
+      html += `<td style="padding: 10px; border-bottom: 1px solid #eee;">${product.description || "Нет описания"}</td>`;
+    });
+    html += `</tr>`;
+    
+    // Строка с действиями
+    html += `
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #eee;">Действия</td>
+    `;
+    compareIds.forEach(id => {
+      html += `
+        <td style="padding: 10px; border-bottom: 1px solid #eee;">
+          <button class="btn btn-buy" onclick="addToCart('${id}', 1);">В корзину</button>
+          <button class="btn btn-detail" onclick="openDetail('${id}')">Подробнее</button>
+        </td>
+      `;
+    });
+    html += `</tr>`;
+    
+    html += `</tbody></table></div>`;
+    
+    content.innerHTML = html;
+    modal.classList.add('active');
   }
 
-  // Загрузка изображений из Firestore
-  async function loadImages() {
-    const gallery = document.getElementById('gallery');
-    if (!gallery) return;
-    
-    gallery.innerHTML = '';
-
-    try {
-      const snapshot = await db.collection('images').orderBy('created_at', 'desc').get();
-      
-      if (snapshot.empty) {
-        gallery.innerHTML = '<p>Нет загруженных изображений</p>';
-        return;
-      }
-      
-      snapshot.forEach(doc => {
-        const img = document.createElement('img');
-        img.src = doc.data().url;
-        img.style.width = '200px';
-        img.style.height = '200px';
-        img.style.objectFit = 'cover';
-        img.style.margin = '10px';
-        img.style.borderRadius = '8px';
-        gallery.appendChild(img);
-      });
-    } catch (error) {
-      console.error('Ошибка загрузки изображений:', error);
-      gallery.innerHTML = '<p>Ошибка загрузки изображений</p>';
+  // Переключение режима сравнения
+  function toggleCompare() {
+    if (Object.keys(compare).length > 0) {
+      openCompare();
+    } else {
+      showNotification('Добавьте товары для сравнения', 'error');
     }
   }
 
