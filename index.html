@@ -9,7 +9,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   <style>
     /* Обновленные стили с улучшениями */
     :root {
@@ -1234,7 +1233,7 @@
     <div id="recently-viewed"></div>
     
     <h3>О магазине</h3>
-    <p>Каталог электроинструментов, наборов и автоключей. Данные загружаются из XML-фида.</p>
+    <p>Каталог электроинструментов, наборов и автоключей и то что нужно для дома.</p>
     
     <div id="admin-panel" class="admin-panel" style="display:none;">
       <h4>Админ-панель</h4>
@@ -1322,24 +1321,7 @@
   const auth = firebase.auth();
   const storage = firebase.storage();
   
-  // Конфигурация Cloudinary
-  const CLOUDINARY_CLOUD_NAME = "dhfkb6xv2";
-  const CLOUDINARY_UPLOAD_PRESET = "unsigned_preset";
-  const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
-  
   const ADMIN_PASSWORD = "12345";
-  
-  // Ключи для локального хранилища (используются как fallback)
-  const CART_STORAGE_KEY = "electrotools_cart";
-  const FAVORITES_STORAGE_KEY = "electrotools_favorites";
-  const COMPARE_STORAGE_KEY = "electrotools_compare";
-  const RECENTLY_VIEWED_KEY = "electrotools_recently_viewed";
-  const REVIEWS_STORAGE_KEY = "electrotools_reviews";
-  const FEED_URL_KEY = "electrotools_feed_url";
-  const FEED_UPDATE_TIME_KEY = "electrotools_feed_update";
-  const ORDERS_STORAGE_KEY = "electrotools_orders";
-  const USERS_STORAGE_KEY = "electrotools_users";
-  const CURRENT_USER_KEY = "electrotools_current_user";
   
   let products = [];
   let cart = {};
@@ -1348,7 +1330,6 @@
   let recentlyViewed = [];
   let reviews = {};
   let orders = [];
-  let users = {};
   let adminMode = false;
   let showingFavorites = false;
   let currentView = 'grid';
@@ -1379,6 +1360,7 @@
         // Анонимная аутентификация
         auth.signInAnonymously().catch(error => {
           console.error('Anonymous auth failed:', error);
+          showNotification('Ошибка аутентификации', 'error');
         });
       }
     });
@@ -1399,10 +1381,6 @@
       const cartDoc = await db.collection('carts').doc(currentUser.uid).get();
       if (cartDoc.exists) {
         cart = cartDoc.data().items || {};
-      } else {
-        // Загружаем из localStorage как fallback
-        const cartData = localStorage.getItem(CART_STORAGE_KEY);
-        if(cartData) cart = JSON.parse(cartData);
       }
       updateCartCount();
       
@@ -1410,18 +1388,12 @@
       const favDoc = await db.collection('favorites').doc(currentUser.uid).get();
       if (favDoc.exists) {
         favorites = favDoc.data().items || {};
-      } else {
-        const favoritesData = localStorage.getItem(FAVORITES_STORAGE_KEY);
-        if(favoritesData) favorites = JSON.parse(favoritesData);
       }
       
       // Загрузка сравнения
       const compDoc = await db.collection('comparisons').doc(currentUser.uid).get();
       if (compDoc.exists) {
         compare = compDoc.data().items || {};
-      } else {
-        const compareData = localStorage.getItem(COMPARE_STORAGE_KEY);
-        if(compareData) compare = JSON.parse(compareData);
       }
       updateCompareCount();
       renderCompareItems();
@@ -1430,26 +1402,17 @@
       const recentDoc = await db.collection('recentlyViewed').doc(currentUser.uid).get();
       if (recentDoc.exists) {
         recentlyViewed = recentDoc.data().items || [];
-      } else {
-        const recentlyViewedData = localStorage.getItem(RECENTLY_VIEWED_KEY);
-        if(recentlyViewedData) recentlyViewed = JSON.parse(recentlyViewedData);
       }
       renderRecentlyViewed();
     } catch (error) {
       console.error("Ошибка загрузки данных пользователя:", error);
+      showNotification("Ошибка загрузки данных", "error");
     }
   }
 
   // Сохранение данных пользователя
   async function saveUserData() {
-    if (!currentUser) {
-      // Сохраняем в localStorage если пользователь не аутентифицирован
-      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
-      localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favorites));
-      localStorage.setItem(COMPARE_STORAGE_KEY, JSON.stringify(compare));
-      localStorage.setItem(RECENTLY_VIEWED_KEY, JSON.stringify(recentlyViewed));
-      return;
-    }
+    if (!currentUser) return;
     
     try {
       // Сохранение корзины
@@ -1477,11 +1440,7 @@
       });
     } catch (error) {
       console.error("Ошибка сохранения данных пользователя:", error);
-      // Fallback to localStorage
-      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
-      localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favorites));
-      localStorage.setItem(COMPARE_STORAGE_KEY, JSON.stringify(compare));
-      localStorage.setItem(RECENTLY_VIEWED_KEY, JSON.stringify(recentlyViewed));
+      showNotification("Ошибка сохранения данных", "error");
     }
   }
 
@@ -1490,15 +1449,14 @@
     try {
       const snapshot = await db.collection('products').get();
       if (snapshot.empty) {
-        // Если нет продуктов в Firestore, загружаем из localStorage
-        const data = localStorage.getItem("electrotools_products");
-        if(data) {
-          products = JSON.parse(data);
-          renderProducts();
-        } else {
-          // Загружаем из фида если нет локальных данных
-          loadFromFeed();
-        }
+        // Если нет продуктов в Firestore
+        document.getElementById("product-grid").innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #95a5a6;">
+            <i class="fas fa-box-open" style="font-size: 48px; margin-bottom: 15px;"></i>
+            <h3>Каталог пуст</h3>
+            <p>Используйте админ-панель для импорта товаров</p>
+          </div>
+        `;
         return;
       }
       
@@ -1510,12 +1468,7 @@
       renderProducts();
     } catch (error) {
       console.error("Ошибка загрузки продуктов:", error);
-      // Fallback to localStorage
-      const data = localStorage.getItem("electrotools_products");
-      if(data) {
-        products = JSON.parse(data);
-        renderProducts();
-      }
+      showNotification("Ошибка загрузки товаров", "error");
     }
   }
 
@@ -1540,27 +1493,15 @@
       
       await batch.commit();
       showNotification("Продукты сохранены в Firebase");
-      
-      // Также сохраняем в localStorage как резервную копию
-      localStorage.setItem("electrotools_products", JSON.stringify(products));
     } catch (error) {
       console.error("Ошибка сохранения продуктов:", error);
-      // Fallback to localStorage
-      localStorage.setItem("electrotools_products", JSON.stringify(products));
-      showNotification("Продукты сохранены локально", "error");
+      showNotification("Ошибка сохранения товаров", "error");
     }
   }
 
   // Загрузка недавно просмотренных товаров
   async function loadRecentlyViewed() {
-    if (!currentUser) {
-      const data = localStorage.getItem(RECENTLY_VIEWED_KEY);
-      if (data) {
-        recentlyViewed = JSON.parse(data);
-        renderRecentlyViewed();
-      }
-      return;
-    }
+    if (!currentUser) return;
     
     try {
       const doc = await db.collection('recentlyViewed').doc(currentUser.uid).get();
@@ -1570,20 +1511,12 @@
       }
     } catch (error) {
       console.error("Ошибка загрузки недавно просмотренных:", error);
-      const data = localStorage.getItem(RECENTLY_VIEWED_KEY);
-      if (data) {
-        recentlyViewed = JSON.parse(data);
-        renderRecentlyViewed();
-      }
     }
   }
 
   // Сохранение недавно просмотренных товаров
   async function saveRecentlyViewed() {
-    if (!currentUser) {
-      localStorage.setItem(RECENTLY_VIEWED_KEY, JSON.stringify(recentlyViewed));
-      return;
-    }
+    if (!currentUser) return;
     
     try {
       await db.collection('recentlyViewed').doc(currentUser.uid).set({
@@ -1592,7 +1525,6 @@
       });
     } catch (error) {
       console.error("Ошибка сохранения недавно просмотренных:", error);
-      localStorage.setItem(RECENTLY_VIEWED_KEY, JSON.stringify(recentlyViewed));
     }
   }
 
@@ -1619,10 +1551,6 @@
       });
     } catch (error) {
       console.error("Ошибка загрузки отзывов:", error);
-      const data = localStorage.getItem(REVIEWS_STORAGE_KEY);
-      if (data) {
-        reviews = JSON.parse(data);
-      }
     }
   }
 
@@ -1638,12 +1566,8 @@
       }
       
       await batch.commit();
-      
-      // Также сохраняем в localStorage
-      localStorage.setItem(REVIEWS_STORAGE_KEY, JSON.stringify(reviews));
     } catch (error) {
       console.error("Ошибка сохранения отзывов:", error);
-      localStorage.setItem(REVIEWS_STORAGE_KEY, JSON.stringify(reviews));
     }
   }
 
@@ -1678,15 +1602,7 @@
 
   // Загрузка сравнения товаров
   async function loadCompare() {
-    if (!currentUser) {
-      const data = localStorage.getItem(COMPARE_STORAGE_KEY);
-      if (data) {
-        compare = JSON.parse(data);
-        updateCompareCount();
-        renderCompareItems();
-      }
-      return;
-    }
+    if (!currentUser) return;
     
     try {
       const doc = await db.collection('comparisons').doc(currentUser.uid).get();
@@ -1697,21 +1613,12 @@
       }
     } catch (error) {
       console.error("Ошибка загрузки сравнения:", error);
-      const data = localStorage.getItem(COMPARE_STORAGE_KEY);
-      if (data) {
-        compare = JSON.parse(data);
-        updateCompareCount();
-        renderCompareItems();
-      }
     }
   }
 
   // Сохранение сравнения товаов
   async function saveCompare() {
-    if (!currentUser) {
-      localStorage.setItem(COMPARE_STORAGE_KEY, JSON.stringify(compare));
-      return;
-    }
+    if (!currentUser) return;
     
     try {
       await db.collection('comparisons').doc(currentUser.uid).set({
@@ -1720,7 +1627,6 @@
       });
     } catch (error) {
       console.error("Ошибка сохранения сравнения:", error);
-      localStorage.setItem(COMPARE_STORAGE_KEY, JSON.stringify(compare));
     }
   }
 
@@ -1798,10 +1704,6 @@
       });
     } catch (error) {
       console.error("Ошибка загрузки заказов:", error);
-      const data = localStorage.getItem(ORDERS_STORAGE_KEY);
-      if (data) {
-        orders = JSON.parse(data);
-      }
     }
   }
 
@@ -1818,12 +1720,8 @@
       }
       
       await batch.commit();
-      
-      // Также сохраняем в localStorage
-      localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(orders));
     } catch (error) {
       console.error("Ошибка сохранения заказов:", error);
-      localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(orders));
     }
   }
 
@@ -1904,9 +1802,9 @@
     
     try {
       // Сохраняем заказ в Firestore
-      await db.collection('orders').add(order);
+      const docRef = await db.collection('orders').add(order);
+      order.id = docRef.id;
       orders.push(order);
-      await saveOrders();
       
       // Очищаем корзину
       cart = {};
@@ -2214,17 +2112,12 @@
     messageElement.textContent = "Загрузка данных...";
     
     // Получаем URL из сохраненных настроек
-    const feedUrl = localStorage.getItem(FEED_URL_KEY) || document.getElementById("feed-url").value;
+    const feedUrl = document.getElementById("feed-url").value;
     
     if (!feedUrl) {
       messageElement.textContent = "Введите URL фида";
       showNotification("Введите URL фида для загрузки", "error");
       return;
-    }
-    
-    // Сохраняем URL, если он был введен в поле
-    if (document.getElementById("feed-url").value) {
-      localStorage.setItem(FEED_URL_KEY, document.getElementById("feed-url").value);
     }
     
     try {
@@ -2291,9 +2184,6 @@
       products = items;
       saveProducts();
       
-      // Сохраняем время последнего обновления
-      localStorage.setItem(FEED_UPDATE_TIME_KEY, new Date().getTime());
-      
       messageElement.textContent = `Загружено ${items.length} товаров`;
       renderProducts();
       showNotification("Данные успешно загружены из фида");
@@ -2316,22 +2206,10 @@
     try {
       // Проверяем, является ли введенный текст валидным URL
       new URL(feedUrl);
-      localStorage.setItem(FEED_URL_KEY, feedUrl);
       showNotification("URL фида сохранен");
     } catch (e) {
       showNotification("Введите корректный URL", "error");
     }
-  }
-
-  // Проверяем, нужно ли обновить данные из фида (раз в сутки)
-  function shouldUpdateFeed() {
-    const lastUpdate = localStorage.getItem(FEED_UPDATE_TIME_KEY);
-    if (!lastUpdate) return true;
-    
-    const now = new Date().getTime();
-    const oneDay = 24 * 60 * 60 * 1000; // 24 часа в миллисекундах
-    
-    return (now - lastUpdate) > oneDay;
   }
 
   function renderProducts() {
@@ -2854,7 +2732,6 @@
       try {
         await db.collection('orders').doc(orderId).delete();
         orders = orders.filter(order => order.id !== orderId);
-        await saveOrders();
         renderAdminOrders();
         showNotification("Заказ успешно удален");
       } catch (error) {
