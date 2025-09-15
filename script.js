@@ -45,6 +45,11 @@ function loadProductsFromJson() {
   return fetch('products.json')
     .then(response => {
       if (!response.ok) {
+        // Пробуем загрузить из локального хранилища
+        const backup = localStorage.getItem('products_backup');
+        if (backup) {
+          return JSON.parse(backup);
+        }
         throw new Error('Файл products.json не найден');
       }
       return response.json();
@@ -167,6 +172,16 @@ function initApp() {
 
 // Обновляем функцию loadProducts для обработки случая, когда в Firestore нет товаров
 function loadProducts() {
+  // Проверяем кэш перед загрузкой
+  const cachedProducts = localStorage.getItem('products_cache');
+  const cacheTime = localStorage.getItem('products_cache_time');
+  
+  if (cachedProducts && cacheTime && Date.now() - cacheTime < 300000) { // 5 минут
+    products = JSON.parse(cachedProducts);
+    renderProducts();
+    return Promise.resolve();
+  }
+  
   showLoadingSkeleton();
   
   return db.collection("products")
@@ -206,6 +221,10 @@ function loadProducts() {
           products.push({ id: doc.id, ...doc.data() });
         });
         
+        // Сохраняем в кэш
+        localStorage.setItem('products_cache', JSON.stringify(products));
+        localStorage.setItem('products_cache_time', Date.now());
+        
         updateCartCount();
         renderProducts();
         renderFeaturedProducts();
@@ -237,7 +256,7 @@ function loadProducts() {
 
 // ===== ФУНКЦИИ ПАГИНАЦИИ =====
 
-// Функция для изменения страницы в пагинации
+// Функция для изменени страницы в пагинации
 function changePage(page) {
   currentPage = page;
   showLoadingSkeleton();
@@ -254,7 +273,7 @@ function changePage(page) {
 // Обновление отображения пагинации
 function updatePagination() {
   const paginationContainer = document.getElementById("pagination");
-  if (!paginationContainer) return;
+  if (!paginationContainer) return; // Добавлена проверка
   
   // Рассчитываем общее количество страниц
   let filteredProducts = getFilteredProducts();
@@ -372,7 +391,7 @@ function getFilteredProducts() {
   return filteredProducts;
 }
 
-// ===== КОНЕЦ ФУНКЦИЙ ПАГИНАции =====
+// ===== КОНЕЦ ФУНКЦИЙ ПАГИНАЦИИ =====
 
 // Функция для загрузки XML-фида
 async function loadFromFeed() {
@@ -553,6 +572,8 @@ function showLoadingSkeleton() {
 // Рендеринг продуктов
 function renderProducts() {
   const grid = document.getElementById("product-grid");
+  if (!grid) return; // Защита от отсутствия элемента
+  
   grid.innerHTML = '';
   
   // Получаем отфильтрованные продукты
@@ -757,7 +778,7 @@ function toggleFavorite(productId) {
     }
   }
   
-  showNotification(favorites[productId] ? "Добавлено в избранное" : "Удалено из избранного");
+  showNotification(favorites[productId] ? "Добавлено в избранное" : "Удалено из избранное");
 }
 
 // Переключение режима отображения избранного
@@ -792,6 +813,10 @@ function applyFilters() {
   
   currentPage = 1;
   renderProducts();
+  
+  // Обновляем счетчик товаров
+  const filteredProducts = getFilteredProducts();
+  document.getElementById('products-count').textContent = `Найдено: ${filteredProducts.length}`;
 }
 
 // Сброс фильтров
@@ -967,7 +992,7 @@ function openCart() {
 
 // Изменение количества товара в корзине
 function changeCartQuantity(productId, delta) {
-  if (!cart[productId]) return;
+  if (!cart[productId] && delta < 1) return; // Защита от отрицательного количества
   
   cart[productId] += delta;
   
@@ -1133,9 +1158,17 @@ function calculateCartTotal() {
   }, 0);
 }
 
-// Размещение заказа
+// Размещение заказа - исправленная версия
 function placeOrder(event) {
   event.preventDefault();
+  
+  // Проверяем, что пользователь авторизован
+  if (!currentUser || !currentUser.uid) {
+    closeModal();
+    openAuthModal();
+    showNotification("Для оформления заказа необходимо авторизоваться", "warning");
+    return;
+  }
   
   // Получаем данные формы
   const name = document.getElementById('order-name').value;
@@ -1216,6 +1249,88 @@ function placeOrder(event) {
     .catch(error => {
       console.error("Ошибка оформления заказа: ", error);
       showNotification("Ошибка оформления заказа: " + error.message, "error");
+    });
+}
+
+// Функция просмотра заказов пользователя - исправленная версия
+function viewOrders() {
+  if (!currentUser) {
+    showNotification("Сначала войдите в систему", "warning");
+    openAuthModal();
+    return;
+  }
+  
+  const modalContent = document.getElementById("modal-content");
+  modalContent.innerHTML = '<h3>Мои заказы</h3><p>Загрузка заказов...</p>';
+  
+  openModal();
+  
+  // Загружаем заказы пользователя
+  db.collection("orders")
+    .where("userId", "==", currentUser.uid)
+    .orderBy("createdAt", "desc")
+    .get()
+    .then((querySnapshot) => {
+      if (querySnapshot.empty) {
+        modalContent.innerHTML = `
+          <h3>Мои заказы</h3>
+          <div class="empty-cart">
+            <i class="fas fa-box-open"></i>
+            <h3>Заказов нет</h3>
+            <p>Вы еще не совершали покупок в нашем магазине</p>
+          </div>
+        `;
+        return;
+      }
+      
+      let ordersHTML = '';
+      querySnapshot.forEach((doc) => {
+        const order = { id: doc.id, ...doc.data() };
+        const orderDate = order.createdAt ? order.createdAt.toDate().toLocaleString('ru-RU') : 'Дата не указана';
+        
+        // Определяем статус заказа
+        let statusClass = 'status-new';
+        let statusText = 'Новый';
+        
+        if (order.status === 'processing') {
+          statusClass = 'status-processing';
+          statusText = 'В обработке';
+        } else if (order.status === 'shipped') {
+          statusClass = 'status-shipped';
+          statusText = 'Отправлен';
+        } else if (order.status === 'delivered') {
+          statusClass = 'status-delivered';
+          statusText = 'Доставлен';
+        } else if (order.status === 'cancelled') {
+          statusClass = 'status-cancelled';
+          statusText = 'Отменен';
+        }
+        
+        ordersHTML += `
+          <div class="order-item" style="border: 1px solid #eee; padding: 15px; margin-bottom: 15px; border-radius: 8px;">
+            <h4>Заказ #${order.id}</h4>
+            <p><strong>Дата:</strong> ${orderDate}</p>
+            <p><strong>Сумма:</strong> ${formatPrice(order.total)} ₴</p>
+            <p><strong>Статус:</strong> <span class="order-status ${statusClass}">${statusText}</span></p>
+            <p><strong>Способ доставки:</strong> ${order.delivery.service}</p>
+            <button class="btn btn-detail" onclick="viewOrderDetails('${order.id}')">Подробнее</button>
+          </div>
+        `;
+      });
+      
+      modalContent.innerHTML = `
+        <h3>Мои заказы</h3>
+        <div class="user-orders">
+          ${ordersHTML}
+        </div>
+      `;
+    })
+    .catch((error) => {
+      console.error("Ошибка загрузки заказов: ", error);
+      modalContent.innerHTML = `
+        <h3>Мои заказы</h3>
+        <p>Ошибка загрузки заказов. Пожалуйста, попробуйте позже.</p>
+      `;
     });
 }
 
@@ -1346,8 +1461,16 @@ function login(event) {
       closeModal();
     })
     .catch(error => {
-      console.error("Ошибка входа: ", error);
-      showNotification("Ошибка входа: " + error.message, "error");
+      let message = "Ошибка входа";
+      switch (error.code) {
+        case 'auth/user-not-found':
+          message = "Пользователь не найден";
+          break;
+        case 'auth/wrong-password':
+          message = "Неверный пароль";
+          break;
+      }
+      showNotification(message, "error");
     });
 }
 
@@ -1651,8 +1774,30 @@ function saveFeedUrl() {
 // Очистка каталога
 function clearCatalog() {
   if (confirm("Вы уверены, что хотите очистить каталог? Это действие нельзя отменить.")) {
-    // Здесь должна быть логика очистки каталога
-    showNotification("Каталог очищен");
+    showLoadingSkeleton();
+    
+    // Получаем все товары
+    db.collection("products").get()
+      .then((querySnapshot) => {
+        const batch = db.batch();
+        querySnapshot.forEach((doc) => {
+          batch.delete(doc.ref);
+        });
+        return batch.commit();
+      })
+      .then(() => {
+        products = [];
+        localStorage.removeItem('products_backup');
+        renderProducts();
+        renderFeaturedProducts();
+        renderCategories();
+        renderBrands();
+        showNotification("Каталог очищен");
+      })
+      .catch((error) => {
+        console.error("Ошибка при очистке каталога: ", error);
+        showNotification("Ошибка при очистке каталога", "error");
+      });
   }
 }
 
@@ -1930,7 +2075,7 @@ function deleteProduct(productId) {
   if (confirm("Вы уверены, что хотите удалить этот товар? Это действие нельзя отменить.")) {
     db.collection("products").doc(productId).delete()
       .then(() => {
-        showNotification("Т товар успешно удален");
+        showNotification("Товар успешно удален");
         // Обновляем список товаров
         loadAdminProducts();
         // Перезагружаем основные продукты
@@ -2063,7 +2208,7 @@ function viewOrders() {
           <div class="order-item" style="border: 1px solid #eee; padding: 15px; margin-bottom: 15px; border-radius: 8px;">
             <h4>Заказ #${order.id}</h4>
             <p><strong>Дата:</strong> ${orderDate}</p>
-            <p><strong>Сумma:</strong> ${formatPrice(order.total)} ₴</p>
+            <p><strong>Сумма:</strong> ${formatPrice(order.total)} ₴</p>
             <p><strong>Статус:</strong> <span class="order-status ${statusClass}">${statusText}</span></p>
             <p><strong>Способ доставки:</strong> ${order.delivery.service}</p>
             <button class="btn btn-detail" onclick="viewOrderDetails('${order.id}')">Подробнее</button>
