@@ -372,7 +372,7 @@ function getFilteredProducts() {
   return filteredProducts;
 }
 
-// ===== КОНЕЦ ФУНКЦИЙ ПАГИНАЦИИ =====
+// ===== КОНЕЦ ФУНКЦИЙ ПАГИНАции =====
 
 // Функция для загрузки XML-фида
 async function loadFromFeed() {
@@ -571,7 +571,7 @@ function renderProducts() {
     grid.innerHTML = `
       <div class="empty-cart">
         <i class="fas fa-search"></i>
-        <h3>Т товары не найдены</h3>
+        <h3>Товары не найдены</h3>
         <p>Попробуйте изменить параметры фильтрации</p>
       </div>
     `;
@@ -725,7 +725,7 @@ function addToCart(productId) {
   localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
   
   updateCartCount();
-  showNotification("Твой товар добавлен в корзину");
+  showNotification("Товар добавлен в корзину");
 }
 
 // Обновление счетчика корзины
@@ -757,7 +757,7 @@ function toggleFavorite(productId) {
     }
   }
   
-  showNotification(favorites[productId] ? "Добавлено в избранное" : "Удалено из избранное");
+  showNotification(favorites[productId] ? "Добавлено в избранное" : "Удалено из избранного");
 }
 
 // Переключение режима отображения избранного
@@ -1028,6 +1028,10 @@ function checkout() {
             <input type="radio" name="delivery" value="nova-poshta" checked onchange="toggleDeliveryDetails('nova-poshta')">
             <span>Новая Почта</span>
           </label>
+          <label class="delivery-option">
+            <input type="radio" name="delivery" value="courier" onchange="toggleDeliveryDetails('courier')">
+            <span>Курьерская доставка</span>
+          </label>
         </div>
         
         <div id="nova-poshta-details" class="delivery-details active">
@@ -1075,7 +1079,7 @@ function checkout() {
           </div>
           <div class="total-line">
             <span>Доставка:</span>
-            <span>Согласно тарифам перевощика</span>
+            <span>Согласно тарифам перевозчика</span>
           </div>
           <div class="total-line final-total">
             <span>Итого:</span>
@@ -1158,20 +1162,6 @@ function placeOrder(event) {
       city,
       warehouse
     };
-  } else if (deliveryMethod === 'ukr-poshta') {
-    const city = document.getElementById('up-city').value;
-    const warehouse = document.getElementById('up-warehouse').value;
-    
-    if (!city || !warehouse) {
-      showNotification('Заполните все поля для доставки Укрпочтой', 'error');
-      return;
-    }
-    
-    deliveryDetails = {
-      service: 'Укрпочта',
-      city,
-      warehouse
-    };
   } else if (deliveryMethod === 'courier') {
     const address = document.getElementById('courier-address').value;
     
@@ -1186,13 +1176,19 @@ function placeOrder(event) {
     };
   }
   
+  // Проверяем обязательные поля
+  if (!name || !phone || !email) {
+    showNotification('Заполните все обязательные поля', 'error');
+    return;
+  }
+  
   // Создаем объект заказа
   const order = {
     userId: currentUser.uid,
     userName: name,
     userPhone: phone,
     userEmail: email,
-    items: {...cart}, // копируем объект корзины
+    items: {...cart},
     total: calculateCartTotal(),
     delivery: deliveryDetails,
     paymentMethod,
@@ -1219,7 +1215,7 @@ function placeOrder(event) {
     })
     .catch(error => {
       console.error("Ошибка оформления заказа: ", error);
-      showNotification("Ошибка оформления заказа", "error");
+      showNotification("Ошибка оформления заказа: " + error.message, "error");
     });
 }
 
@@ -1434,15 +1430,17 @@ function promptAdminPassword() {
 
 // Проверка статуса администратора
 function checkAdminStatus(userId) {
-  // Проверяем, есть ли пользователь в списке администраторов в LocalStorage
-  const admins = JSON.parse(localStorage.getItem(ADMINS_STORAGE_KEY) || '{}');
-  if (admins[userId]) {
-    document.getElementById("admin-panel").style.display = "block";
-    adminMode = true;
-    
-    // Загружаем заказы для админ-панели
-    loadAdminOrders();
-  }
+  db.collection("admins").doc(userId).get()
+    .then((doc) => {
+      if (doc.exists) {
+        document.getElementById("admin-panel").style.display = "block";
+        adminMode = true;
+        loadAdminOrders();
+      }
+    })
+    .catch((error) => {
+      console.error("Ошибка проверки прав администратора: ", error);
+    });
 }
 
 // Выход из системы
@@ -1769,7 +1767,7 @@ function loadAdminProducts() {
     .get()
     .then((querySnapshot) => {
       if (querySnapshot.empty) {
-        productsList.innerHTML = '<p>Т товаров нет</p>';
+        productsList.innerHTML = '<p>Товаров нет</p>';
         return;
       }
       
@@ -1932,7 +1930,7 @@ function deleteProduct(productId) {
   if (confirm("Вы уверены, что хотите удалить этот товар? Это действие нельзя отменить.")) {
     db.collection("products").doc(productId).delete()
       .then(() => {
-        showNotification("Товар успешно удален");
+        showNotification("Т товар успешно удален");
         // Обновляем список товаров
         loadAdminProducts();
         // Перезагружаем основные продукты
@@ -2065,7 +2063,7 @@ function viewOrders() {
           <div class="order-item" style="border: 1px solid #eee; padding: 15px; margin-bottom: 15px; border-radius: 8px;">
             <h4>Заказ #${order.id}</h4>
             <p><strong>Дата:</strong> ${orderDate}</p>
-            <p><strong>Сумма:</strong> ${formatPrice(order.total)} ₴</p>
+            <p><strong>Сумma:</strong> ${formatPrice(order.total)} ₴</p>
             <p><strong>Статус:</strong> <span class="order-status ${statusClass}">${statusText}</span></p>
             <p><strong>Способ доставки:</strong> ${order.delivery.service}</p>
             <button class="btn btn-detail" onclick="viewOrderDetails('${order.id}')">Подробнее</button>
