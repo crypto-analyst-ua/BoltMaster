@@ -170,29 +170,6 @@ function initApp() {
   });
 }
 
-// Применение фильтров
-function applyFilters() {
-  // Получаем значения цены
-  const minPrice = document.getElementById("price-min").value ? parseInt(document.getElementById("price-min").value) : null;
-  const maxPrice = document.getElementById("price-max").value ? parseInt(document.getElementById("price-max").value) : null;
-  
-  // Обновляем фильтры
-  currentFilters.minPrice = minPrice;
-  currentFilters.maxPrice = maxPrice;
-  currentFilters.category = document.getElementById("category").value;
-  currentFilters.brand = document.getElementById("brand").value;
-  currentFilters.availability = document.getElementById("availability").value;
-  currentFilters.sort = document.getElementById("sort").value;
-  currentFilters.search = document.getElementById("search").value;
-  
-  currentPage = 1;
-  renderProducts();
-  
-  // Обновляем счетчик товаров
-  const filteredProducts = getFilteredProducts();
-  document.getElementById('products-count').textContent = `Найдено: ${filteredProducts.length}`;
-}
-
 // Обновляем функцию loadProducts для обработки случая, когда в Firestore нет товаров
 function loadProducts() {
   // Проверяем кэш перед загрузкой
