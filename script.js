@@ -170,6 +170,29 @@ function initApp() {
   });
 }
 
+// Применение фильтров
+function applyFilters() {
+  // Получаем значения цены
+  const minPrice = document.getElementById("price-min").value ? parseInt(document.getElementById("price-min").value) : null;
+  const maxPrice = document.getElementById("price-max").value ? parseInt(document.getElementById("price-max").value) : null;
+  
+  // Обновляем фильтры
+  currentFilters.minPrice = minPrice;
+  currentFilters.maxPrice = maxPrice;
+  currentFilters.category = document.getElementById("category").value;
+  currentFilters.brand = document.getElementById("brand").value;
+  currentFilters.availability = document.getElementById("availability").value;
+  currentFilters.sort = document.getElementById("sort").value;
+  currentFilters.search = document.getElementById("search").value;
+  
+  currentPage = 1;
+  renderProducts();
+  
+  // Обновляем счетчик товаров
+  const filteredProducts = getFilteredProducts();
+  document.getElementById('products-count').textContent = `Найдено: ${filteredProducts.length}`;
+}
+
 // Обновляем функцию loadProducts для обработки случая, когда в Firestore нет товаров
 function loadProducts() {
   // Проверяем кэш перед загрузкой
@@ -261,7 +284,7 @@ function changePage(page) {
   currentPage = page;
   showLoadingSkeleton();
   
-  // Используем setTimeout для плавного перехода
+  // Используем setTimeout для плавного переходa
   setTimeout(() => {
     renderProducts();
     updatePagination();
@@ -1018,7 +1041,7 @@ function removeFromCart(productId) {
   openCart(); // Перерисовываем корзину
 }
 
-// Оформление заказа
+// Оформление заказа - ИСПРАВЛЕННАЯ ВЕРСИЯ
 function checkout() {
   if (!currentUser) {
     closeModal();
@@ -1158,11 +1181,10 @@ function calculateCartTotal() {
   }, 0);
 }
 
-// Размещение заказа - исправленная версия
+// Размещение заказа - ИСПРАВЛЕННАЯ ВЕРСИЯ
 function placeOrder(event) {
   event.preventDefault();
   
-  // Проверяем, что пользователь авторизован
   if (!currentUser || !currentUser.uid) {
     closeModal();
     openAuthModal();
@@ -1171,42 +1193,55 @@ function placeOrder(event) {
   }
   
   // Получаем данные формы
-  const name = document.getElementById('order-name').value;
-  const phone = document.getElementById('order-phone').value;
-  const email = document.getElementById('order-email').value;
+  const name = document.getElementById('order-name').value.trim();
+  const phone = document.getElementById('order-phone').value.trim();
+  const email = document.getElementById('order-email').value.trim();
   const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
+  
+  // Валидация email
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    showNotification("Введите корректный email адрес", "error");
+    return;
+  }
+  
+  // Валидация телефона (базовая проверка)
+  const phoneRegex = /^[\+]?[0-9]{10,15}$/;
+  const cleanPhone = phone.replace(/\D/g, '');
+  if (!phoneRegex.test(cleanPhone)) {
+    showNotification("Введите корректный номер телефона", "error");
+    return;
+  }
   
   // Получаем выбранный способ доставки
   const deliveryMethod = document.querySelector('input[name="delivery"]:checked').value;
   let deliveryDetails = {};
   
-  // Получаем детали доставки в зависимости от выбранного способа
-  if (deliveryMethod === 'nova-poshta') {
-    const city = document.getElementById('np-city').value;
-    const warehouse = document.getElementById('np-warehouse').value;
-    
-    if (!city || !warehouse) {
-      showNotification('Заполните все поля для доставки Новой Почтой', 'error');
-      return;
+  try {
+    if (deliveryMethod === 'nova-poshta') {
+      const city = document.getElementById('np-city').value.trim();
+      const warehouse = document.getElementById('np-warehouse').value.trim();
+      
+      if (!city || !warehouse) {
+        showNotification('Заполните все поля для доставки Новой Почтой', 'error');
+        return;
+      }
+      
+      deliveryDetails = { service: 'Новая Почта', city, warehouse };
+    } else if (deliveryMethod === 'courier') {
+      const address = document.getElementById('courier-address').value.trim();
+      
+      if (!address) {
+        showNotification('Введите адрес доставки', 'error');
+        return;
+      }
+      
+      deliveryDetails = { service: 'Курьер', address };
     }
-    
-    deliveryDetails = {
-      service: 'Новая Почта',
-      city,
-      warehouse
-    };
-  } else if (deliveryMethod === 'courier') {
-    const address = document.getElementById('courier-address').value;
-    
-    if (!address) {
-      showNotification('Введите адрес доставки', 'error');
-      return;
-    }
-    
-    deliveryDetails = {
-      service: 'Курьер',
-      address
-    };
+  } catch (error) {
+    console.error("Ошибка получения данных доставки:", error);
+    showNotification("Ошибка обработки данных доставки", "error");
+    return;
   }
   
   // Проверяем обязательные поля
@@ -1215,11 +1250,17 @@ function placeOrder(event) {
     return;
   }
   
+  // Проверяем, что корзина не пуста
+  if (Object.keys(cart).length === 0) {
+    showNotification('Корзина пуста', 'error');
+    return;
+  }
+  
   // Создаем объект заказа
   const order = {
     userId: currentUser.uid,
     userName: name,
-    userPhone: phone,
+    userPhone: cleanPhone,
     userEmail: email,
     items: {...cart},
     total: calculateCartTotal(),
@@ -1239,16 +1280,23 @@ function placeOrder(event) {
       updateCartCount();
       
       showNotification(`Заказ успешно оформлен. Номер вашего заказа: ${docRef.id}`);
-      
-      // Закрываем модальное окно
       closeModal();
-      
-      // Показываем страницу подтверждения заказа
       showOrderConfirmation(docRef.id, order);
     })
     .catch(error => {
       console.error("Ошибка оформления заказа: ", error);
       showNotification("Ошибка оформления заказа: " + error.message, "error");
+      
+      // Пытаемся сохранить заказ в localStorage как резервный вариант
+      try {
+        const backupOrders = JSON.parse(localStorage.getItem('orders_backup') || '[]');
+        order.id = 'backup-' + Date.now();
+        backupOrders.push(order);
+        localStorage.setItem('orders_backup', JSON.stringify(backupOrders));
+        showNotification("Заказ сохранен локально. Свяжитесь с администратором.", "warning");
+      } catch (backupError) {
+        console.error("Ошибка сохранения резервной копии заказа:", backupError);
+      }
     });
 }
 
@@ -2231,6 +2279,23 @@ function viewOrders() {
       `;
     });
 }
+
+// Функция для открытия модального окна с правилами
+function openRules() {
+  document.getElementById('rules-modal').style.display = 'block';
+}
+
+// Функция для закрытия модального окна с правилами
+function closeRulesModal() {
+  document.getElementById('rules-modal').style.display = 'none';
+}
+
+// Закрытие модального окна при клике outside content
+document.getElementById('rules-modal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeRulesModal();
+  }
+});
 
 // Инициализация приложения после загрузки DOM
 document.addEventListener('DOMContentLoaded', initApp);
