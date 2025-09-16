@@ -391,7 +391,7 @@ function getFilteredProducts() {
   return filteredProducts;
 }
 
-// ===== КОНЕЦ ФУНКЦИЙ ПАГИНАЦИИ =====
+// ===== КОНЕЦ ФУНКЦИИ ПАГИНАЦИИ =====
 
 // Функция для загрузки XML-фида
 async function loadFromFeed() {
@@ -1018,7 +1018,7 @@ function removeFromCart(productId) {
   openCart(); // Перерисовываем корзину
 }
 
-// Оформление заказа - ИСПРАВЛЕННАЯ ВЕРСИЯ
+// ===== ОФОРМЛЕНИЕ ЗАКАЗА =====
 function checkout() {
   if (!currentUser) {
     closeModal();
@@ -1026,7 +1026,7 @@ function checkout() {
     showNotification("Для оформления заказа необходимо авторизоваться", "warning");
     return;
   }
-  
+
   const modalContent = document.getElementById("modal-content");
   modalContent.innerHTML = `
     <h3>Оформление заказа</h3>
@@ -1038,7 +1038,7 @@ function checkout() {
         </div>
         <div class="form-group">
           <label>Телефон*</label>
-          <input type="tel" id="order-phone" required placeholder="+38 (0__) ___ __ __">
+          <input type="tel" id="order-phone" required placeholder="+380XXXXXXXXX">
         </div>
       </div>
       <div class="form-group">
@@ -1047,34 +1047,14 @@ function checkout() {
       </div>
       
       <div class="delivery-section">
-        <h4>Способ доставки</h4>
-        <div class="delivery-options">
-          <label class="delivery-option">
-            <input type="radio" name="delivery" value="nova-poshta" checked onchange="toggleDeliveryDetails('nova-poshta')">
-            <span>Новая Почта</span>
-          </label>
-          <label class="delivery-option">
-            <input type="radio" name="delivery" value="courier" onchange="toggleDeliveryDetails('courier')">
-            <span>Курьерская доставка</span>
-          </label>
+        <h4>Доставка Новой Почтой</h4>
+        <div class="form-group">
+          <label>Город*</label>
+          <input type="text" id="np-city" required placeholder="Введите ваш город">
         </div>
-        
-        <div id="nova-poshta-details" class="delivery-details active">
-          <div class="form-group">
-            <label>Город*</label>
-            <input type="text" id="np-city" required placeholder="Введите ваш город">
-          </div>
-          <div class="form-group">
-            <label>Отделение Новой Почты*</label>
-            <input type="text" id="np-warehouse" required placeholder="Номер отделения">
-          </div>
-        </div>
-        
-        <div id="courier-details" class="delivery-details">
-          <div class="form-group">
-            <label>Адрес доставки*</label>
-            <textarea id="courier-address" required placeholder="Улица, дом, квартира"></textarea>
-          </div>
+        <div class="form-group">
+          <label>Отделение Новой Почты*</label>
+          <input type="text" id="np-warehouse" required placeholder="Номер отделения">
         </div>
       </div>
       
@@ -1120,45 +1100,7 @@ function checkout() {
   openModal();
 }
 
-// Переключение деталей доставки
-function toggleDeliveryDetails(method) {
-  // Скрываем все блоки с деталями
-  document.querySelectorAll('.delivery-details').forEach(detail => {
-    detail.classList.remove('active');
-  });
-  
-  // Показываем нужный блок
-  document.getElementById(`${method}-details`).classList.add('active');
-}
-
-// Генерация сводки заказа
-function generateOrderSummary() {
-  let summaryHTML = '';
-  
-  for (const [productId, quantity] of Object.entries(cart)) {
-    const product = products.find(p => p.id === productId);
-    if (product) {
-      summaryHTML += `
-        <div class="order-item">
-          <span>${product.title} x${quantity}</span>
-          <span>${formatPrice(product.price * quantity)} ₴</span>
-        </div>
-      `;
-    }
-  }
-  
-  return summaryHTML;
-}
-
-// Расчет общей стоимости корзины
-function calculateCartTotal() {
-  return Object.entries(cart).reduce((sum, [productId, quantity]) => {
-    const product = products.find(p => p.id === productId);
-    return sum + (product ? product.price * quantity : 0);
-  }, 0);
-}
-
-// Размещение заказа - ИСПРАВЛЕННАЯ ВЕРСИЯ
+// ===== СОХРАНЕНИЕ ЗАКАЗА В FIREBASE =====
 function placeOrder(event) {
   event.preventDefault();
   
@@ -1175,14 +1117,13 @@ function placeOrder(event) {
   const email = document.getElementById('order-email').value.trim();
   const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
   
-  // Валидация email
+  // Валидация данных
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     showNotification("Введите корректный email адрес", "error");
     return;
   }
   
-  // Валидация телефона (базовая проверка)
   const phoneRegex = /^[\+]?[0-9]{10,15}$/;
   const cleanPhone = phone.replace(/\D/g, '');
   if (!phoneRegex.test(cleanPhone)) {
@@ -1190,36 +1131,20 @@ function placeOrder(event) {
     return;
   }
   
-  // Получаем выбранный способ доставки
-  const deliveryMethod = document.querySelector('input[name="delivery"]:checked').value;
-  let deliveryDetails = {};
+  // Получаем данные доставки
+  const city = document.getElementById('np-city').value.trim();
+  const warehouse = document.getElementById('np-warehouse').value.trim();
   
-  try {
-    if (deliveryMethod === 'nova-poshta') {
-      const city = document.getElementById('np-city').value.trim();
-      const warehouse = document.getElementById('np-warehouse').value.trim();
-      
-      if (!city || !warehouse) {
-        showNotification('Заполните все поля для доставки Новой Почтой', 'error');
-        return;
-      }
-      
-      deliveryDetails = { service: 'Новая Почта', city, warehouse };
-    } else if (deliveryMethod === 'courier') {
-      const address = document.getElementById('courier-address').value.trim();
-      
-      if (!address) {
-        showNotification('Введите адрес доставки', 'error');
-        return;
-      }
-      
-      deliveryDetails = { service: 'Курьер', address };
-    }
-  } catch (error) {
-    console.error("Ошибка получения данных доставки:", error);
-    showNotification("Ошибка обработки данных доставки", "error");
+  if (!city || !warehouse) {
+    showNotification('Заполните все поля для доставки Новой Почтой', 'error');
     return;
   }
+  
+  const deliveryDetails = { 
+    service: 'Новая Почта', 
+    city, 
+    warehouse 
+  };
   
   // Проверяем обязательные поля
   if (!name || !phone || !email) {
@@ -1262,101 +1187,46 @@ function placeOrder(event) {
     })
     .catch(error => {
       console.error("Ошибка оформления заказа: ", error);
-      showNotification("Ошибка оформления заказа: " + error.message, "error");
-      
-      // Пытаемся сохранить заказ в localStorage как резервный вариант
-      try {
-        const backupOrders = JSON.parse(localStorage.getItem('orders_backup') || '[]');
-        order.id = 'backup-' + Date.now();
-        backupOrders.push(order);
-        localStorage.setItem('orders_backup', JSON.stringify(backupOrders));
-        showNotification("Заказ сохранен локально. Свяжитесь с администратором.", "warning");
-      } catch (backupError) {
-        console.error("Ошибка сохранения резервной копии заказа:", backupError);
-      }
+      showNotification("Ошибка оформления заказа", "error");
     });
 }
 
-// Функция просмотра заказов пользователя - исправленная версия
-function viewOrders() {
-  if (!currentUser) {
-    showNotification("Сначала войдите в систему", "warning");
-    openAuthModal();
-    return;
-  }
+// Переключение деталей доставки
+function toggleDeliveryDetails(method) {
+  // Скрываем все блоки с деталями
+  document.querySelectorAll('.delivery-details').forEach(detail => {
+    detail.classList.remove('active');
+  });
   
-  const modalContent = document.getElementById("modal-content");
-  modalContent.innerHTML = '<h3>Мои заказы</h3><p>Загрузка заказов...</p>';
+  // Показываем нужный блок
+  document.getElementById(`${method}-details`).classList.add('active');
+}
+
+// Генерация сводки заказа
+function generateOrderSummary() {
+  let summaryHTML = '';
   
-  openModal();
-  
-  // Загружаем заказы пользователя
-  db.collection("orders")
-    .where("userId", "==", currentUser.uid)
-    .orderBy("createdAt", "desc")
-    .get()
-    .then((querySnapshot) => {
-      if (querySnapshot.empty) {
-        modalContent.innerHTML = `
-          <h3>Мои заказы</h3>
-          <div class="empty-cart">
-            <i class="fas fa-box-open"></i>
-            <h3>Заказов нет</h3>
-            <p>Вы еще не совершали покупок в нашем магазине</p>
-          </div>
-        `;
-        return;
-      }
-      
-      let ordersHTML = '';
-      querySnapshot.forEach((doc) => {
-        const order = { id: doc.id, ...doc.data() };
-        const orderDate = order.createdAt ? order.createdAt.toDate().toLocaleString('ru-RU') : 'Дата не указана';
-        
-        // Определяем статус заказа
-        let statusClass = 'status-new';
-        let statusText = 'Новый';
-        
-        if (order.status === 'processing') {
-          statusClass = 'status-processing';
-          statusText = 'В обработке';
-        } else if (order.status === 'shipped') {
-          statusClass = 'status-shipped';
-          statusText = 'Отправлен';
-        } else if (order.status === 'delivered') {
-          statusClass = 'status-delivered';
-          statusText = 'Доставлен';
-        } else if (order.status === 'cancelled') {
-          statusClass = 'status-cancelled';
-          statusText = 'Отменен';
-        }
-        
-        ordersHTML += `
-          <div class="order-item" style="border: 1px solid #eee; padding: 15px; margin-bottom: 15px; border-radius: 8px;">
-            <h4>Заказ #${order.id}</h4>
-            <p><strong>Дата:</strong> ${orderDate}</p>
-            <p><strong>Сумма:</strong> ${formatPrice(order.total)} ₴</p>
-            <p><strong>Статус:</strong> <span class="order-status ${statusClass}">${statusText}</span></p>
-            <p><strong>Способ доставки:</strong> ${order.delivery.service}</p>
-            <button class="btn btn-detail" onclick="viewOrderDetails('${order.id}')">Подробнее</button>
-          </div>
-        `;
-      });
-      
-      modalContent.innerHTML = `
-        <h3>Мои заказы</h3>
-        <div class="user-orders">
-          ${ordersHTML}
+  for (const [productId, quantity] of Object.entries(cart)) {
+    const product = products.find(p => p.id === productId);
+    if (product) {
+      summaryHTML += `
+        <div class="order-item">
+          <span>${product.title} x${quantity}</span>
+          <span>${formatPrice(product.price * quantity)} ₴</span>
         </div>
       `;
-    })
-    .catch((error) => {
-      console.error("Ошибка загрузки заказов: ", error);
-      modalContent.innerHTML = `
-        <h3>Мои заказы</h3>
-        <p>Ошибка загрузки заказов. Пожалуйста, попробуйте позже.</p>
-      `;
-    });
+    }
+  }
+  
+  return summaryHTML;
+}
+
+// Расчет общей стоимости корзины
+function calculateCartTotal() {
+  return Object.entries(cart).reduce((sum, [productId, quantity]) => {
+    const product = products.find(p => p.id === productId);
+    return sum + (product ? product.price * quantity : 0);
+  }, 0);
 }
 
 // Показ подтверждения заказа
@@ -1626,15 +1496,15 @@ function switchTab(tabId) {
   }
 }
 
-// Загрузка заказов для админ-панели
+// ===== ЗАГРУЗКА ЗАКАЗОВ В АДМИН-ПАНЕЛИ =====
 function loadAdminOrders() {
   const ordersList = document.getElementById("admin-orders-list");
   ordersList.innerHTML = '<p>Загрузка заказов...</p>';
   
+  // Слушаем обновления в реальном времени
   db.collection("orders")
     .orderBy("createdAt", "desc")
-    .get()
-    .then((querySnapshot) => {
+    .onSnapshot((querySnapshot) => {
       if (querySnapshot.empty) {
         ordersList.innerHTML = '<p>Заказов нет</p>';
         return;
@@ -1644,14 +1514,6 @@ function loadAdminOrders() {
       
       querySnapshot.forEach((doc) => {
         const order = { id: doc.id, ...doc.data() };
-        const orderElement = document.createElement('div');
-        orderElement.className = 'order-item';
-        orderElement.style.border = '1px solid #eee';
-        orderElement.style.padding = '15px';
-        orderElement.style.marginBottom = '15px';
-        orderElement.style.borderRadius = '8px';
-        
-        // Форматируем дату
         const orderDate = order.createdAt ? order.createdAt.toDate().toLocaleString('ru-RU') : 'Дата не указана';
         
         // Определяем статус заказа
@@ -1672,33 +1534,70 @@ function loadAdminOrders() {
           statusText = 'Отменен';
         }
         
+        const orderElement = document.createElement('div');
+        orderElement.className = 'admin-order-item';
         orderElement.innerHTML = `
-          <h4>Заказ #${order.id}</h4>
-          <p><strong>Клиент:</strong> ${order.userName} (${order.userEmail}, ${order.userPhone})</p>
-          <p><strong>Дата:</strong> ${orderDate}</p>
-          <p><strong>Сумма:</strong> ${formatPrice(order.total)} ₴</p>
-          <p><strong>Доставка:</strong> ${order.delivery.service}</p>
-          <p><strong>Статус:</strong> <span class="order-status ${statusClass}">${statusText}</span></p>
-          
+          <div class="order-header">
+            <h4>Заказ #${order.id}</h4>
+            <span class="order-date">${orderDate}</span>
+          </div>
+          <div class="order-info">
+            <p><strong>Клиент:</strong> ${order.userName} (${order.userEmail}, ${order.userPhone})</p>
+            <p><strong>Сумма:</strong> ${formatPrice(order.total)} ₴</p>
+            <p><strong>Доставка:</strong> ${order.delivery.service}</p>
+            <p><strong>Статус:</strong> <span class="order-status ${statusClass}">${statusText}</span></p>
+          </div>
           <div class="admin-order-actions">
             <button class="btn btn-detail" onclick="viewOrderDetails('${order.id}')">Детали</button>
-            <button class="btn btn-admin" onclick="changeOrderStatus('${order.id}', 'processing')">В обработку</button>
-            <button class="btn" onclick="changeOrderStatus('${order.id}', 'shipped')">Отправить</button>
-            <button class="btn" style="background: var(--success); color: white;" onclick="changeOrderStatus('${order.id}', 'delivered')">Доставлен</button>
-            <button class="btn" style="background: var(--danger); color: white;" onclick="changeOrderStatus('${order.id}', 'cancelled')">Отменить</button>
+            <select onchange="changeOrderStatus('${order.id}', this.value)">
+              <option value="new" ${order.status === 'new' ? 'selected' : ''}>Новый</option>
+              <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>В обработке</option>
+              <option value="shipped" ${order.status === 'shipped' ? 'selected' : ''}>Отправлен</option>
+              <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Доставлен</option>
+              <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Отменен</option>
+            </select>
+            <button class="btn btn-danger" onclick="deleteOrder('${order.id}')">Удалить</button>
           </div>
         `;
         
         ordersList.appendChild(orderElement);
       });
-    })
-    .catch((error) => {
+    }, (error) => {
       console.error("Ошибка загрузки заказов: ", error);
       ordersList.innerHTML = '<p>Ошибка загрузки заказов</p>';
     });
 }
 
-// Просмотр деталей заказа
+// ===== ИЗМЕНЕНИЕ СТАТУСА ЗАКАЗА =====
+function changeOrderStatus(orderId, status) {
+  db.collection("orders").doc(orderId).update({
+    status,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  })
+  .then(() => {
+    showNotification("Статус заказа обновлен");
+  })
+  .catch((error) => {
+    console.error("Ошибка обновления статуса заказа: ", error);
+    showNotification("Ошибка обновления статуса заказа", "error");
+  });
+}
+
+// ===== УДАЛЕНИЕ ЗАКАЗА =====
+function deleteOrder(orderId) {
+  if (confirm("Вы уверены, что хотите удалить этот заказ? Это действие нельзя отменить.")) {
+    db.collection("orders").doc(orderId).delete()
+      .then(() => {
+        showNotification("Заказ успешно удален");
+      })
+      .catch((error) => {
+        console.error("Ошибка удаления заказа: ", error);
+        showNotification("Ошибка удаления заказа", "error");
+      });
+  }
+}
+
+// ===== ПРОСМОТР ДЕТАЛЕЙ ЗАКАЗА =====
 function viewOrderDetails(orderId) {
   db.collection("orders").doc(orderId).get()
     .then((doc) => {
@@ -1733,23 +1632,37 @@ function viewOrderDetails(orderId) {
       modalContent.innerHTML = `
         <h3>Детали заказа #${order.id}</h3>
         <div class="order-details">
-          <p><strong>Клиент:</strong> ${order.userName}</p>
-          <p><strong>Email:</strong> ${order.userEmail}</p>
-          <p><strong>Телефон:</strong> ${order.userPhone}</p>
-          <p><strong>Дата создания:</strong> ${orderDate}</p>
-          <p><strong>Дата обновления:</strong> ${updatedDate}</p>
-          <p><strong>Способ оплаты:</strong> ${order.paymentMethod === 'cash' ? 'Наличными при получении' : 'Онлайн-оплата картой'}</p>
+          <div class="customer-info">
+            <h4>Информация о клиенте</h4>
+            <p><strong>Имя:</strong> ${order.userName}</p>
+            <p><strong>Email:</strong> ${order.userEmail}</p>
+            <p><strong>Телефон:</strong> ${order.userPhone}</p>
+          </div>
           
-          <h4>Доставка</h4>
-          <p><strong>Служба:</strong> ${order.delivery.service}</p>
-          ${order.delivery.city ? `<p><strong>Город:</strong> ${order.delivery.city}</p>` : ''}
-          ${order.delivery.warehouse ? `<p><strong>Отделение:</strong> ${order.delivery.warehouse}</p>` : ''}
-          ${order.delivery.address ? `<p><strong>Адрес:</strong> ${order.delivery.address}</p>` : ''}
+          <div class="order-meta">
+            <h4>Информация о заказе</h4>
+            <p><strong>Дата создания:</strong> ${orderDate}</p>
+            <p><strong>Дата обновления:</strong> ${updatedDate}</p>
+            <p><strong>Способ оплата:</strong> ${order.paymentMethod === 'cash' ? 'Наличными при получении' : 'Онлайн-оплата картой'}</p>
+            <p><strong>Статус:</strong> ${order.status}</p>
+          </div>
           
-          <h4>Товары</h4>
-          ${itemsHTML}
+          <div class="delivery-info">
+            <h4>Доставка</h4>
+            <p><strong>Служба:</strong> ${order.delivery.service}</p>
+            ${order.delivery.city ? `<p><strong>Город:</strong> ${order.delivery.city}</p>` : ''}
+            ${order.delivery.warehouse ? `<p><strong>Отделение:</strong> ${order.delivery.warehouse}</p>` : ''}
+            ${order.delivery.address ? `<p><strong>Адрес:</strong> ${order.delivery.address}</p>` : ''}
+          </div>
           
-          <div class="cart-total">Итого: ${formatPrice(order.total)} ₴</div>
+          <div class="order-items">
+            <h4>Товары</h4>
+            ${itemsHTML}
+          </div>
+          
+          <div class="order-total">
+            <h4>Итого: ${formatPrice(order.total)} ₴</h4>
+          </div>
         </div>
       `;
       
@@ -1759,34 +1672,6 @@ function viewOrderDetails(orderId) {
       console.error("Ошибка загрузки деталей заказа: ", error);
       showNotification("Ошибка загрузки деталей заказа", "error");
     });
-}
-
-// Изменение статуса заказа
-function changeOrderStatus(orderId, status) {
-  const statusMap = {
-    'new': 'Новый',
-    'processing': 'В обработке',
-    'shipped': 'Отправлен',
-    'delivered': 'Доставлен',
-    'cancelled': 'Отменен'
-  };
-  
-  if (!confirm(`Изменить статус заказа на "${statusMap[status]}"?`)) {
-    return;
-  }
-  
-  db.collection("orders").doc(orderId).update({
-    status,
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  })
-  .then(() => {
-    showNotification("Статус заказа обновлен");
-    loadAdminOrders(); // Перезагружаем список заказов
-  })
-  .catch((error) => {
-    console.error("Ошибка обновления статуса заказа: ", error);
-    showNotification("Ошибка обновления статуса заказа", "error");
-  });
 }
 
 // Сохранение URL фида
@@ -2220,7 +2105,7 @@ function viewOrders() {
           statusText = 'В обработке';
         } else if (order.status === 'shipped') {
           statusClass = 'status-shipped';
-          statusText = 'Отправлен';
+          statusText = 'Отставлен';
         } else if (order.status === 'delivered') {
           statusClass = 'status-delivered';
           statusText = 'Доставлен';
@@ -2275,4 +2160,4 @@ document.getElementById('rules-modal').addEventListener('click', function(e) {
 });
 
 // Инициализация приложения после загрузки DOM
-document.addEventListener('DOMContentLoaded', initApp);
+document.addEventListener('DOMContentLoaded', initApp); 
