@@ -1235,18 +1235,18 @@ function placeOrder(event) {
   
   // Создаем объект заказа
   const order = {
-  userId: currentUser.uid,
-  userName: name,
-  userPhone: cleanPhone,
-  userEmail: email,
-  items: {...cart},
-  total: calculateCartTotal(),
-  delivery: deliveryDetails,
-  paymentMethod,
-  status: 'new',
-  createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-  updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-};
+    userId: currentUser.uid,
+    userName: name,
+    userPhone: cleanPhone,
+    userEmail: email,
+    items: {...cart},
+    total: calculateCartTotal(),
+    delivery: deliveryDetails,
+    paymentMethod,
+    status: 'new',
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
   
   // Сохраняем заказ в Firestore
   db.collection("orders").add(order)
@@ -1644,12 +1644,15 @@ function loadAdminOrders() {
       
       querySnapshot.forEach((doc) => {
         const order = { id: doc.id, ...doc.data() };
+        const orderElement = document.createElement('div');
+        orderElement.className = 'order-item';
+        orderElement.style.border = '1px solid #eee';
+        orderElement.style.padding = '15px';
+        orderElement.style.marginBottom = '15px';
+        orderElement.style.borderRadius = '8px';
         
-        // Проверяем, что createdAt существует и является объектом Timestamp
-        let orderDate = 'Дата не указана';
-        if (order.createdAt && order.createdAt.toDate) {
-          orderDate = order.createdAt.toDate().toLocaleString('ru-RU');
-        }
+        // Форматируем дату
+        const orderDate = order.createdAt ? order.createdAt.toDate().toLocaleString('ru-RU') : 'Дата не указана';
         
         // Определяем статус заказа
         let statusClass = 'status-new';
@@ -1668,13 +1671,6 @@ function loadAdminOrders() {
           statusClass = 'status-cancelled';
           statusText = 'Отменен';
         }
-        
-        const orderElement = document.createElement('div');
-        orderElement.className = 'order-item';
-        orderElement.style.border = '1px solid #eee';
-        orderElement.style.padding = '15px';
-        orderElement.style.marginBottom = '15px';
-        orderElement.style.borderRadius = '8px';
         
         orderElement.innerHTML = `
           <h4>Заказ #${order.id}</h4>
@@ -1714,18 +1710,6 @@ function viewOrderDetails(orderId) {
       const order = { id: doc.id, ...doc.data() };
       const modalContent = document.getElementById("modal-content");
       
-      // Форматируем даты с проверкой
-      let orderDate = 'Дата не указана';
-      let updatedDate = 'Дата не указана';
-      
-      if (order.createdAt && order.createdAt.toDate) {
-        orderDate = order.createdAt.toDate().toLocaleString('ru-RU');
-      }
-      
-      if (order.updatedAt && order.updatedAt.toDate) {
-        updatedDate = order.updatedAt.toDate().toLocaleString('ru-RU');
-      }
-      
       let itemsHTML = '';
       for (const [productId, quantity] of Object.entries(order.items)) {
         const product = products.find(p => p.id === productId);
@@ -1741,6 +1725,10 @@ function viewOrderDetails(orderId) {
           `;
         }
       }
+      
+      // Форматируем дату
+      const orderDate = order.createdAt ? order.createdAt.toDate().toLocaleString('ru-RU') : 'Дата не указана';
+      const updatedDate = order.updatedAt ? order.updatedAt.toDate().toLocaleString('ru-RU') : 'Дата не указана';
       
       modalContent.innerHTML = `
         <h3>Детали заказа #${order.id}</h3>
@@ -2221,12 +2209,7 @@ function viewOrders() {
       let ordersHTML = '';
       querySnapshot.forEach((doc) => {
         const order = { id: doc.id, ...doc.data() };
-        
-        // Проверяем, что createdAt существует и является объектом Timestamp
-        let orderDate = 'Дата не указана';
-        if (order.createdAt && order.createdAt.toDate) {
-          orderDate = order.createdAt.toDate().toLocaleString('ru-RU');
-        }
+        const orderDate = order.createdAt ? order.createdAt.toDate().toLocaleString('ru-RU') : 'Дата не указана';
         
         // Определяем статус заказа
         let statusClass = 'status-new';
