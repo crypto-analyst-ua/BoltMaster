@@ -2,8 +2,52 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>BoltMaster — Интернет-магазин инструментов</title>
+  <title>BoltMaster — Интернет-магазин инструментов в Украине | Купить инструменты</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="BoltMaster — интернет-магазин профессионального и бытового инструмента. Широкий ассортимент крепежа, сантехники, слесарного и малярного инструмента. Гарантия качества, доставка по Украине.">
+  <meta name="keywords" content="инструменты, крепеж, сантехника, строительные инструменты, ручной инструмент, купить инструмент, магазин инструментов, Украина">
+  <meta name="author" content="BoltMaster">
+  <meta name="robots" content="index, follow">
+  
+  <!-- Open Graph для социальных сетей -->
+  <meta property="og:title" content="BoltMaster — Интернет-магазин инструментов в Украине">
+  <meta property="og:description" content="Широкий ассортимент профессионального и бытового инструмента с доставкой по Украине">
+  <meta property="og:image" content="https://boltmaster-2025.web.app/images/og-image.jpg">
+  <meta property="og:url" content="https://boltmaster-2025.web.app/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="BoltMaster">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="BoltMaster — Интернет-магазин инструментов">
+  <meta name="twitter:description" content="Широкий ассортимент профессионального и бытового инструмента">
+  <meta name="twitter:image" content="https://boltmaster-2025.web.app/images/twitter-image.jpg">
+  
+  <!-- Структурированные данные -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Store",
+    "name": "BoltMaster",
+    "description": "Интернет-магазин профессионального и бытового инструмента",
+    "url": "https://boltmaster-2025.web.app/",
+    "telephone": "+380684296978",
+    "email": "korovinkonstantin0@gmail.com",
+    "address": {
+      "@type": "PostalAddress",
+      "addressCountry": "UA"
+    },
+    "openingHours": "Mo-Su 09:00-18:00",
+    "priceRange": "₴",
+    "image": "https://boltmaster-2025.web.app/images/logo.jpg",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://boltmaster-2025.web.app/?search={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+  
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Добавляем необходимые Firebase скрипты -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -18,24 +62,24 @@
 
 <header>
   <div class="logo">
-    <i class="fas fa-tools"></i>
+    <i class="fas fa-tools" aria-hidden="true"></i>
     <h1>BoltMaster — магазин инструментов</h1>
   </div>
   <div class="header-controls">
     <div class="search-container">
-      <i class="fas fa-search search-icon"></i>
-      <input type="text" id="search" placeholder="Поиск...">
+      <i class="fas fa-search search-icon" aria-hidden="true"></i>
+      <input type="text" id="search" placeholder="Поиск..." aria-label="Поиск товаров">
     </div>
-    <select id="category">
+    <select id="category" aria-label="Выбор категории товаров">
       <option value="">Все категории</option>
     </select>
-    <button onclick="toggleFavorites()" class="btn" id="favorites-btn">
-      <i class="far fa-heart"></i>
+    <button onclick="toggleFavorites()" class="btn" id="favorites-btn" aria-label="Избранное">
+      <i class="far fa-heart" aria-hidden="true"></i>
     </button>
     
     <div class="user-menu" id="user-menu" style="display: none;">
       <div class="user-btn">
-        <i class="fas fa-user"></i>
+        <i class="fas fa-user" aria-hidden="true"></i>
         <span id="user-name"></span>
       </div>
       <div class="user-dropdown">
@@ -46,15 +90,15 @@
     </div>
     
     <button onclick="openAuthModal()" class="btn btn-admin" id="login-btn">
-      <i class="fas fa-user"></i> Войти
+      <i class="fas fa-user" aria-hidden="true"></i> Войти
     </button>
     
     <button onclick="promptAdminPassword()" class="btn btn-admin" id="admin-access-btn" style="display: none;">
-      <i class="fas fa-crown"></i> Админ
+      <i class="fas fa-crown" aria-hidden="true"></i> Админ
     </button>
     
-    <button onclick="openCart()" class="btn btn-cart">
-      <i class="fas fa-shopping-cart"></i>
+    <button onclick="openCart()" class="btn btn-cart" aria-label="Корзина">
+      <i class="fas fa-shopping-cart" aria-hidden="true"></i>
       <span class="cart-count" id="cart-count">0</span>
     </button>
   </div>
@@ -66,20 +110,20 @@
     <div class="filter-group">
       <label>Цена, ₴</label>
       <div class="price-range">
-        <input type="number" id="price-min" placeholder="от" min="0">
+        <input type="number" id="price-min" placeholder="от" min="0" aria-label="Минимальная цена">
         <span>-</span>
-        <input type="number" id="price-max" placeholder="до" min="0">
+        <input type="number" id="price-max" placeholder="до" min="0" aria-label="Максимальная цена">
       </div>
     </div>
     <div class="filter-group">
       <label>Бренд</label>
-      <select id="brand">
+      <select id="brand" aria-label="Фильтр по бренду">
         <option value="">Все бренды</option>
       </select>
     </div>
     <div class="filter-group">
       <label>Наличие</label>
-      <select id="availability">
+      <select id="availability" aria-label="Фильтр по наличию">
         <option value="">Все товары</option>
         <option value="in-stock">В наличии</option>
         <option value="out-of-stock">Нет в наличии</option>
@@ -87,7 +131,7 @@
     </div>
     <div class="filter-group">
       <label>Сортировка</label>
-      <select id="sort">
+      <select id="sort" aria-label="Сортировка товаров">
         <option value="default">По умолчанию</option>
         <option value="price-asc">Цена (по возрастанию)</option>
         <option value="price-desc">Цена (по убыванию)</option>
@@ -108,8 +152,8 @@
       <div>
         <span id="products-count"></span>
         <div class="view-options">
-          <button class="view-btn active" id="grid-view" onclick="setViewMode('grid')"><i class="fas fa-th"></i></button>
-          <button class="view-btn" id="list-view" onclick="setViewMode('list')"><i class="fas fa-list"></i></button>
+          <button class="view-btn active" id="grid-view" onclick="setViewMode('grid')" aria-label="Плитка"><i class="fas fa-th" aria-hidden="true"></i></button>
+          <button class="view-btn" id="list-view" onclick="setViewMode('list')" aria-label="Список"><i class="fas fa-list" aria-hidden="true"></i></button>
         </div>
       </div>
     </div>
@@ -210,60 +254,79 @@
 <!-- Добавляем новый раздел "О магазине" перед футером -->
 <section class="about-section">
   <div class="container">
-    <h2>О магазине BoltMaster</h2>
+    <h1>BoltMaster — интернет-магазин инструментов в Украине</h1>
     <div class="about-content">
-      <p>Наш магазин предлагает широкий ассортимент профессионального и бытового инструмента, оборудования и расходных материалов для ремонта, строительства, монтажа и домашнего использования.</p>
+      <p>Добро пожаловать в BoltMaster — ваш надежный партнер в выборе качественного инструмента и оборудования! Мы предлагаем широкий ассортимент профессионального и бытового инструмента для ремонта, строительства, монтажа и домашнего использования.</p>
       
-      <h3>Основные категории товаров:</h3>
+      <h2>Категории инструментов в нашем магазине</h2>
+      <p>В каталоге BoltMaster вы найдете все необходимое для выполнения задач любой сложности:</p>
+      
+      <h3>Крепеж и расходные материалы</h3>
+      <p>У нас вы можете купить заклепки алюминиевые, скобы для степлера и другой крепеж по выгодным ценам с доставкой по всей Украине.</p>
+      
+      <h3>Сантехника и системы водоснабжения</h3>
+      <p>В наличии гидроаккумуляторы, циркуляционные и фонтанные насосы, реле давления, расширительные баки для систем отопления от проверенных брендов.</p>
+      
+      <h3>Абразивный и слесарный инструмент</h3>
+      <p>Предлагаем лепестковые круги для УШМ, наборы торцевых головок и бит, ключи-трещотки, отвертки ударные, зубила и клещи переставные для труб.</p>
+      
+      <h3>Щетки металлические и малярный инструмент</h3>
+      <p>В нашем магазине представлены дисковые, чашечные и конусные щетки для дрелей и УШМ, а также шпатели, валики, кюветки и другой малярный инструмент.</p>
+      
+      <h2>Почему выбирают BoltMaster?</h2>
       <ul>
-        <li><strong>Крепеж и расходники:</strong> Заклепки алюминиевые, скобы для степлера.</li>
-        <li><strong>Сантехника и водоснабжение:</strong> Гидроаккумуляторы, насосы (циркуляционные, фонтанные), реле давления, расширительные баки для систем отопления.</li>
-        <li><strong>Абразивный инструмент:</strong> Лепестковые круги для УШМ.</li>
-        <li><strong>Слесарный и ручной инструмент:</strong> Наборы торцевых головок и бит, ключи-трещотки, отвертки ударные, зубила, клещи переставные для труб.</li>
-        <li><strong>Щетки металлические:</strong> Дисковые, чашечные и конусные щетки для дрелей и УШМ (латунированные и стальные витые), ручные щетки.</li>
-        <li><strong>Малярный инструмент:</strong> Шпатели, валики, кюветки.</li>
-        <li><strong>Прочий инструмент:</strong> Ножи строительные.</li>
+        <li>Широкий ассортимент инструментов и оборудования</li>
+        <li>Гарантия качества на все товары</li>
+        <li>Конкурентные цены и регулярные акции</li>
+        <li>Быстрая доставка по Киеву и всей Украине</li>
+        <li>Профессиональные консультации по подбору инструмента</li>
       </ul>
       
-      <h3>Наши преимущества:</h3>
-      <ul>
-        <li><strong>Широкий ассортимент:</strong> От мелкого крепежа до профессионального оборудования.</li>
-        <li><strong>Качественные бренды:</strong> В каталоге представлена продукция надежных брендов, таких как SIGMA, AQUATICA, GRAD, LEO.</li>
-        <li><strong>Доступность:</strong> Товары в наличии.</li>
-        <li><strong>Подробное описание:</strong> Каждая позиция имеет детальное описание, технические характеристики и фотографию.</li>
-      </ul>
+      <p>Независимо от того, нужен ли вам инструмент для профессионального использования или для домашнего ремонта, в BoltMaster вы найдете именно то, что ищете. Мы тщательно отбираем ассортимент, сотрудничая только с проверенными производителями и поставщиками.</p>
       
-      <p>Мы стремимся предоставить нашим клиентам все необходимое для успешного выполнения задач любой сложности.</p>
+      <p>Сделайте заказ в нашем интернет-магазине уже сегодня и убедитесь в качества нашего сервиса и товаров!</p>
     </div>
   </div>
 </section>
 
 <footer>
-    <div class="footer-section">
-      <h4>Помощь</h4>
-      <a href="#" onclick="openRules(); return false;">Правила магазина</a>
-      <div class="contact-info">
-        <div><i class="fas fa-envelope"></i> korovinkonstantin0@gmail.com</div>
-        <div><i class="fas fa-phone"></i> +380684296978</div>
-      </div>
+  <div class="footer-section">
+    <h4>Помощь</h4>
+    <a href="#" onclick="openRules(); return false;">Правила магазина</a>
+    <div class="contact-info">
+      <div><i class="fas fa-envelope" aria-hidden="true"></i> korovinkonstantin0@gmail.com</div>
+      <div><i class="fas fa-phone" aria-hidden="true"></i> +380684296978</div>
     </div>
-    
-    <div class="copyright">
-      © <span id="year"></span> BoltMaster. Все права защищены.
+  </div>
+  
+  <div class="copyright">
+    © <span id="year"></span> BoltMaster. Все права защищены.
+  </div>
+  
+  <!-- Скрытые структурированные данные для локального бизнеса -->
+  <div itemscope itemtype="https://schema.org/LocalBusiness" style="display:none;">
+    <span itemprop="name">BoltMaster</span>
+    <span itemprop="description">Интернет-магазин инструментов</span>
+    <span itemprop="telephone">+380684296978</span>
+    <span itemprop="email">korovinkonstantin0@gmail.com</span>
+    <div itemprop="address" itemscope itemtype="https://schema.org/PostalAddress">
+      <span itemprop="addressCountry">Украина</span>
+      <span itemprop="addressLocality">Киев</span>
     </div>
+    <span itemprop="priceRange">₴</span>
   </div>
 </footer>
 
 <div id="modal" class="modal">
   <div class="modal-content" id="modal-content">
-    <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+    <button class="modal-close" onclick="closeModal()" aria-label="Закрыть"><i class="fas fa-times" aria-hidden="true"></i></button>
   </div>
 </div>
 
 <!-- Добавим модальное окно для правил после существующего модального окна -->
 <div id="rules-modal" class="modal">
   <div class="modal-content" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
-    <button class="modal-close" onclick="closeRulesModal()"><i class="fas fa-times"></i></button>
+    <button class="modal-close" onclick="closeRulesModal()" aria-label="Закрыть"><i class="fas fa-times" aria-hidden="true"></i></button>
     <div class="rules-container">
       <h1>Правила интернет‑магазина BoltMaster</h1>
       <div class="version">Актуальная версия: 1.0 — опубликовано: 16.09.2025</div>
@@ -308,7 +371,7 @@
           <li>5.1. На большинство товаров распространяется гарантия производителя. Срок гарантия указан в карточке товара или в сопроводительных документах.</li>
           <li>5.2. Возврат товара надлежащего качества возможен в течение 14 дней с момента покупки при соблюдении условий: товарный вид, целостность упаковки, сохранённые ярлыки и комплектующие.</li>
           <li>5.3. Возврат дефектного товара осуществляется в соответствии с действующим законодательством и правилами производителя — обмен или возврат денежный средств производится после проверки товара.</li>
-          <li>5.4. Стоимость доставки при возврате возмещается в порядке, установленном законодательством и внутренной политикой магазина.</li>
+          <li>5.4. Стоимость доставка при возврате возмещается в порядке, установленном законодательством и внутренной политикой магазина.</li>
         </ul>
       </section>
 
@@ -351,7 +414,7 @@
 </div>
 
 <div id="notification" class="notification">
-  <i class="fas fa-check-circle"></i>
+  <i class="fas fa-check-circle" aria-hidden="true"></i>
   <span id="notification-text"></span>
 </div>
 
