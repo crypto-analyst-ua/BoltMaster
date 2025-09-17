@@ -881,6 +881,7 @@ function showProductDetail(productId) {
   
   const modalContent = document.getElementById("modal-content");
   modalContent.innerHTML = `
+    <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
     <h3>${product.title}</h3>
     <div class="product-detail">
       <div class="product-image">
@@ -954,6 +955,7 @@ function openCart() {
   
   if (Object.keys(cart).length === 0) {
     modalContent.innerHTML = `
+      <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
       <h3>Кошик</h3>
       <div class="empty-cart">
         <i class="fas fa-shopping-cart"></i>
@@ -990,6 +992,7 @@ function openCart() {
     }
     
     modalContent.innerHTML = `
+      <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
       <h3>Кошик</h3>
       <div class="cart-items">
         ${cartItemsHTML}
@@ -1043,6 +1046,7 @@ function checkout() {
 
   const modalContent = document.getElementById("modal-content");
   modalContent.innerHTML = `
+    <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
     <h3>Оформлення замовлення</h3>
     <form class="checkout-form" onsubmit="placeOrder(event)">
       <div class="form-row">
@@ -1247,11 +1251,12 @@ function calculateCartTotal() {
   }, 0);
 }
 
-// Показ підтвердження замовлення
+// ===== ПОКАЗ ПІДТВЕРДЖЕННЯ ЗАКАЗА =====
 function showOrderConfirmation(orderId, order) {
   const modalContent = document.getElementById("modal-content");
   
   modalContent.innerHTML = `
+    <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
     <div class="order-confirmation">
       <div class="confirmation-header">
         <i class="fas fa-check-circle"></i>
@@ -1296,6 +1301,7 @@ function closeModal() {
 function openAuthModal() {
   const modalContent = document.getElementById("modal-content");
   modalContent.innerHTML = `
+    <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
     <h3>Вхід в систему</h3>
     <div class="auth-tabs">
       <div class="auth-tab active" onclick="switchAuthTab('login')">Вхід</div>
@@ -1666,6 +1672,7 @@ function viewOrderDetails(orderId) {
       const updatedDate = order.updatedAt ? order.updatedAt.toDate().toLocaleString('uk-UA') : 'Дата не вказана';
       
       modalContent.innerHTML = `
+        <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
         <h3>Деталі замовлення #${order.id}</h3>
         <div class="order-details">
           <div class="customer-info">
@@ -1766,6 +1773,7 @@ function exportJSON() {
 function openAddProductModal() {
   const modalContent = document.getElementById("modal-content");
   modalContent.innerHTML = `
+    <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
     <h3>Додати новий товар</h3>
     <form onsubmit="saveNewProduct(event)">
       <div class="form-group">
@@ -1933,6 +1941,7 @@ function editProduct(productId) {
   
   const modalContent = document.getElementById("modal-content");
   modalContent.innerHTML = `
+    <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
     <h3>Редагувати товар</h3>
     <form onsubmit="updateProduct(event, '${productId}')">
       <div class="form-group">
@@ -2044,6 +2053,7 @@ function openProfile() {
   
   const modalContent = document.getElementById("modal-content");
   modalContent.innerHTML = `
+    <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
     <h3>Профіль користувача</h3>
     <div class="profile-info">
       <div class="form-group">
