@@ -16,16 +16,12 @@
   <meta property="og:url" content="https://boltmaster-2025.web.app/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="BoltMaster">
-  <meta property="og:locale" content="uk_UA">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="BoltMaster — Інтернет-магазин інструментів">
   <meta name="twitter:description" content="Широкий асортимент професійного та побутового інструменту">
   <meta name="twitter:image" content="https://boltmaster-2025.web.app/images/twitter-image.jpg">
-  
-  <!-- Канонический URL для избежания дублирования контента -->
-  <link rel="canonical" href="https://boltmaster-2025.web.app/">
   
   <!-- Структуровані дані -->
   <script type="application/ld+json">
@@ -39,8 +35,7 @@
     "email": "korovinkonstantin0@gmail.com",
     "address": {
       "@type": "PostalAddress",
-      "addressCountry": "UA",
-      "addressLocality": "Україна"
+      "addressCountry": "UA"
     },
     "openingHours": "Mo-Su 09:00-18:00",
     "priceRange": "₴",
@@ -53,21 +48,19 @@
   }
   </script>
   
-  <!-- Preload важных ресурсов -->
-  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
-  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Додаємо необхідні Firebase скрипти -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js" defer></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js" defer></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js" defer></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js" defer></script>
-
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+  <!-- Cloudinary SDK -->
+  <script src="https://upload-widget.cloudinary.com/global/all.js"></script>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<header itemscope itemtype="https://schema.org/Store">
+<header>
   <div class="logo">
     <i class="fas fa-tools" aria-hidden="true"></i>
     <h1>BoltMaster — магазин інструментів</h1>
@@ -113,7 +106,7 @@
 
 <main>
   <aside class="filters">
-    <h2>Фільтри</h2>
+    <h3>Фільтри</h3>
     <div class="filter-group">
       <label>Ціна, ₴</label>
       <div class="price-range">
@@ -208,7 +201,7 @@
   </section>
 
   <aside>
-    <h2>Популярні товари</h2>
+    <h3>Популярні товари</h3>
     <div class="featured-products" id="featured-products">
       <div class="featured-item">
         <div class="skeleton-img" style="width: 60px; height: 60px;"></div>
@@ -227,7 +220,7 @@
     </div>
     
     <div id="admin-panel" class="admin-panel" style="display:none;">
-      <h3>Адмін-панель</h3>
+      <h4>Адмін-панель</h4>
       <div class="tabs">
         <div class="tab active" onclick="switchTab('import-tab')">Імпорт</div>
         <div class="tab" onclick="switchTab('products-tab')">Товари</div>
@@ -261,26 +254,26 @@
 <!-- Додаємо новий розділ "Про магазин" перед футером -->
 <section class="about-section">
   <div class="container">
-    <h2>BoltMaster — інтернет-магазин інструментів в Україні</h2>
+    <h1>BoltMaster — інтернет-магазин інструментів в Україні</h1>
     <div class="about-content">
       <p>Ласкаво просимо до BoltMaster — ваш надійний партнер у виборі якісного інструменту та обладнання! Ми пропонуємо широкий асортимент професійного та побутового інструменту для ремонту, будівництва, монтажу та домашнього використання.</p>
       
-      <h3>Категорії інструментів у нашому магазині</h3>
+      <h2>Категорії інструментів у нашому магазині</h2>
       <p>У каталозі BoltMaster ви знайдете все необхідне для виконання завдань будь-якої складності:</p>
       
-      <h4>Кріплення та витратні матеріали</h4>
+      <h3>Кріплення та витратні матеріали</h3>
       <p>У нас ви можете купити заклепки алюмінієві, скоби для степлера та інше кріплення за вигідними цінами з доставкою по всій Україні.</p>
       
-      <h4>Сантехніка та системи водопостачання</h4>
+      <h3>Сантехніка та системи водопостачання</h3>
       <p>В наявності гідроакумулятори, циркуляційні та фонтанні насоси, реле тиску, розширювальні баки для систем опалення від перевірених брендів.</p>
       
-      <h4>Абразивний та слюсарний інструмент</h4>
+      <h3>Абразивний та слюсарний інструмент</h3>
       <p>Пропонуємо пелюсткові круги для УШМ, набори торцевих головок та біт, ключі-трещотки, викрутки ударні, зубила та кліщі переставні для труб.</p>
       
-      <h4>Щітки металеві та малярний інструмент</h4>
+      <h3>Щітки металеві та малярний інструмент</h3>
       <p>У нашому магазині представлені дискові, чашкові та конічні щітки для дрилів та УШМ, а також шпателі, валики, кюветки та інший малярний інструмент.</p>
       
-      <h3>Чому обирають BoltMaster?</h3>
+      <h2>Чому обирають BoltMaster?</h2>
       <ul>
         <li>Широкий асортимент інструментів та обладнання</li>
         <li>Гарантія якості на всі товари</li>
@@ -303,8 +296,8 @@
 
 <footer>
   <div class="footer-section">
-    <h3>Допомога</h3>
-    <a href="/rules.html" rel="nofollow">Правила магазину</a>
+    <h4>Допомога</h4>
+    <a href="#" onclick="openRules(); return false;">Правила магазину</a>
     <div class="contact-info">
       <div><i class="fas fa-envelope" aria-hidden="true"></i> korovinkonstantin0@gmail.com</div>
       <div><i class="fas fa-phone" aria-hidden="true"></i> +380684296978</div>
@@ -323,7 +316,6 @@
     <span itemprop="email">korovinkonstantin0@gmail.com</span>
     <div itemprop="address" itemscope itemtype="https://schema.org/PostalAddress">
       <span itemprop="addressCountry">Україна</span>
-      <span itemprop="addressLocality">Україна</span>
     </div>
     <span itemprop="priceRange">₴</span>
   </div>
@@ -340,18 +332,18 @@
   <div class="modal-content" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
     <button class="modal-close" onclick="closeRulesModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
     <div class="rules-container">
-      <h2>Правила інтернет‑магазину BoltMaster</h2>
+      <h1>Правила інтернет‑магазину BoltMaster</h1>
       <div class="version">Актуальна версія: 1.0 — опубліковано: 16.09.2025</div>
       
       <section id="general">
-        <h3>1. Загальні положення</h3>
+        <h2>1. Загальні положення</h2>
         <p>1.1. Ці правила визначають порядок оформлення та обробки замовлень в інтернет‑магазині BoltMaster, а також права та обов'язки сторін.</p>
         <p>1.2. Розміщуючи замовлення, Покупець підтверджує згоду з цими правилами.</p>
         <p>1.3. Магазин має право вносити зміни до правил; нова версія набуває чинності з моменту публікації на сайті.</p>
       </section>
 
       <section id="ordering">
-        <h3>2. Оформлення замовлення</h3>
+        <h2>2. Оформлення замовлення</h2>
         <ul>
           <li>2.1. Замовлення оформляється на сайті через кошик. При оформленні необхідно вказати коректні ПІБ, адресу доставки, телефон та e‑mail.</li>
           <li>2.2. Після розміщення замовлення Покупець отримує підтвердження на e‑mail та/або SMS.</li>
@@ -360,7 +352,7 @@
       </section>
 
       <section id="payment">
-        <h3>3. Оплата</h3>
+        <h2>3. Оплата</h2>
         <ul>
           <li>3.1. Доступні способи оплати: онлайн‑оплата банківською карткою, накладений платіж (за погодженням), безготівковий розрахунок для юридичних осіб.</li>
           <li>3.2. Оплата вважається виконаною з моменту отримання підтвердження платіжної системи.</li>
@@ -369,7 +361,7 @@
       </section>
 
       <section id="delivery">
-        <h3>4. Доставка</h3>
+        <h2>4. Доставка</h2>
         <ul>
           <li>4.1. Доставка виконується кур'єрськими службами або самовивозом з пунктів видачі (якщо доступно).</li>
           <li>4.2. Вартість та термін доставки розраховуються при оформленні замовлення та залежать від регіону та обраного способу.</li>
@@ -378,7 +370,7 @@
       </section>
 
       <section id="warranty_return">
-        <h3>5. Гарантія та повернення</h3>
+        <h2>5. Гарантія та повернення</h2>
         <ul>
           <li>5.1. На більшість товарів поширюється гарантія виробника. Термін гарантії вказаний у картці товару або в супровідних документах.</li>
           <li>5.2. Повернення товару належної якості можливе протягом 14 днів з моменту покупки за дотримання умов: товарний вигляд, цілісність упаковки, збережені ярлики та комплектуючі.</li>
@@ -388,7 +380,7 @@
       </section>
 
       <section id="responsibility">
-        <h3>6. Відповідальність сторін</h3>
+        <h2>6. Відповідальність сторін</h2>
         <ul>
           <li>6.1. Магазин зобов'язується надати товари, що відповідають опису в картці товару.</li>
           <li>6.2. Магазин не несе відповідальності за збитки Покупця, що виникли внаслідок неправильного використання товару.</li>
@@ -397,7 +389,7 @@
       </section>
 
       <section id="personal_data">
-        <h3>7. Персональні дані та конфіденційність</h3>
+        <h2>7. Персональні дані та конфіденційність</h2>
         <ul>
           <li>7.1. Магазин обробляє персональні дані Покупців відповідно до законодавства про захист персональних даних.</li>
           <li>7.2. Інформація використовується для обробки замовлень, доставки та зворотного зв'язку, а також може використовуватися для розсилки акцій за згодою Покупця.</li>
@@ -406,7 +398,7 @@
       </section>
 
       <section id="dispute">
-        <h3>8. Спори та форс‑мажор</h3>
+        <h2>8. Спори та форс‑мажор</h2>
         <ul>
           <li>8.1. Усі спори, що виникають між Покупцем та Магазином, вирішуються шляхом переговорів. У разі неможливості досягти згоди спір підлягає розгляду у встановленому законом порядку.</li>
           <li>8.2. Магазин звільняється від відповідальності за часткове або повне невиконання зобов'язань, викликане форс‑мажорними обставинами (військові дії, надзвичайні природні події, дії органів влади тощо).</li>
@@ -414,7 +406,7 @@
       </section>
 
       <section id="contacts">
-        <h3>9. Контактна інформація</h3>
+        <h2>9. Контактна інформація</h2>
         <p class="small">З питань, пов'язаних із замовленнями, оплатою, доставкою або поверненням, будь ласка, звертайтеся до розділу «Контакти» на сайті або використовуйте вказані телефони та e‑mail.</p>
       </section>
 
@@ -430,6 +422,6 @@
   <span id="notification-text"></span>
 </div>
 
-<script src="script.js" defer></script>
+<script src="script.js"></script>
 </body>
 </html>
