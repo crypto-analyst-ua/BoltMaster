@@ -1,0 +1,8 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /profile/
+Disallow: /cart/
+Disallow: /*?*
+Allow: /
+Sitemap: https://boltmaster-2025.web.app/sitemap.xml
+Host: boltmaster-2025.web.app
