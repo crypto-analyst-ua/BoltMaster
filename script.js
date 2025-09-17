@@ -189,21 +189,6 @@ function initApp() {
     currentFilters.maxPrice = this.value ? parseInt(this.value) : null;
     applyFilters();
   });
-
-  // Налаштовуємо делегування подій
-  setupEventDelegation();
-}
-
-// Функція для налаштування делегування подій
-function setupEventDelegation() {
-  // Делегирование событий для кнопок избранного
-  document.addEventListener('click', function(e) {
-    const favoriteBtn = e.target.closest('.favorite-btn');
-    if (favoriteBtn) {
-      const productId = favoriteBtn.getAttribute('data-product-id');
-      toggleFavorite(productId, e);
-    }
-  });
 }
 
 // Оновлюємо функцію loadProducts для обробки випадку, коли в Firestore немає товарів
@@ -671,15 +656,13 @@ function renderProducts() {
         <span>(12)</span>
       </div>
       <div class="card-actions">
-        <button class="btn btn-buy" onclick="addToCart('${product.id}', event)">
+        <button class="btn btn-buy" onclick="addToCart('${product.id}')">
           <i class="fas fa-shopping-cart"></i> Купити
         </button>
         <button class="btn btn-detail" onclick="showProductDetail('${product.id}')">
           <i class="fas fa-info"></i> Детальніше
         </button>
-        <button class="btn-favorite favorite-btn ${isFavorite ? 'active' : ''}" 
-                data-product-id="${product.id}"
-                onclick="toggleFavorite('${product.id}', event)">
+        <button class="btn-favorite ${isFavorite ? 'active' : ''}" onclick="toggleFavorite('${product.id}')">
           <i class="${isFavorite ? 'fas' : 'far'} fa-heart"></i>
         </button>
       </div>
@@ -774,11 +757,7 @@ function showNotification(message, type = "success") {
 }
 
 // Додавання товару в кошик
-function addToCart(productId, event = null) {
-  if (event) {
-    event.stopPropagation();
-  }
-  
+function addToCart(productId) {
   if (!cart[productId]) {
     cart[productId] = 0;
   }
@@ -798,11 +777,7 @@ function updateCartCount() {
 }
 
 // Додавання/видалення з обраного
-function toggleFavorite(productId, event = null) {
-  if (event) {
-    event.stopPropagation();
-  }
-  
+function toggleFavorite(productId) {
   if (favorites[productId]) {
     delete favorites[productId];
   } else {
@@ -812,51 +787,19 @@ function toggleFavorite(productId, event = null) {
   // Зберігаємо обране в localStorage
   localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favorites));
   
-  // Оновлюємо всі відображення цього товару
-  updateFavoriteIndicators(productId);
-  
-  // Анімація кнопки
-  if (event) {
-    const btn = event.currentTarget;
-    btn.classList.add('pulse');
-    setTimeout(() => btn.classList.remove('pulse'), 500);
+  // Перемальовуємо продукти, якщо знаходимось у режимі обраного
+  if (showingFavorites) {
+    renderProducts();
+  } else {
+    // Інакше просто оновлюємо іконку серця у товару
+    const heartIcon = document.querySelector(`button[onclick="toggleFavorite('${productId}')"] i`);
+    if (heartIcon) {
+      heartIcon.className = favorites[productId] ? 'fas fa-heart' : 'far fa-heart';
+      heartIcon.parentElement.className = `btn-favorite ${favorites[productId] ? 'active' : ''}`;
+    }
   }
   
   showNotification(favorites[productId] ? "Додано в обране" : "Видалено з обраного");
-}
-
-// Оновлення індикаторів обраного для конкретного товару
-function updateFavoriteIndicators(productId) {
-  // Оновлюємо кнопки в картках товарів
-  const favoriteButtons = document.querySelectorAll(`.favorite-btn[data-product-id="${productId}"]`);
-  favoriteButtons.forEach(btn => {
-    const icon = btn.querySelector('i');
-    if (favorites[productId]) {
-      icon.className = 'fas fa-heart';
-      btn.classList.add('active');
-    } else {
-      icon.className = 'far fa-heart';
-      btn.classList.remove('active');
-    }
-  });
-  
-  // Оновлюємо кнопку в детальному перегляді, якщо вона відкрита
-  const detailFavoriteBtn = document.querySelector(`.product-detail .favorite-btn[data-product-id="${productId}"]`);
-  if (detailFavoriteBtn) {
-    const icon = detailFavoriteBtn.querySelector('i');
-    if (favorites[productId]) {
-      icon.className = 'fas fa-heart';
-      detailFavoriteBtn.classList.add('active');
-    } else {
-      icon.className = 'far fa-heart';
-      detailFavoriteBtn.classList.remove('active');
-    }
-  }
-  
-  // Якщо ми в режимі перегляду обраного, перемальовуємо список
-  if (showingFavorites) {
-    renderProducts();
-  }
 }
 
 // Переключення режиму відображення обраного
@@ -877,13 +820,9 @@ function toggleFavorites() {
 
 // Застосування фільтрів
 function applyFilters() {
-  // Отримуємо елементи фільтрів ціни
-  const minPriceEl = document.getElementById("price-min");
-  const maxPriceEl = document.getElementById("price-max");
-  
-  // Отримуємо значення з перевіркою існування елементів
-  const minPrice = minPriceEl && minPriceEl.value ? parseInt(minPriceEl.value) : null;
-  const maxPrice = maxPriceEl && maxPriceEl.value ? parseInt(maxPriceEl.value) : null;
+  // Отримуємо значення ціни
+  const minPrice = document.getElementById("price-min").value ? parseInt(document.getElementById("price-min").value) : null;
+  const maxPrice = document.getElementById("price-max").value ? parseInt(document.getElementById("price-max").value) : null;
   
   // Оновлюємо фільтри
   currentFilters.minPrice = minPrice;
@@ -946,10 +885,9 @@ function setViewMode(mode) {
 function showProductDetail(productId) {
   const product = products.find(p => p.id === productId);
   if (!product) return;
-
+  
   const modalContent = document.getElementById("modal-content");
   modalContent.innerHTML = `
-    <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
     <h3>${product.title}</h3>
     <div class="product-detail">
       <div class="product-image">
@@ -978,16 +916,14 @@ function showProductDetail(productId) {
           <button class="btn btn-buy" onclick="addToCartWithQuantity('${product.id}')">
             <i class="fas fa-shopping-cart"></i> Додати до кошика
           </button>
-          <button class="btn-favorite favorite-btn ${favorites[product.id] ? 'active' : ''}" 
-                  data-product-id="${product.id}"
-                  onclick="toggleFavorite('${product.id}', event)">
+          <button class="btn-favorite ${favorites[product.id] ? 'active' : ''}" onclick="toggleFavorite('${product.id}')">
             <i class="${favorites[product.id] ? 'fas' : 'far'} fa-heart"></i>
           </button>
         </div>
       </div>
     </div>
   `;
-
+  
   openModal();
 }
 
@@ -1339,7 +1275,7 @@ function showOrderConfirmation(orderId, order) {
           <p>Доставка здійснюється за тарифами перевізника. Вартість доставки розраховується окремо та оплачується при отриманні замовлення.</p>
         </div>
         <p><strong>Місто:</strong> ${order.delivery.city}</p>
-        <p><strong>Відділенния:</strong> ${order.delivery.warehouse}</p>
+        <p><strong>Відділення:</strong> ${order.delivery.warehouse}</p>
         <p><strong>Спосіб оплати:</strong> ${order.paymentMethod === 'cash' ? 'Готівкою при отриманні' : 'Онлайн-оплата карткою'}</p>
         <p><strong>Сума товарів:</strong> ${formatPrice(order.total)} ₴</p>
       </div>
@@ -1728,9 +1664,6 @@ function viewOrderDetails(orderId) {
                 <div class="cart-item-price">${formatPrice(product.price)} ₴ x ${quantity} = ${formatPrice(product.price * quantity)} ₴</div>
               </div>
             </div>
-            <button class="order-modal-close" onclick="closeModal()" aria-label="Закрити">
-    <i class="fas fa-times" aria-hidden="true"></i>
-</button>
           `;
         }
       }

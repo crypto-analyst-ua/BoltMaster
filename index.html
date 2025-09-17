@@ -111,49 +111,48 @@
 </header>
 
 <main>
-  <section>
-    <!-- Переміщуємо фільтри всередину секції -->
-    <div class="filters-top">
-      <h3>Фільтри</h3>
-      <div class="filter-group">
-        <label>Ціна, ₴</label>
-        <div class="price-range">
-          <input type="number" id="price-min" placeholder="від" min="0" aria-label="Мінімальна ціна">
-          <span>-</span>
-          <input type="number" id="price-max" placeholder="до" min="0" aria-label="Максимальна ціна">
-        </div>
-      </div>
-      <div class="filter-group">
-        <label>Бренд</label>
-        <select id="brand" aria-label="Фільтр по бренду">
-          <option value="">Всі бренди</option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <label>Наявність</label>
-        <select id="availability" aria-label="Фільтр по наявності">
-          <option value="">Всі товари</option>
-          <option value="in-stock">В наявності</option>
-          <option value="out-of-stock">Немає в наявності</option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <label>Сортування</label>
-        <select id="sort" aria-label="Сортування товарів">
-          <option value="default">За замовчуванням</option>
-          <option value="price-asc">Ціна (за зростанням)</option>
-          <option value="price-desc">Ціна (за спаданням)</option>
-          <option value="name-asc">Назва (А-Я)</option>
-          <option value="name-desc">Назва (Я-А)</option>
-          <option value="popular">За популярністю</option>
-        </select>
-      </div>
-      <div class="filter-buttons">
-        <button onclick="applyFilters()" class="btn btn-detail">Застосувати</button>
-        <button onclick="resetFilters()" class="btn">Скинути</button>
+  <aside class="filters">
+    <h3>Фільтри</h3>
+    <div class="filter-group">
+      <label>Ціна, ₴</label>
+      <div class="price-range">
+        <input type="number" id="price-min" placeholder="від" min="0" aria-label="Мінімальна ціна">
+        <span>-</span>
+        <input type="number" id="price-max" placeholder="до" min="0" aria-label="Максимальна ціна">
       </div>
     </div>
-    
+    <div class="filter-group">
+      <label>Бренд</label>
+      <select id="brand" aria-label="Фільтр по бренду">
+        <option value="">Всі бренди</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Наявність</label>
+      <select id="availability" aria-label="Фільтр по наявності">
+        <option value="">Всі товари</option>
+        <option value="in-stock">В наявності</option>
+        <option value="out-of-stock">Немає в наявності</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Сортування</label>
+      <select id="sort" aria-label="Сортування товарів">
+        <option value="default">За замовчуванням</option>
+        <option value="price-asc">Ціна (за зростанням)</option>
+        <option value="price-desc">Ціна (за спаданням)</option>
+        <option value="name-asc">Назва (А-Я)</option>
+        <option value="name-desc">Назва (Я-А)</option>
+        <option value="popular">За популярністю</option>
+      </select>
+    </div>
+    <div class="filter-buttons">
+      <button onclick="applyFilters()" class="btn btn-detail">Застосувати</button>
+      <button onclick="resetFilters()" class="btn">Скинути</button>
+    </div>
+  </aside>
+
+  <section>
     <div class="products-header">
       <h2 id="products-title">Всі товари</h2>
       <div>
@@ -258,7 +257,7 @@
   </aside>
 </main>
 
-<!--Про магазин-->
+<!-- Додаємо новий розділ "Про магазин" перед футером -->
 <section class="about-section">
   <div class="container">
     <h1>BoltMaster — інтернет-магазин інструментів в Україні</h1>
@@ -408,7 +407,7 @@
       <section id="dispute">
         <h2>8. Спори та форс‑мажор</h2>
         <ul>
-          <li>8.1. Усі спори, що виникають між Покупцем та Магазином, вирішуються шляхом переговорів. У разі неможливости досягти згоди спір підлягає розгляду у встановленому законом порядку.</li>
+          <li>8.1. Усі спори, що виникають між Покупцем та Магазином, вирішуються шляхом переговорів. У разі неможливості досягти згоди спір підлягає розгляду у встановленому законом порядку.</li>
           <li>8.2. Магазин звільняється від відповідальності за часткове або повне невиконання зобов'язань, викликане форс‑мажорними обставинами (військові дії, надзвичайні природні події, дії органів влади тощо).</li>
         </ul>
       </section>
