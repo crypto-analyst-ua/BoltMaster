@@ -820,9 +820,13 @@ function toggleFavorites() {
 
 // Застосування фільтрів
 function applyFilters() {
-  // Отримуємо значення ціни
-  const minPrice = document.getElementById("price-min").value ? parseInt(document.getElementById("price-min").value) : null;
-  const maxPrice = document.getElementById("price-max").value ? parseInt(document.getElementById("price-max").value) : null;
+  // Отримуємо елементи фільтрів ціни
+  const minPriceEl = document.getElementById("price-min");
+  const maxPriceEl = document.getElementById("price-max");
+  
+  // Отримуємо значення з перевіркою існування елементів
+  const minPrice = minPriceEl && minPriceEl.value ? parseInt(minPriceEl.value) : null;
+  const maxPrice = maxPriceEl && maxPriceEl.value ? parseInt(maxPriceEl.value) : null;
   
   // Оновлюємо фільтри
   currentFilters.minPrice = minPrice;
@@ -885,9 +889,10 @@ function setViewMode(mode) {
 function showProductDetail(productId) {
   const product = products.find(p => p.id === productId);
   if (!product) return;
-  
+
   const modalContent = document.getElementById("modal-content");
   modalContent.innerHTML = `
+    <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
     <h3>${product.title}</h3>
     <div class="product-detail">
       <div class="product-image">
@@ -923,7 +928,7 @@ function showProductDetail(productId) {
       </div>
     </div>
   `;
-  
+
   openModal();
 }
 
