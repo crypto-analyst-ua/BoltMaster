@@ -1554,3 +1554,25 @@
 .btn-danger:hover {
   background-color: #c0392b;
 }
+
+.delivery-notice {
+  background-color: #f8f9fa;
+  border-left: 4px solid #17a2b8;
+  padding: 10px 15px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.delivery-notice i {
+  color: #17a2b8;
+  margin-right: 10px;
+  font-size: 18px;
+}
+
+.delivery-notice p {
+  margin: 0;
+  font-size: 14px;
+  color: #6c757d;
+}

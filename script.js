@@ -1048,6 +1048,10 @@ function checkout() {
       
       <div class="delivery-section">
         <h4>Доставка Новой Почтой</h4>
+        <div class="delivery-notice">
+          <i class="fas fa-info-circle"></i>
+          <p>Доставка осуществляется по тарифам перевозчика. Стоимость доставки рассчитывается отдельно и оплачивается при получении заказа.</p>
+        </div>
         <div class="form-group">
           <label>Город*</label>
           <input type="text" id="np-city" required placeholder="Введите ваш город">
@@ -1245,8 +1249,14 @@ function showOrderConfirmation(orderId, order) {
         <p><strong>Телефон:</strong> ${order.userPhone}</p>
         <p><strong>Email:</strong> ${order.userEmail}</p>
         <p><strong>Способ доставки:</strong> ${order.delivery.service}</p>
+        <div class="delivery-notice">
+          <i class="fas fa-info-circle"></i>
+          <p>Доставка осуществляется по тарифам перевозчика. Стоимость доставки рассчитывается отдельно и оплачивается при получении заказа.</p>
+        </div>
+        <p><strong>Город:</strong> ${order.delivery.city}</p>
+        <p><strong>Отделение:</strong> ${order.delivery.warehouse}</p>
         <p><strong>Способ оплаты:</strong> ${order.paymentMethod === 'cash' ? 'Наличными при получении' : 'Онлайн-оплата картой'}</p>
-        <p><strong>Общая сумма:</strong> ${formatPrice(order.total)} ₴</p>
+        <p><strong>Сумма товаров:</strong> ${formatPrice(order.total)} ₴</p>
       </div>
       <div class="confirmation-actions">
         <button class="btn btn-detail" onclick="closeModal()">Продолжить покупки</button>
