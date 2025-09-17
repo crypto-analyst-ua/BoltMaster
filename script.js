@@ -647,14 +647,7 @@ function renderProducts() {
         <span class="price">${formatPrice(product.price)} ₴</span>
         ${product.oldPrice ? `<span class="old-price">${formatPrice(product.oldPrice)} ₴</span>` : ''}
       </div>
-      <div class="rating">
-        <i class="fas fa-star"></i>
-        <i class="fas fa-star"></i>
-        <i class="fas fa-star"></i>
-        <i class="fas fa-star"></i>
-        <i class="fas fa-star-half-alt"></i>
-        <span>(12)</span>
-      </div>
+      
       <div class="card-actions">
         <button class="btn btn-buy" onclick="addToCart('${product.id}')">
           <i class="fas fa-shopping-cart"></i> Купити
