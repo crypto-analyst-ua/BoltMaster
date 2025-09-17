@@ -1351,3 +1351,40 @@
         min-height: 44px; /* Мінімальний розмір для дотику */
     }
 }
+
+/* Стилі для кнопки закриття в модальному вікні замовлення */
+.order-modal-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--text-muted);
+    z-index: 10;
+}
+
+.order-modal-close:hover {
+    color: var(--danger);
+}
+
+.btn-favorite {
+  transition: all 0.3s ease;
+  transform: scale(1);
+}
+
+.btn-favorite.active {
+  color: #e74c3c;
+  transform: scale(1.1);
+}
+
+.btn-favorite.pulse {
+  animation: pulse 0.5s ease;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
