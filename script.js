@@ -1,4 +1,4 @@
-// Конфигурация Firebase
+// Конфігурація Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyCxAEDkZ57_yu1RDZ6xAEl7KkBgVli00b0",
   authDomain: "boltmaster-2025.firebaseapp.com",
@@ -8,12 +8,12 @@ const firebaseConfig = {
   appId: "1:995027194761:web:d3464fefcc6eb41129c758"
 };
 
-// Инициализация Firebase
+// Ініціалізація Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
 
-// Константы приложения
+// Константи додатка
 const ADMIN_PASSWORD = "Lenok1378@";
 const CART_STORAGE_KEY = "electrotools_cart";
 const FAVORITES_STORAGE_KEY = "electrotools_favorites";
@@ -40,17 +40,37 @@ let currentFilters = {
   availability: ''
 };
 
-// Добавляем новую функцию для загрузки товаров из JSON файла
+// Функція для налаштування лічильника переглядів
+function setupPageCounter() {
+  const params = new URLSearchParams({
+      style: 'flat-square',
+      label: 'Views',
+      color: 'blue',
+      logo: 'firebase'
+  });
+
+  // Беремо шлях поточної сторінки
+  const currentPath = window.location.pathname;
+
+  // Робимо лічильник для boltmaster-2025.web.app
+  const counterURL = `https://hits.sh/boltmaster-2025.web.app${currentPath}.svg?${params.toString()}`;
+  const pageViewsElement = document.getElementById('page-views');
+  if (pageViewsElement) {
+      pageViewsElement.src = counterURL;
+  }
+}
+
+// Додаємо нову функцію для завантаження товарів з JSON файлу
 function loadProductsFromJson() {
   return fetch('products.json')
     .then(response => {
       if (!response.ok) {
-        // Пробуем загрузить из локального хранилища
+        // Пробуємо завантажити з локального сховища
         const backup = localStorage.getItem('products_backup');
         if (backup) {
           return JSON.parse(backup);
         }
-        throw new Error('Файл products.json не найден');
+        throw new Error('Файл products.json не знайдено');
       }
       return response.json();
     })
@@ -58,14 +78,14 @@ function loadProductsFromJson() {
       if (Array.isArray(data)) {
         return data;
       } else {
-        throw new Error('Неверный формат файла products.json');
+        throw new Error('Невірний формат файлу products.json');
       }
     });
 }
 
-// Инициализация приложения
+// Ініціалізація додатка
 function initApp() {
-  // Проверяем статус аутентификации
+  // Перевіряємо статус аутентифікації
   auth.onAuthStateChanged(user => {
     if (user) {
       currentUser = user;
@@ -74,7 +94,7 @@ function initApp() {
       document.getElementById('admin-access-btn').style.display = 'inline-block';
       document.getElementById('user-name').textContent = user.displayName || user.email;
       
-      // Проверяем, является ли пользователь администратором
+      // Перевіряємо, чи є користувач адміністратором
       checkAdminStatus(user.uid);
     } else {
       currentUser = null;
@@ -83,14 +103,15 @@ function initApp() {
       document.getElementById('admin-access-btn').style.display = 'none';
       document.getElementById("admin-panel").style.display = "none";
       adminMode = false;
+      document.getElementById("page-views-container").style.display = "none";
     }
   });
   
-  // Пытаемся загрузить продукты из Firestore
+  // Намагаємося завантажити продукти з Firestore
   loadProducts().catch(error => {
-    console.error("Ошибка загрузки из Firestore, пробуем загрузить из JSON:", error);
+    console.error("Помилка завантаження з Firestore, пробуємо завантажити з JSON:", error);
     
-    // Если не удалось загрузить из Firestore, пробуем загрузить из JSON
+    // Якщо не вдалося завантажити з Firestore, пробуємо завантажити з JSON
     loadProductsFromJson()
       .then(jsonProducts => {
         products = jsonProducts;
@@ -99,40 +120,40 @@ function initApp() {
         renderFeaturedProducts();
         renderCategories();
         renderBrands();
-        showNotification("Товары загружены из локального файла");
+        showNotification("Товари завантажено з локального файлу");
         
-        // Сохраняем продукты в localStorage как резервную копию
+        // Зберігаємо продукти в localStorage як резервну копію
         localStorage.setItem('products_backup', JSON.stringify(products));
       })
       .catch(jsonError => {
-        console.error("Ошибка загрузки из JSON:", jsonError);
-        showNotification("Не удалось загрузить товары", "error");
+        console.error("Помилка завантаження з JSON:", jsonError);
+        showNotification("Не вдалося завантажити товари", "error");
       });
   });
   
-  // Загружаем избранное и корзину из localStorage
+  // Завантажуємо обране та кошик з localStorage
   const cartData = localStorage.getItem(CART_STORAGE_KEY);
   if(cartData) cart = JSON.parse(cartData);
   
   const favoritesData = localStorage.getItem(FAVORITES_STORAGE_KEY);
   if(favoritesData) favorites = JSON.parse(favoritesData);
   
-  // Загружаем настройки вида
+  // Завантажуємо налаштування виду
   const viewMode = localStorage.getItem(VIEW_MODE_KEY) || 'grid';
   setViewMode(viewMode);
   
   updateCartCount();
   
-  // Загружаем сохраненный URL фида
+  // Завантажуємо збережений URL фіду
   const feedUrl = localStorage.getItem(FEED_URL_KEY);
   if (feedUrl) {
     document.getElementById("feed-url").value = feedUrl;
   }
   
-  // Устанавливаем текущий год в футере
+  // Встановлюємо поточний рік у футері
   document.getElementById("year").innerText = new Date().getFullYear();
   
-  // Добавляем обработчики событий
+  // Додаємо обробники подій
   document.getElementById('search').addEventListener('input', function() {
     currentFilters.search = this.value;
     applyFilters();
@@ -158,7 +179,7 @@ function initApp() {
     applyFilters();
   });
   
-  // Добавляем обработчики для фильтров цены
+  // Додаємо обробники для фільтрів ціни
   document.getElementById('price-min').addEventListener('change', function() {
     currentFilters.minPrice = this.value ? parseInt(this.value) : null;
     applyFilters();
@@ -170,13 +191,13 @@ function initApp() {
   });
 }
 
-// Обновляем функцию loadProducts для обработки случая, когда в Firestore нет товаров
+// Оновлюємо функцію loadProducts для обробки випадку, коли в Firestore немає товарів
 function loadProducts() {
-  // Проверяем кэш перед загрузкой
+  // Перевіряємо кеш перед завантаженням
   const cachedProducts = localStorage.getItem('products_cache');
   const cacheTime = localStorage.getItem('products_cache_time');
   
-  if (cachedProducts && cacheTime && Date.now() - cacheTime < 300000) { // 5 минут
+  if (cachedProducts && cacheTime && Date.now() - cacheTime < 300000) { // 5 хвилин
     products = JSON.parse(cachedProducts);
     renderProducts();
     return Promise.resolve();
@@ -189,7 +210,7 @@ function loadProducts() {
     .get()
     .then((querySnapshot) => {
       if (querySnapshot.empty) {
-        // Если в Firestore нет товаров, пробуем загрузить из localStorage
+        // Якщо в Firestore немає товарів, пробуємо завантажити з localStorage
         const data = localStorage.getItem('products_backup');
         if (data) {
           products = JSON.parse(data);
@@ -200,7 +221,7 @@ function loadProducts() {
           renderBrands();
           return Promise.resolve();
         } else {
-          // Если в localStorage тоже нет, пробуем загрузить из JSON
+          // Якщо в localStorage теж немає, пробуємо завантажити з JSON
           return loadProductsFromJson()
             .then(jsonProducts => {
               products = jsonProducts;
@@ -209,9 +230,9 @@ function loadProducts() {
               renderFeaturedProducts();
               renderCategories();
               renderBrands();
-              showNotification("Товары загружены из локального файла");
+              showNotification("Товари завантажено з локального файлу");
               
-              // Сохраняем продукты в localStorage как резервную копию
+              // Зберігаємо продукти в localStorage як резервну копію
               localStorage.setItem('products_backup', JSON.stringify(products));
             });
         }
@@ -221,7 +242,7 @@ function loadProducts() {
           products.push({ id: doc.id, ...doc.data() });
         });
         
-        // Сохраняем в кэш
+        // Зберігаємо в кеш
         localStorage.setItem('products_cache', JSON.stringify(products));
         localStorage.setItem('products_cache_time', Date.now());
         
@@ -234,10 +255,10 @@ function loadProducts() {
       }
     })
     .catch((error) => {
-      console.error("Ошибка загрузки продуктов: ", error);
-      showNotification("Ошибка загрузки продуктов", "error");
+      console.error("Помилка завантаження продуктів: ", error);
+      showNotification("Помилка завантаження продуктів", "error");
       
-      // Пробуем загрузить из localStorage, если Firestore недоступен
+      // Пробуємо завантажити з localStorage, якщо Firestore недоступний
       const data = localStorage.getItem('products_backup');
       if (data) {
         products = JSON.parse(data);
@@ -248,38 +269,38 @@ function loadProducts() {
         renderBrands();
         return Promise.resolve();
       } else {
-        // Пробрасываем ошибку дальше для обработки в initApp
+        // Передаємо помилку далі для обробки в initApp
         return Promise.reject(error);
       }
     });
 }
 
-// ===== ФУНКЦИИ ПАГИНАЦИИ =====
+// ===== ФУНКЦІЇ ПАГІНАЦІЇ =====
 
-// Функция для изменени страницы в пагинации
+// Функція для зміни сторінки в пагінації
 function changePage(page) {
   currentPage = page;
   showLoadingSkeleton();
   
-  // Используем setTimeout для плавного переходa
+  // Використовуємо setTimeout для плавного переходу
   setTimeout(() => {
     renderProducts();
     updatePagination();
-    // Прокручиваем страницу вверх для удобства просмотра
+    // Прокручуємо сторінку вгору для зручності перегляду
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, 100);
 }
 
-// Обновление отображения пагинации
+// Оновлення відображення пагінації
 function updatePagination() {
   const paginationContainer = document.getElementById("pagination");
-  if (!paginationContainer) return; // Добавлена проверка
+  if (!paginationContainer) return; // Додана перевірка
   
-  // Рассчитываем общее количество страниц
+  // Розраховуємо загальну кількість сторінок
   let filteredProducts = getFilteredProducts();
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
   
-  // Если страниц нет или всего одна, скрываем пагинацию
+  // Якщо сторінок немає або всього одна, приховуємо пагінацію
   if (totalPages <= 1) {
     paginationContainer.style.display = 'none';
     return;
@@ -287,26 +308,26 @@ function updatePagination() {
   
   paginationContainer.style.display = 'flex';
   
-  // Очищаем контейнер пагинации
+  // Очищаємо контейнер пагінації
   paginationContainer.innerHTML = '';
   
-  // Добавляем кнопку "Назад"
+  // Додаємо кнопку "Назад"
   const prevButton = document.createElement('button');
   prevButton.innerHTML = '&laquo;';
   prevButton.disabled = currentPage === 1;
   prevButton.onclick = () => changePage(currentPage - 1);
   paginationContainer.appendChild(prevButton);
   
-  // Определяем диапазон отображаемых страниц
+  // Визначаємо діапазон відображуваних сторінок
   let startPage = Math.max(1, currentPage - 2);
   let endPage = Math.min(totalPages, startPage + 4);
   
-  // Корректируем startPage, если мы в конце диапазона
+  // Корегуємо startPage, якщо ми в кінці діапазону
   if (endPage - startPage < 4) {
     startPage = Math.max(1, endPage - 4);
   }
   
-  // Добавляем кнопки пагинации
+  // Додаємо кнопки пагінації
   for (let i = startPage; i <= endPage; i++) {
     const button = document.createElement('button');
     button.textContent = i;
@@ -315,7 +336,7 @@ function updatePagination() {
     paginationContainer.appendChild(button);
   }
   
-  // Добавляем кнопку "Вперед"
+  // Додаємо кнопку "Вперед"
   const nextButton = document.createElement('button');
   nextButton.innerHTML = '&raquo;';
   nextButton.disabled = currentPage === totalPages;
@@ -323,7 +344,7 @@ function updatePagination() {
   paginationContainer.appendChild(nextButton);
 }
 
-// Получение отфильтрованных продуктов (вспомогательная функция)
+// Отримання відфільтрованих продуктів (допоміжна функція)
 function getFilteredProducts() {
   let filteredProducts = [...products];
   
@@ -369,7 +390,7 @@ function getFilteredProducts() {
     );
   }
   
-  // Применяем сортировку
+  // Застосовуємо сортування
   switch (currentFilters.sort) {
     case 'price-asc':
       filteredProducts.sort((a, b) => a.price - b.price);
@@ -384,53 +405,53 @@ function getFilteredProducts() {
       filteredProducts.sort((a, b) => b.title.localeCompare(a.title));
       break;
     default:
-      // По умолчанию - без сортировки
+      // За замовчуванням - без сортування
       break;
   }
   
   return filteredProducts;
 }
 
-// ===== КОНЕЦ ФУНКЦИИ ПАГИНАЦИИ =====
+// ===== КІНЕЦЬ ФУНКЦІЇ ПАГІНАЦІЇ =====
 
-// Функция для загрузки XML-фида
+// Функція для завантаження XML-фіду
 async function loadFromFeed() {
   const messageElement = document.getElementById("feed-message");
-  messageElement.textContent = "Загрузка данных...";
+  messageElement.textContent = "Завантаження даних...";
   
-  // Получаем URL из сохраненных настроек
+  // Отримуємо URL із збережених налаштувань
   const feedUrl = localStorage.getItem(FEED_URL_KEY) || document.getElementById("feed-url").value;
   
   if (!feedUrl) {
-    messageElement.textContent = "Введите URL фида";
-    showNotification("Введите URL фида для загрузки");
+    messageElement.textContent = "Введіть URL фіду";
+    showNotification("Введіть URL фіду для завантаження");
     return;
   }
   
-  // Сохраняем URL, если он был введен в поле
+  // Зберігаємо URL, якщо він був введений в поле
   if (document.getElementById("feed-url").value) {
     localStorage.setItem(FEED_URL_KEY, document.getElementById("feed-url").value);
   }
   
   try {
-    // Используем прокси для обхода CORS
+    // Використовуємо проксі для обходу CORS
     const proxyUrl = 'https://corsproxy.io/?';
     const response = await fetch(proxyUrl + encodeURIComponent(feedUrl));
     
     if (!response.ok) {
-      throw new Error(`Ошибка HTTP: ${response.status}`);
+      throw new Error(`Помилка HTTP: ${response.status}`);
     }
     
     const xmlText = await response.text();
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(xmlText, "text/xml");
     
-    // Проверяем, есть ли ошибки парсинга
+    // Перевіряємо, чи є помилки парсингу
     if (xmlDoc.getElementsByTagName("parsererror").length > 0) {
-      throw new Error("Ошибка парсинга XML");
+      throw new Error("Помилка парсингу XML");
     }
     
-    // Парсим XML в зависимости от структуры
+    // Парсимо XML залежно від структури
     let items = [];
     const offers = xmlDoc.getElementsByTagName("offer");
     
@@ -446,24 +467,24 @@ async function loadFromFeed() {
       const priceText = getValue("price");
       const price = priceText ? parseFloat(priceText.replace(/[^0-9.,]/g, "").replace(",", ".")) : 0;
       const description = getValue("description") || "";
-      const brand = getValue("vendor") || getValue("brand") || "Неизвестно";
+      const brand = getValue("vendor") || getValue("brand") || "Невідомо";
       
-      // Получаем URL изображения
+      // Отримуємо URL зображення
       let image = "";
       const pictureElement = offer.getElementsByTagName("picture")[0];
       if (pictureElement) {
         image = pictureElement.textContent.trim();
       }
       
-      // Получаем категорию
-      const category = getValue("category") || "Без категории";
+      // Отримуємо категорію
+      const category = getValue("category") || "Без категорії";
       
       items.push({
         id,
         title,
         price,
         description,
-        image: image, // Используем оригинальный URL изображения
+        image: image, // Використовуємо оригінальний URL зображення
         category,
         brand,
         fromFeed: true,
@@ -473,10 +494,10 @@ async function loadFromFeed() {
     }
     
     if (items.length === 0) {
-      throw new Error("Не найдено товаров в фиде");
+      throw new Error("Не знайдено товарів у фіді");
     }
     
-    // Сохраняем товары в Firestore
+    // Зберігаємо товари в Firestore
     const batch = db.batch();
     const productsRef = db.collection("products");
     
@@ -487,20 +508,20 @@ async function loadFromFeed() {
     
     await batch.commit();
     
-    // Сохраняем время последнего обновления
+    // Зберігаємо час останнього оновлення
     localStorage.setItem(FEED_UPDATE_TIME_KEY, new Date().getTime());
     
-    messageElement.textContent = `Загружено ${items.length} товаров`;
-    showNotification("Данные успешно загружены из фида");
+    messageElement.textContent = `Завантажено ${items.length} товарів`;
+    showNotification("Дані успішно завантажені з фіду");
     
   } catch (error) {
-    console.error("Ошибка загрузки фида:", error);
-    messageElement.textContent = `Ошибка: ${error.message}`;
-    showNotification("Ошибка загрузки данных из фида", "error");
+    console.error("Помилка завантаження фіду:", error);
+    messageElement.textContent = `Помилка: ${error.message}`;
+    showNotification("Помилка завантаження даних з фіду", "error");
   }
 }
 
-// Сохранение продуктов в Firestore
+// Збереження продуктів в Firestore
 function saveProduct(product) {
   const productData = {
     ...product,
@@ -516,15 +537,15 @@ function saveProduct(product) {
   
   return productRef.set(productData, { merge: true })
     .then(() => {
-      showNotification("Товар успешно сохранен");
-      loadProducts(); // Перезагружаем список товаров
+      showNotification("Товар успішно збережено");
+      loadProducts(); // Перезавантажуємо список товарів
       return productData.id;
     })
     .catch((error) => {
-      console.error("Ошибка сохранения товара: ", error);
-      showNotification("Ошибка сохранения товара", "error");
+      console.error("Помилка збереження товару: ", error);
+      showNotification("Помилка збереження товару", "error");
       
-      // Сохраняем в localStorage как запасной вариант
+      // Зберігаємо в localStorage як запасний варіант
       if (!product.id) {
         product.id = generateId();
         products.push(product);
@@ -544,12 +565,12 @@ function saveProduct(product) {
     });
 }
 
-// Генерация ID для нового товара
+// Генерація ID для нового товару
 function generateId() {
   return 'product-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
 }
 
-// Показать скелетон загрузки
+// Показати скелетон завантаження
 function showLoadingSkeleton() {
   const grid = document.getElementById("product-grid");
   grid.innerHTML = '';
@@ -569,31 +590,31 @@ function showLoadingSkeleton() {
   }
 }
 
-// Рендеринг продуктов
+// Рендеринг продуктів
 function renderProducts() {
   const grid = document.getElementById("product-grid");
-  if (!grid) return; // Защита от отсутствия элемента
+  if (!grid) return; // Захист від відсутності елемента
   
   grid.innerHTML = '';
   
-  // Получаем отфильтрованные продукты
+  // Отримуємо відфільтровані продукти
   let filteredProducts = getFilteredProducts();
   
-  // Обновляем заголовок и счетчик
-  document.getElementById('products-title').textContent = showingFavorites ? 'Избранные товары' : 'Все товары';
-  document.getElementById('products-count').textContent = `Найдено: ${filteredProducts.length}`;
+  // Оновлюємо заголовок і лічильник
+  document.getElementById('products-title').textContent = showingFavorites ? 'Обрані товари' : 'Всі товари';
+  document.getElementById('products-count').textContent = `Знайдено: ${filteredProducts.length}`;
   
-  // Применяем пагинацию
+  // Застосовуємо пагінацію
   const startIndex = (currentPage - 1) * productsPerPage;
   const paginatedProducts = filteredProducts.slice(startIndex, startIndex + productsPerPage);
   
-  // Рендерим продукты
+  // Рендеримо продукти
   if (paginatedProducts.length === 0) {
     grid.innerHTML = `
       <div class="empty-cart">
         <i class="fas fa-search"></i>
-        <h3>Товары не найдены</h3>
-        <p>Попробуйте изменить параметры фильтрации</p>
+        <h3>Товари не знайдено</h3>
+        <p>Спробуйте змінити параметри фільтрації</p>
       </div>
     `;
     updatePagination();
@@ -613,7 +634,7 @@ function renderProducts() {
     const card = document.createElement("div");
     card.className = "card";
     
-    // Проверяем, добавлен ли товар в избранное
+    // Перевіряємо, чи доданий товар в обране
     const isFavorite = favorites[product.id];
     
     card.innerHTML = `
@@ -621,7 +642,7 @@ function renderProducts() {
       ${product.isNew ? '<div class="card-badge">Новинка</div>' : ''}
       <img src="${product.image || 'https://via.placeholder.com/300x200?text=No+Image'}" alt="${product.title}">
       <h3>${product.title}</h3>
-      <p>${product.description || 'Описание отсутствует'}</p>
+      <p>${product.description || 'Опис відсутній'}</p>
       <div class="price-container">
         <span class="price">${formatPrice(product.price)} ₴</span>
         ${product.oldPrice ? `<span class="old-price">${formatPrice(product.oldPrice)} ₴</span>` : ''}
@@ -636,10 +657,10 @@ function renderProducts() {
       </div>
       <div class="card-actions">
         <button class="btn btn-buy" onclick="addToCart('${product.id}')">
-          <i class="fas fa-shopping-cart"></i> Купить
+          <i class="fas fa-shopping-cart"></i> Купити
         </button>
         <button class="btn btn-detail" onclick="showProductDetail('${product.id}')">
-          <i class="fas fa-info"></i> Подробнее
+          <i class="fas fa-info"></i> Детальніше
         </button>
         <button class="btn-favorite ${isFavorite ? 'active' : ''}" onclick="toggleFavorite('${product.id}')">
           <i class="${isFavorite ? 'fas' : 'far'} fa-heart"></i>
@@ -653,12 +674,12 @@ function renderProducts() {
   updatePagination();
 }
 
-// Рендеринг избранных товаров
+// Рендеринг обраних товарів
 function renderFeaturedProducts() {
   const featuredContainer = document.getElementById("featured-products");
   featuredContainer.innerHTML = '';
   
-  // Берем первые 5 товаров
+  // Беремо перші 5 товарів
   const featuredProducts = products.slice(0, 5);
   
   featuredProducts.forEach(product => {
@@ -677,16 +698,16 @@ function renderFeaturedProducts() {
   });
 }
 
-// Рендеринг категории
+// Рендеринг категорії
 function renderCategories() {
   const categorySelect = document.getElementById("category");
   
-  // Очищаем все опции кроме первой
+  // Очищаємо всі опції крім першої
   while (categorySelect.options.length > 1) {
     categorySelect.remove(1);
   }
   
-  // Получаем уникальные категории
+  // Отримуємо унікальні категорії
   const categories = [...new Set(products.map(product => product.category))].filter(Boolean);
   
   categories.forEach(category => {
@@ -697,16 +718,16 @@ function renderCategories() {
   });
 }
 
-// Рендеринг брендов
+// Рендеринг брендів
 function renderBrands() {
   const brandSelect = document.getElementById("brand");
   
-  // Очищаем все опции кроме первой
+  // Очищаємо всі опції крім першої
   while (brandSelect.options.length > 1) {
     brandSelect.remove(1);
   }
   
-  // Получаем уникальные бренды
+  // Отримуємо унікальні бренди
   const brands = [...new Set(products.map(product => product.brand))].filter(Boolean);
   
   brands.forEach(brand => {
@@ -717,12 +738,12 @@ function renderBrands() {
   });
 }
 
-// Форматирование цены
+// Форматування ціни
 function formatPrice(price) {
-  return new Intl.NumberFormat('ru-RU').format(price);
+  return new Intl.NumberFormat('uk-UA').format(price);
 }
 
-// Показать уведомление
+// Показати сповіщення
 function showNotification(message, type = "success") {
   const notification = document.getElementById("notification");
   const text = document.getElementById("notification-text");
@@ -735,27 +756,27 @@ function showNotification(message, type = "success") {
   }, 3000);
 }
 
-// Добавление товара в корзину
+// Додавання товару в кошик
 function addToCart(productId) {
   if (!cart[productId]) {
     cart[productId] = 0;
   }
   cart[productId]++;
   
-  // Сохраняем корзину в localStorage
+  // Зберігаємо кошик в localStorage
   localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
   
   updateCartCount();
-  showNotification("Товар добавлен в корзину");
+  showNotification("Товар додано до кошика");
 }
 
-// Обновление счетчика корзины
+// Оновлення лічильника кошика
 function updateCartCount() {
   const count = Object.values(cart).reduce((total, qty) => total + qty, 0);
   document.getElementById("cart-count").textContent = count;
 }
 
-// Добавление/удаление из избранного
+// Додавання/видалення з обраного
 function toggleFavorite(productId) {
   if (favorites[productId]) {
     delete favorites[productId];
@@ -763,14 +784,14 @@ function toggleFavorite(productId) {
     favorites[productId] = true;
   }
   
-  // Сохраняем избранное в localStorage
+  // Зберігаємо обране в localStorage
   localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favorites));
   
-  // Перерисовываем продукты, если находимся в режиме избранного
+  // Перемальовуємо продукти, якщо знаходимось у режимі обраного
   if (showingFavorites) {
     renderProducts();
   } else {
-    // Иначе просто обновляем иконку сердца у товара
+    // Інакше просто оновлюємо іконку серця у товару
     const heartIcon = document.querySelector(`button[onclick="toggleFavorite('${productId}')"] i`);
     if (heartIcon) {
       heartIcon.className = favorites[productId] ? 'fas fa-heart' : 'far fa-heart';
@@ -778,10 +799,10 @@ function toggleFavorite(productId) {
     }
   }
   
-  showNotification(favorites[productId] ? "Добавлено в избранное" : "Удалено из избранное");
+  showNotification(favorites[productId] ? "Додано в обране" : "Видалено з обраного");
 }
 
-// Переключение режима отображения избранного
+// Переключення режиму відображення обраного
 function toggleFavorites() {
   showingFavorites = !showingFavorites;
   
@@ -797,13 +818,13 @@ function toggleFavorites() {
   applyFilters();
 }
 
-// Применение фильтров
+// Застосування фільтрів
 function applyFilters() {
-  // Получаем значения цены
+  // Отримуємо значення ціни
   const minPrice = document.getElementById("price-min").value ? parseInt(document.getElementById("price-min").value) : null;
   const maxPrice = document.getElementById("price-max").value ? parseInt(document.getElementById("price-max").value) : null;
   
-  // Обновляем фильтры
+  // Оновлюємо фільтри
   currentFilters.minPrice = minPrice;
   currentFilters.maxPrice = maxPrice;
   currentFilters.category = document.getElementById("category").value;
@@ -814,12 +835,12 @@ function applyFilters() {
   currentPage = 1;
   renderProducts();
   
-  // Обновляем счетчик товаров
+  // Оновлюємо лічильник товарів
   const filteredProducts = getFilteredProducts();
-  document.getElementById('products-count').textContent = `Найдено: ${filteredProducts.length}`;
+  document.getElementById('products-count').textContent = `Знайдено: ${filteredProducts.length}`;
 }
 
-// Сброс фильтров
+// Скидання фільтрів
 function resetFilters() {
   document.getElementById("price-min").value = '';
   document.getElementById("price-max").value = '';
@@ -842,7 +863,7 @@ function resetFilters() {
   applyFilters();
 }
 
-// Установка режима просмотра
+// Встановлення режиму перегляду
 function setViewMode(mode) {
   localStorage.setItem(VIEW_MODE_KEY, mode);
   
@@ -860,7 +881,7 @@ function setViewMode(mode) {
   renderProducts();
 }
 
-// Показать детали товара
+// Показати деталі товару
 function showProductDetail(productId) {
   const product = products.find(p => p.id === productId);
   if (!product) return;
@@ -878,13 +899,13 @@ function showProductDetail(productId) {
           ${product.oldPrice ? `<span class="old-price">${formatPrice(product.oldPrice)} ₴</span>` : ''}
         </div>
         <div class="product-meta">
-          <div><i class="fas fa-box"></i> ${product.inStock ? 'В наличии' : 'Нет в наличии'}</div>
-          <div><i class="fas fa-truck"></i> Доставка за 1-2 дня</div>
-          <div><i class="fas fa-shield-alt"></i> Гарантия 12 месяцев</div>
+          <div><i class="fas fa-box"></i> ${product.inStock ? 'В наявності' : 'Немає в наявності'}</div>
+          <div><i class="fas fa-truck"></i> Доставка за 1-2 дні</div>
+          <div><i class="fas fa-shield-alt"></i> Гарантія 12 місяців</div>
         </div>
         <div class="product-description">
-          <h4>Описание</h4>
-          <p>${product.description || 'Описание отсутствует'}</p>
+          <h4>Опис</h4>
+          <p>${product.description || 'Опис відсутній'}</p>
         </div>
         <div class="quantity-control">
           <button class="quantity-btn" onclick="changeQuantity(-1)">-</button>
@@ -893,7 +914,7 @@ function showProductDetail(productId) {
         </div>
         <div class="detail-actions">
           <button class="btn btn-buy" onclick="addToCartWithQuantity('${product.id}')">
-            <i class="fas fa-shopping-cart"></i> Добавить в корзину
+            <i class="fas fa-shopping-cart"></i> Додати до кошика
           </button>
           <button class="btn-favorite ${favorites[product.id] ? 'active' : ''}" onclick="toggleFavorite('${product.id}')">
             <i class="${favorites[product.id] ? 'fas' : 'far'} fa-heart"></i>
@@ -906,7 +927,7 @@ function showProductDetail(productId) {
   openModal();
 }
 
-// Добавление товара в корзину с указанным количеством
+// Додавання товару в кошик із зазначеною кількістю
 function addToCartWithQuantity(productId) {
   const quantity = parseInt(document.getElementById("product-quantity").value) || 1;
   
@@ -915,15 +936,15 @@ function addToCartWithQuantity(productId) {
   }
   cart[productId] += quantity;
   
-  // Сохраняем корзину в localStorage
+  // Зберігаємо кошик в localStorage
   localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
   
   updateCartCount();
-  showNotification("Товар добавлен в корзину");
+  showNotification("Товар додано до кошика");
   closeModal();
 }
 
-// Изменение количества товара
+// Зміна кількості товару
 function changeQuantity(delta) {
   const input = document.getElementById("product-quantity");
   let value = parseInt(input.value) || 1;
@@ -934,17 +955,17 @@ function changeQuantity(delta) {
   input.value = value;
 }
 
-// Открытие корзины
+// Відкриття кошика
 function openCart() {
   const modalContent = document.getElementById("modal-content");
   
   if (Object.keys(cart).length === 0) {
     modalContent.innerHTML = `
-      <h3>Корзина</h3>
+      <h3>Кошик</h3>
       <div class="empty-cart">
         <i class="fas fa-shopping-cart"></i>
-        <h3>Корзина пуста</h3>
-        <p>Добавьте товары из каталога</p>
+        <h3>Кошик порожній</h3>
+        <p>Додайте товари з каталогу</p>
       </div>
     `;
   } else {
@@ -976,13 +997,13 @@ function openCart() {
     }
     
     modalContent.innerHTML = `
-      <h3>Корзина</h3>
+      <h3>Кошик</h3>
       <div class="cart-items">
         ${cartItemsHTML}
       </div>
       <div class="cart-footer">
-        <div class="cart-total">Итого: ${formatPrice(total)} ₴</div>
-        <button class="btn btn-buy" onclick="checkout()">Оформить заказ</button>
+        <div class="cart-total">Разом: ${formatPrice(total)} ₴</div>
+        <button class="btn btn-buy" onclick="checkout()">Оформити замовлення</button>
       </div>
     `;
   }
@@ -990,9 +1011,9 @@ function openCart() {
   openModal();
 }
 
-// Изменение количества товара в корзине
+// Зміна кількості товару в кошику
 function changeCartQuantity(productId, delta) {
-  if (!cart[productId] && delta < 1) return; // Защита от отрицательного количества
+  if (!cart[productId] && delta < 1) return; // Захист від від'ємної кількості
   
   cart[productId] += delta;
   
@@ -1000,40 +1021,40 @@ function changeCartQuantity(productId, delta) {
     delete cart[productId];
   }
   
-  // Сохраняем корзину в localStorage
+  // Зберігаємо кошик в localStorage
   localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
   
   updateCartCount();
-  openCart(); // Перерисовываем корзину
+  openCart(); // Перемальовуємо кошик
 }
 
-// Удаление товара из корзины
+// Видалення товару з кошика
 function removeFromCart(productId) {
   delete cart[productId];
   
-  // Сохраняем корзину в localStorage
+  // Зберігаємо кошик в localStorage
   localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
   
   updateCartCount();
-  openCart(); // Перерисовываем корзину
+  openCart(); // Перемальовуємо кошик
 }
 
-// ===== ОФОРМЛЕНИЕ ЗАКАЗА =====
+// ===== ОФОРМЛЕННЯ ЗАМОВЛЕННЯ =====
 function checkout() {
   if (!currentUser) {
     closeModal();
     openAuthModal();
-    showNotification("Для оформления заказа необходимо авторизоваться", "warning");
+    showNotification("Для оформлення замовлення необхідно авторизуватися", "warning");
     return;
   }
 
   const modalContent = document.getElementById("modal-content");
   modalContent.innerHTML = `
-    <h3>Оформление заказа</h3>
+    <h3>Оформлення замовлення</h3>
     <form class="checkout-form" onsubmit="placeOrder(event)">
       <div class="form-row">
         <div class="form-group">
-          <label>Имя и фамилия*</label>
+          <label>Ім'я та прізвище*</label>
           <input type="text" id="order-name" required value="${currentUser.displayName || ''}">
         </div>
         <div class="form-group">
@@ -1047,122 +1068,122 @@ function checkout() {
       </div>
       
       <div class="delivery-section">
-        <h4>Доставка Новой Почтой</h4>
+        <h4>Доставка Новою Поштою</h4>
         <div class="delivery-notice">
           <i class="fas fa-info-circle"></i>
-          <p>Доставка осуществляется по тарифам перевозчика. Стоимость доставки рассчитывается отдельно и оплачивается при получении заказа.</p>
+          <p>Доставка здійснюється за тарифами перевізника. Вартість доставки розраховується окремо та оплачується при отриманні замовлення.</p>
         </div>
         <div class="form-group">
-          <label>Город*</label>
-          <input type="text" id="np-city" required placeholder="Введите ваш город">
+          <label>Місто*</label>
+          <input type="text" id="np-city" required placeholder="Введіть ваше місто">
         </div>
         <div class="form-group">
-          <label>Отделение Новой Почты*</label>
-          <input type="text" id="np-warehouse" required placeholder="Номер отделения">
+          <label>Відділення Нової Пошти*</label>
+          <input type="text" id="np-warehouse" required placeholder="Номер відділення">
         </div>
       </div>
       
       <div class="payment-section">
-        <h4>Способ оплаты</h4>
+        <h4>Спосіб оплати</h4>
         <div class="payment-options">
           <label class="payment-option">
             <input type="radio" name="payment" value="cash" checked>
-            <span>Наличными при получении</span>
+            <span>Готівкою при отриманні</span>
           </label>
           <label class="payment-option">
             <input type="radio" name="payment" value="card">
-            <span>Онлайн-оплата картой</span>
+            <span>Онлайн-оплата карткою</span>
           </label>
         </div>
       </div>
       
       <div class="order-summary">
-        <h4>Ваш заказ</h4>
+        <h4>Ваше замовлення</h4>
         <div class="order-items">
           ${generateOrderSummary()}
         </div>
         <div class="order-total">
           <div class="total-line">
-            <span>Сумма заказа:</span>
+            <span>Сума замовлення:</span>
             <span>${formatPrice(calculateCartTotal())} ₴</span>
           </div>
           <div class="total-line">
             <span>Доставка:</span>
-            <span>Согласно тарифам перевозчика</span>
+            <span>Згідно тарифів перевізника</span>
           </div>
           <div class="total-line final-total">
-            <span>Итого:</span>
+            <span>Разом:</span>
             <span>${formatPrice(calculateCartTotal())} ₴</span>
           </div>
         </div>
       </div>
       
-      <button type="submit" class="btn btn-buy">Подтвердить заказ</button>
+      <button type="submit" class="btn btn-buy">Підтвердити замовлення</button>
     </form>
   `;
   
   openModal();
 }
 
-// ===== СОХРАНЕНИЕ ЗАКАЗА В FIREBASE =====
+// ===== ЗБЕРЕЖЕННЯ ЗАМОВЛЕННЯ В FIREBASE =====
 function placeOrder(event) {
   event.preventDefault();
   
   if (!currentUser || !currentUser.uid) {
     closeModal();
     openAuthModal();
-    showNotification("Для оформления заказа необходимо авторизоваться", "warning");
+    showNotification("Для оформлення замовлення необхідно авторизуватися", "warning");
     return;
   }
   
-  // Получаем данные формы
+  // Отримуємо дані форми
   const name = document.getElementById('order-name').value.trim();
   const phone = document.getElementById('order-phone').value.trim();
   const email = document.getElementById('order-email').value.trim();
   const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
   
-  // Валидация данных
+  // Валідація даних
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
-    showNotification("Введите корректный email адрес", "error");
+    showNotification("Введіть коректну email адресу", "error");
     return;
   }
   
   const phoneRegex = /^[\+]?[0-9]{10,15}$/;
   const cleanPhone = phone.replace(/\D/g, '');
   if (!phoneRegex.test(cleanPhone)) {
-    showNotification("Введите корректный номер телефона", "error");
+    showNotification("Введіть коректний номер телефону", "error");
     return;
   }
   
-  // Получаем данные доставки
+  // Отримуємо дані доставки
   const city = document.getElementById('np-city').value.trim();
   const warehouse = document.getElementById('np-warehouse').value.trim();
   
   if (!city || !warehouse) {
-    showNotification('Заполните все поля для доставки Новой Почтой', 'error');
+    showNotification('Заповніть всі поля для доставки Новою Поштою', 'error');
     return;
   }
   
   const deliveryDetails = { 
-    service: 'Новая Почта', 
+    service: 'Нова Пошта', 
     city, 
     warehouse 
   };
   
-  // Проверяем обязательные поля
+  // Перевіряємо обов'язкові поля
   if (!name || !phone || !email) {
-    showNotification('Заполните все обязательные поля', 'error');
+    showNotification('Заповніть всі обов\'язкові поля', 'error');
     return;
   }
   
-  // Проверяем, что корзина не пуста
+  // Перевіряємо, що кошик не порожній
   if (Object.keys(cart).length === 0) {
-    showNotification('Корзина пуста', 'error');
+    showNotification('Кошик порожній', 'error');
     return;
   }
   
-  // Создаем объект заказа
+  // Створюємо об'єкт замовлення
   const order = {
     userId: currentUser.uid,
     userName: name,
@@ -1177,36 +1198,36 @@ function placeOrder(event) {
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
   
-  // Сохраняем заказ в Firestore
+  // Зберігаємо замовлення в Firestore
   db.collection("orders").add(order)
     .then((docRef) => {
-      // Очищаем корзину
+      // Очищаємо кошик
       cart = {};
       localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
       updateCartCount();
       
-      showNotification(`Заказ успешно оформлен. Номер вашего заказа: ${docRef.id}`);
+      showNotification(`Замовлення успішно оформлено. Номер вашого замовлення: ${docRef.id}`);
       closeModal();
       showOrderConfirmation(docRef.id, order);
     })
     .catch(error => {
-      console.error("Ошибка оформления заказа: ", error);
-      showNotification("Ошибка оформления заказа", "error");
+      console.error("Помилка оформлення замовлення: ", error);
+      showNotification("Помилка оформлення замовлення", "error");
     });
 }
 
-// Переключение деталей доставки
+// Переключення деталей доставки
 function toggleDeliveryDetails(method) {
-  // Скрываем все блоки с деталями
+  // Приховуємо всі блоки з деталями
   document.querySelectorAll('.delivery-details').forEach(detail => {
     detail.classList.remove('active');
   });
   
-  // Показываем нужный блок
+  // Показуємо потрібний блок
   document.getElementById(`${method}-details`).classList.add('active');
 }
 
-// Генерация сводки заказа
+// Генерація підсумку замовлення
 function generateOrderSummary() {
   let summaryHTML = '';
   
@@ -1225,7 +1246,7 @@ function generateOrderSummary() {
   return summaryHTML;
 }
 
-// Расчет общей стоимости корзины
+// Розрахунок загальної вартості кошика
 function calculateCartTotal() {
   return Object.entries(cart).reduce((sum, [productId, quantity]) => {
     const product = products.find(p => p.id === productId);
@@ -1233,7 +1254,7 @@ function calculateCartTotal() {
   }, 0);
 }
 
-// Показ подтверждения заказа
+// Показ підтвердження замовлення
 function showOrderConfirmation(orderId, order) {
   const modalContent = document.getElementById("modal-content");
   
@@ -1241,26 +1262,26 @@ function showOrderConfirmation(orderId, order) {
     <div class="order-confirmation">
       <div class="confirmation-header">
         <i class="fas fa-check-circle"></i>
-        <h3>Заказ успешно оформлен!</h3>
+        <h3>Замовлення успішно оформлено!</h3>
       </div>
       <div class="confirmation-details">
-        <p><strong>Номер заказа:</strong> ${orderId}</p>
-        <p><strong>Имя:</strong> ${order.userName}</p>
+        <p><strong>Номер замовлення:</strong> ${orderId}</p>
+        <p><strong>Ім'я:</strong> ${order.userName}</p>
         <p><strong>Телефон:</strong> ${order.userPhone}</p>
         <p><strong>Email:</strong> ${order.userEmail}</p>
-        <p><strong>Способ доставки:</strong> ${order.delivery.service}</p>
+        <p><strong>Спосіб доставки:</strong> ${order.delivery.service}</p>
         <div class="delivery-notice">
           <i class="fas fa-info-circle"></i>
-          <p>Доставка осуществляется по тарифам перевозчика. Стоимость доставки рассчитывается отдельно и оплачивается при получении заказа.</p>
+          <p>Доставка здійснюється за тарифами перевізника. Вартість доставки розраховується окремо та оплачується при отриманні замовлення.</p>
         </div>
-        <p><strong>Город:</strong> ${order.delivery.city}</p>
-        <p><strong>Отделение:</strong> ${order.delivery.warehouse}</p>
-        <p><strong>Способ оплаты:</strong> ${order.paymentMethod === 'cash' ? 'Наличными при получении' : 'Онлайн-оплата картой'}</p>
-        <p><strong>Сумма товаров:</strong> ${formatPrice(order.total)} ₴</p>
+        <p><strong>Місто:</strong> ${order.delivery.city}</p>
+        <p><strong>Відділення:</strong> ${order.delivery.warehouse}</p>
+        <p><strong>Спосіб оплати:</strong> ${order.paymentMethod === 'cash' ? 'Готівкою при отриманні' : 'Онлайн-оплата карткою'}</p>
+        <p><strong>Сума товарів:</strong> ${formatPrice(order.total)} ₴</p>
       </div>
       <div class="confirmation-actions">
-        <button class="btn btn-detail" onclick="closeModal()">Продолжить покупки</button>
-        <button class="btn" onclick="viewOrders()">Мои заказы</button>
+        <button class="btn btn-detail" onclick="closeModal()">Продовжити покупки</button>
+        <button class="btn" onclick="viewOrders()">Мої замовлення</button>
       </div>
     </div>
   `;
@@ -1268,25 +1289,25 @@ function showOrderConfirmation(orderId, order) {
   openModal();
 }
 
-// Открытие модального окна
+// Відкриття модального вікна
 function openModal() {
   document.getElementById("modal").classList.add("active");
 }
 
-// Закрытие модального окна
+// Закриття модального вікна
 function closeModal() {
   document.getElementById("modal").classList.remove("active");
 }
 
-// Открытие модального окна авторизации
+// Відкриття модального вікна авторизації
 function openAuthModal() {
   const modalContent = document.getElementById("modal-content");
   modalContent.innerHTML = `
-    <h3>Вход в систему</h3>
+    <h3>Вхід в систему</h3>
     <div class="auth-tabs">
-      <div class="auth-tab active" onclick="switchAuthTab('login')">Вход</div>
-      <div class="auth-tab" onclick="switchAuthTab('register')">Регистрация</div>
-      <div class="auth-tab" onclick="switchAuthTab('admin')">Администратор</div>
+      <div class="auth-tab active" onclick="switchAuthTab('login')">Вхід</div>
+      <div class="auth-tab" onclick="switchAuthTab('register')">Реєстрація</div>
+      <div class="auth-tab" onclick="switchAuthTab('admin')">Адміністратор</div>
     </div>
     <form id="login-form" onsubmit="login(event)">
       <div class="form-group">
@@ -1297,11 +1318,11 @@ function openAuthModal() {
         <label>Пароль</label>
         <input type="password" required>
       </div>
-      <button type="submit" class="btn btn-detail">Войти</button>
+      <button type="submit" class="btn btn-detail">Увійти</button>
     </form>
     <form id="register-form" style="display:none;" onsubmit="register(event)">
       <div class="form-group">
-        <label>Имя</label>
+        <label>Ім'я</label>
         <input type="text" required>
       </div>
       <div class="form-group">
@@ -1312,22 +1333,22 @@ function openAuthModal() {
         <label>Пароль</label>
         <input type="password" required minlength="6">
       </div>
-      <button type="submit" class="btn btn-detail">Зарегистрироваться</button>
+      <button type="submit" class="btn btn-detail">Зареєструватися</button>
     </form>
     <div id="admin-auth-form" style="display:none;">
-      <p>Для доступа к панели администратора введите пароль:</p>
+      <p>Для доступу до панелі адміністратора введіть пароль:</p>
       <div class="form-group">
-        <label>Пароль администратора</label>
+        <label>Пароль адміністратора</label>
         <input type="password" id="admin-password" required>
       </div>
-      <button class="btn btn-admin" onclick="verifyAdminPassword()">Получить права администратора</button>
+      <button class="btn btn-admin" onclick="verifyAdminPassword()">Отримати права адміністратора</button>
     </div>
   `;
   
   openModal();
 }
 
-// Переключение вкладок авторизации
+// Переключення вкладок авторизації
 function switchAuthTab(tab) {
   const loginForm = document.getElementById("login-form");
   const registerForm = document.getElementById("register-form");
@@ -1354,7 +1375,7 @@ function switchAuthTab(tab) {
   }
 }
 
-// Вход в систему
+// Вхід в систему
 function login(event) {
   event.preventDefault();
   const email = event.target.querySelector('input[type="email"]').value;
@@ -1362,24 +1383,24 @@ function login(event) {
   
   auth.signInWithEmailAndPassword(email, password)
     .then(() => {
-      showNotification("Вход выполнен успешно");
+      showNotification("Вхід виконано успішно");
       closeModal();
     })
     .catch(error => {
-      let message = "Ошибка входа";
+      let message = "Помилка входу";
       switch (error.code) {
         case 'auth/user-not-found':
-          message = "Пользователь не найден";
+          message = "Користувач не знайдений";
           break;
         case 'auth/wrong-password':
-          message = "Неверный пароль";
+          message = "Невірний пароль";
           break;
       }
       showNotification(message, "error");
     });
 }
 
-// Регистрация
+// Реєстрація
 function register(event) {
   event.preventDefault();
   const name = event.target.querySelector('input[type="text"]').value;
@@ -1388,75 +1409,83 @@ function register(event) {
   
   auth.createUserWithEmailAndPassword(email, password)
     .then((userCredential) => {
-      // Обновляем профиль пользователя
+      // Оновлюємо профіль користувача
       return userCredential.user.updateProfile({
         displayName: name
       });
     })
     .then(() => {
-      showNotification("Регистрация выполнена успешно");
+      showNotification("Реєстрація виконана успішно");
       closeModal();
     })
     .catch(error => {
-      console.error("Ошибка регистрации: ", error);
-      showNotification("Ошибка регистрации: " + error.message, "error");
+      console.error("Помилка реєстрації: ", error);
+      showNotification("Помилка реєстрації: " + error.message, "error");
     });
 }
 
-// Функция проверки пароля администратора
+// Функція перевірки пароля адміністратора
 function verifyAdminPassword() {
   const password = document.getElementById("admin-password").value;
   if (password === ADMIN_PASSWORD) {
     if (!currentUser) {
-      showNotification("Сначала войдите в систему", "error");
+      showNotification("Спочатку увійдіть в систему", "error");
       switchAuthTab('login');
       return;
     }
     
-    // Сохраняем пользователя как администратора
+    // Зберігаємо користувача як адміністратора
     const admins = JSON.parse(localStorage.getItem(ADMINS_STORAGE_KEY) || '{}');
     admins[currentUser.uid] = true;
     localStorage.setItem(ADMINS_STORAGE_KEY, JSON.stringify(admins));
     
     document.getElementById("admin-panel").style.display = "block";
     adminMode = true;
-    showNotification("Права администратора получены");
+    showNotification("Права адміністратора отримані");
     closeModal();
     
-    // Загружаем заказы для админ-панели
+    // Завантажуємо замовлення для адмін-панелі
     loadAdminOrders();
+    
+    // Показуємо лічильник переглядів
+    document.getElementById("page-views-container").style.display = "block";
+    setupPageCounter();
   } else {
-    showNotification("Неверный пароль администратора", "error");
+    showNotification("Невірний пароль адміністратора", "error");
   }
 }
 
-// Функция для ввода пароля администратора
+// Функція для введення пароля адміністратора
 function promptAdminPassword() {
-  const password = prompt("Введите пароль администратора:");
+  const password = prompt("Введіть пароль адміністратора:");
   if (password === ADMIN_PASSWORD) {
     if (!currentUser) {
-      showNotification("Сначала войдите в систему", "error");
+      showNotification("Спочатку увійдіть в систему", "error");
       openAuthModal();
       return;
     }
     
-    // Сохраняем пользователя как администратора
+    // Зберігаємо користувача як адміністратора
     const admins = JSON.parse(localStorage.getItem(ADMINS_STORAGE_KEY) || '{}');
     admins[currentUser.uid] = true;
     localStorage.setItem(ADMINS_STORAGE_KEY, JSON.stringify(admins));
     
     document.getElementById("admin-panel").style.display = "block";
     adminMode = true;
-    showNotification("Права администратора получены");
+    showNotification("Права адміністратора отримані");
     
-    // Загружаем заказы для админ-панели
+    // Завантажуємо замовлення для адмін-панелі
     loadAdminOrders();
+    
+    // Показуємо лічильник переглядів
+    document.getElementById("page-views-container").style.display = "block";
+    setupPageCounter();
   } else if (password) {
-    showNotification("Неверный пароль администратора", "error");
+    showNotification("Невірний пароль адміністратора", "error");
   }
 }
 
-// Проверка статуса администратора
+// Перевірка статусу адміністратора
 function checkAdminStatus(userId) {
   db.collection("admins").doc(userId).get()
     .then((doc) => {
@@ -1464,27 +1493,31 @@ function checkAdminStatus(userId) {
         document.getElementById("admin-panel").style.display = "block";
         adminMode = true;
         loadAdminOrders();
+        
+        // Показуємо лічильник переглядів
+        document.getElementById("page-views-container").style.display = "block";
+        setupPageCounter();
       }
     })
     .catch((error) => {
-      console.error("Ошибка проверки прав администратора: ", error);
+      console.error("Помилка перевірки прав адміністратора: ", error);
     });
 }
 
-// Выход из системы
+// Вихід з системи
 function logout() {
-  // Не удаляем права администратора при выходе, чтобы не вводить пароль каждый раз
+  // Не видаляємо права адміністратора при виході, щоб не вводити пароль кожного разу
   auth.signOut()
     .then(() => {
-      showNotification("Выход выполнен успешно");
+      showNotification("Вихід виконано успішно");
     })
     .catch(error => {
-      console.error("Ошибка выхода: ", error);
-      showNotification("Ошибка выхода", "error");
+      console.error("Помилка виходу: ", error);
+      showNotification("Помилка виходу", "error");
     });
 }
 
-// Переключение вкладок в админ-панели
+// Переключення вкладок в адмін-панелі
 function switchTab(tabId) {
   const tabs = document.querySelectorAll(".tab");
   const tabContents = document.querySelectorAll(".tab-content");
@@ -1495,28 +1528,28 @@ function switchTab(tabId) {
   document.querySelector(`.tab[onclick="switchTab('${tabId}')"]`).classList.add("active");
   document.getElementById(tabId).classList.add("active");
   
-  // Если переключились на вкладку товаров, загружаем их
+  // Якщо переключилися на вкладку товарів, завантажуємо їх
   if (tabId === 'products-tab') {
     loadAdminProducts();
   }
   
-  // Если переключились на вкладку заказов, загружаем их
+  // Якщо переключилися на вкладку замовлень, завантажуємо їх
   if (tabId === 'orders-tab') {
     loadAdminOrders();
   }
 }
 
-// ===== ЗАГРУЗКА ЗАКАЗОВ В АДМИН-ПАНЕЛИ =====
+// ===== ЗАВАНТАЖЕННЯ ЗАМОВЛЕНЬ В АДМІН-ПАНЕЛІ =====
 function loadAdminOrders() {
   const ordersList = document.getElementById("admin-orders-list");
-  ordersList.innerHTML = '<p>Загрузка заказов...</p>';
+  ordersList.innerHTML = '<p>Завантаження замовлень...</p>';
   
-  // Слушаем обновления в реальном времени
+  // Слухаємо оновлення в реальному часі
   db.collection("orders")
     .orderBy("createdAt", "desc")
     .onSnapshot((querySnapshot) => {
       if (querySnapshot.empty) {
-        ordersList.innerHTML = '<p>Заказов нет</p>';
+        ordersList.innerHTML = '<p>Замовлень немає</p>';
         return;
       }
       
@@ -1524,95 +1557,95 @@ function loadAdminOrders() {
       
       querySnapshot.forEach((doc) => {
         const order = { id: doc.id, ...doc.data() };
-        const orderDate = order.createdAt ? order.createdAt.toDate().toLocaleString('ru-RU') : 'Дата не указана';
+        const orderDate = order.createdAt ? order.createdAt.toDate().toLocaleString('uk-UA') : 'Дата не вказана';
         
-        // Определяем статус заказа
+        // Визначаємо статус замовлення
         let statusClass = 'status-new';
-        let statusText = 'Новый';
+        let statusText = 'Новий';
         
         if (order.status === 'processing') {
           statusClass = 'status-processing';
-          statusText = 'В обработке';
+          statusText = 'В обробці';
         } else if (order.status === 'shipped') {
           statusClass = 'status-shipped';
-          statusText = 'Отправлен';
+          statusText = 'Відправлено';
         } else if (order.status === 'delivered') {
           statusClass = 'status-delivered';
-          statusText = 'Доставлен';
+          statusText = 'Доставлено';
         } else if (order.status === 'cancelled') {
           statusClass = 'status-cancelled';
-          statusText = 'Отменен';
+          statusText = 'Скасовано';
         }
         
         const orderElement = document.createElement('div');
         orderElement.className = 'admin-order-item';
         orderElement.innerHTML = `
           <div class="order-header">
-            <h4>Заказ #${order.id}</h4>
+            <h4>Замовлення #${order.id}</h4>
             <span class="order-date">${orderDate}</span>
           </div>
           <div class="order-info">
-            <p><strong>Клиент:</strong> ${order.userName} (${order.userEmail}, ${order.userPhone})</p>
-            <p><strong>Сумма:</strong> ${formatPrice(order.total)} ₴</p>
+            <p><strong>Клієнт:</strong> ${order.userName} (${order.userEmail}, ${order.userPhone})</p>
+            <p><strong>Сума:</strong> ${formatPrice(order.total)} ₴</p>
             <p><strong>Доставка:</strong> ${order.delivery.service}</p>
             <p><strong>Статус:</strong> <span class="order-status ${statusClass}">${statusText}</span></p>
           </div>
           <div class="admin-order-actions">
-            <button class="btn btn-detail" onclick="viewOrderDetails('${order.id}')">Детали</button>
+            <button class="btn btn-detail" onclick="viewOrderDetails('${order.id}')">Деталі</button>
             <select onchange="changeOrderStatus('${order.id}', this.value)">
-              <option value="new" ${order.status === 'new' ? 'selected' : ''}>Новый</option>
-              <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>В обработке</option>
-              <option value="shipped" ${order.status === 'shipped' ? 'selected' : ''}>Отправлен</option>
-              <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Доставлен</option>
-              <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Отменен</option>
+              <option value="new" ${order.status === 'new' ? 'selected' : ''}>Новий</option>
+              <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>В обробці</option>
+              <option value="shipped" ${order.status === 'shipped' ? 'selected' : ''}>Відправлено</option>
+              <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Доставлено</option>
+              <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Скасовано</option>
             </select>
-            <button class="btn btn-danger" onclick="deleteOrder('${order.id}')">Удалить</button>
+            <button class="btn btn-danger" onclick="deleteOrder('${order.id}')">Видалити</button>
           </div>
         `;
         
         ordersList.appendChild(orderElement);
       });
     }, (error) => {
-      console.error("Ошибка загрузки заказов: ", error);
-      ordersList.innerHTML = '<p>Ошибка загрузки заказов</p>';
+      console.error("Помилка завантаження замовлень: ", error);
+      ordersList.innerHTML = '<p>Помилка завантаження замовлень</p>';
     });
 }
 
-// ===== ИЗМЕНЕНИЕ СТАТУСА ЗАКАЗА =====
+// ===== ЗМІНА СТАТУСУ ЗАМОВЛЕННЯ =====
 function changeOrderStatus(orderId, status) {
   db.collection("orders").doc(orderId).update({
     status,
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   })
   .then(() => {
-    showNotification("Статус заказа обновлен");
+    showNotification("Статус замовлення оновлено");
   })
   .catch((error) => {
-    console.error("Ошибка обновления статуса заказа: ", error);
-    showNotification("Ошибка обновления статуса заказа", "error");
+    console.error("Помилка оновлення статусу замовлення: ", error);
+    showNotification("Помилка оновлення статусу замовлення", "error");
   });
 }
 
-// ===== УДАЛЕНИЕ ЗАКАЗА =====
+// ===== ВИДАЛЕННЯ ЗАМОВЛЕННЯ =====
 function deleteOrder(orderId) {
-  if (confirm("Вы уверены, что хотите удалить этот заказ? Это действие нельзя отменить.")) {
+  if (confirm("Ви впевнені, що хочете видалити це замовлення? Цю дію не можна скасувати.")) {
     db.collection("orders").doc(orderId).delete()
       .then(() => {
-        showNotification("Заказ успешно удален");
+        showNotification("Замовлення успішно видалено");
       })
       .catch((error) => {
-        console.error("Ошибка удаления заказа: ", error);
-        showNotification("Ошибка удаления заказа", "error");
+        console.error("Помилка видалення замовлення: ", error);
+        showNotification("Помилка видалення замовлення", "error");
       });
   }
 }
 
-// ===== ПРОСМОТР ДЕТАЛЕЙ ЗАКАЗА =====
+// ===== ПЕРЕГЛЯД ДЕТАЛЕЙ ЗАМОВЛЕННЯ =====
 function viewOrderDetails(orderId) {
   db.collection("orders").doc(orderId).get()
     .then((doc) => {
       if (!doc.exists) {
-        showNotification("Заказ не найден", "error");
+        showNotification("Замовлення не знайдено", "error");
         return;
       }
       
@@ -1635,43 +1668,43 @@ function viewOrderDetails(orderId) {
         }
       }
       
-      // Форматируем дату
-      const orderDate = order.createdAt ? order.createdAt.toDate().toLocaleString('ru-RU') : 'Дата не указана';
-      const updatedDate = order.updatedAt ? order.updatedAt.toDate().toLocaleString('ru-RU') : 'Дата не указана';
+      // Форматуємо дату
+      const orderDate = order.createdAt ? order.createdAt.toDate().toLocaleString('uk-UA') : 'Дата не вказана';
+      const updatedDate = order.updatedAt ? order.updatedAt.toDate().toLocaleString('uk-UA') : 'Дата не вказана';
       
       modalContent.innerHTML = `
-        <h3>Детали заказа #${order.id}</h3>
+        <h3>Деталі замовлення #${order.id}</h3>
         <div class="order-details">
           <div class="customer-info">
-            <h4>Информация о клиенте</h4>
-            <p><strong>Имя:</strong> ${order.userName}</p>
+            <h4>Інформація про клієнта</h4>
+            <p><strong>Ім'я:</strong> ${order.userName}</p>
             <p><strong>Email:</strong> ${order.userEmail}</p>
             <p><strong>Телефон:</strong> ${order.userPhone}</p>
           </div>
           
           <div class="order-meta">
-            <h4>Информация о заказе</h4>
-            <p><strong>Дата создания:</strong> ${orderDate}</p>
-            <p><strong>Дата обновления:</strong> ${updatedDate}</p>
-            <p><strong>Способ оплата:</strong> ${order.paymentMethod === 'cash' ? 'Наличными при получении' : 'Онлайн-оплата картой'}</p>
+            <h4>Інформація про замовлення</h4>
+            <p><strong>Дата створення:</strong> ${orderDate}</p>
+            <p><strong>Дата оновлення:</strong> ${updatedDate}</p>
+            <p><strong>Спосіб оплати:</strong> ${order.paymentMethod === 'cash' ? 'Готівкою при отриманні' : 'Онлайн-оплата карткою'}</p>
             <p><strong>Статус:</strong> ${order.status}</p>
           </div>
           
           <div class="delivery-info">
             <h4>Доставка</h4>
             <p><strong>Служба:</strong> ${order.delivery.service}</p>
-            ${order.delivery.city ? `<p><strong>Город:</strong> ${order.delivery.city}</p>` : ''}
-            ${order.delivery.warehouse ? `<p><strong>Отделение:</strong> ${order.delivery.warehouse}</p>` : ''}
-            ${order.delivery.address ? `<p><strong>Адрес:</strong> ${order.delivery.address}</p>` : ''}
+            ${order.delivery.city ? `<p><strong>Місто:</strong> ${order.delivery.city}</p>` : ''}
+            ${order.delivery.warehouse ? `<p><strong>Відділення:</strong> ${order.delivery.warehouse}</p>` : ''}
+            ${order.delivery.address ? `<p><strong>Адреса:</strong> ${order.delivery.address}</p>` : ''}
           </div>
           
           <div class="order-items">
-            <h4>Товары</h4>
+            <h4>Товари</h4>
             ${itemsHTML}
           </div>
           
           <div class="order-total">
-            <h4>Итого: ${formatPrice(order.total)} ₴</h4>
+            <h4>Разом: ${formatPrice(order.total)} ₴</h4>
           </div>
         </div>
       `;
@@ -1679,24 +1712,24 @@ function viewOrderDetails(orderId) {
       openModal();
     })
     .catch((error) => {
-      console.error("Ошибка загрузки деталей заказа: ", error);
-      showNotification("Ошибка загрузки деталей заказа", "error");
+      console.error("Помилка завантаження деталей замовлення: ", error);
+      showNotification("Помилка завантаження деталей замовлення", "error");
     });
 }
 
-// Сохранение URL фида
+// Збереження URL фіду
 function saveFeedUrl() {
   const feedUrl = document.getElementById("feed-url").value;
   localStorage.setItem(FEED_URL_KEY, feedUrl);
-  showNotification("URL фида сохранен");
+  showNotification("URL фіду збережено");
 }
 
-// Очистка каталога
+// Очищення каталогу
 function clearCatalog() {
-  if (confirm("Вы уверены, что хотите очистить каталог? Это действие нельзя отменить.")) {
+  if (confirm("Ви впевнені, що хочете очистити каталог? Цю дію не можна скасувати.")) {
     showLoadingSkeleton();
     
-    // Получаем все товары
+    // Отримуємо всі товари
     db.collection("products").get()
       .then((querySnapshot) => {
         const batch = db.batch();
@@ -1712,16 +1745,16 @@ function clearCatalog() {
         renderFeaturedProducts();
         renderCategories();
         renderBrands();
-        showNotification("Каталог очищен");
+        showNotification("Каталог очищено");
       })
       .catch((error) => {
-        console.error("Ошибка при очистке каталога: ", error);
-        showNotification("Ошибка при очистке каталога", "error");
+        console.error("Помилка при очищенні каталогу: ", error);
+        showNotification("Помилка при очищенні каталогу", "error");
       });
   }
 }
 
-// Экспорт в JSON
+// Експорт в JSON
 function exportJSON() {
   const dataStr = JSON.stringify(products, null, 2);
   const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
@@ -1733,36 +1766,36 @@ function exportJSON() {
   linkElement.setAttribute('download', exportFileDefaultName);
   linkElement.click();
   
-  showNotification("Данные экспортированы в JSON");
+  showNotification("Дані експортовано в JSON");
 }
 
-// Функция открытия модального окна добавления товара
+// Функція відкриття модального вікна додавання товару
 function openAddProductModal() {
   const modalContent = document.getElementById("modal-content");
   modalContent.innerHTML = `
-    <h3>Добавить новый товар</h3>
+    <h3>Додати новий товар</h3>
     <form onsubmit="saveNewProduct(event)">
       <div class="form-group">
-        <label>Название товара</label>
+        <label>Назва товару</label>
         <input type="text" id="product-title" required>
       </div>
       <div class="form-group">
-        <label>Описание</label>
+        <label>Опис</label>
         <textarea id="product-description" rows="3"></textarea>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label>Цена, ₴</label>
+          <label>Ціна, ₴</label>
           <input type="number" id="product-price" min="0" step="0.01" required>
         </div>
         <div class="form-group">
-          <label>Старая цена, ₴</label>
+          <label>Стара ціна, ₴</label>
           <input type="number" id="product-old-price" min="0" step="0.01">
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label>Категория</label>
+          <label>Категорія</label>
           <input type="text" id="product-category" required>
         </div>
         <div class="form-group">
@@ -1771,13 +1804,13 @@ function openAddProductModal() {
         </div>
       </div>
       <div class="form-group">
-        <label>URL изображения</label>
+        <label>URL зображення</label>
         <input type="url" id="product-image">
       </div>
       <div class="form-row">
         <div class="form-group">
           <label>
-            <input type="checkbox" id="product-in-stock"> В наличии
+            <input type="checkbox" id="product-in-stock"> В наявності
           </label>
         </div>
         <div class="form-group">
@@ -1787,17 +1820,17 @@ function openAddProductModal() {
         </div>
       </div>
       <div class="form-group">
-        <label>Скидка, %</label>
+        <label>Знижка, %</label>
         <input type="number" id="product-discount" min="0" max="100">
       </div>
-      <button type="submit" class="btn btn-detail">Сохранить товар</button>
+      <button type="submit" class="btn btn-detail">Зберегти товар</button>
     </form>
   `;
   
   openModal();
 }
 
-// Функция сохранения нового товара
+// Функція збереження нового товару
 function saveNewProduct(event) {
   event.preventDefault();
   
@@ -1817,28 +1850,28 @@ function saveNewProduct(event) {
   saveProduct(newProduct)
     .then(() => {
       closeModal();
-      // Переключаемся на вкладку товаров в админ-панели
+      // Переключаємося на вкладку товарів в адмін-панелі
       switchTab('products-tab');
     });
 }
 
-// Функция загрузки товаров в админ-панели
+// Функція завантаження товарів в адмін-панелі
 function loadAdminProducts() {
   const productsList = document.getElementById("admin-products-list");
-  productsList.innerHTML = '<p>Загрузка товаров...</p>';
+  productsList.innerHTML = '<p>Завантаження товарів...</p>';
   
   db.collection("products")
     .orderBy("createdAt", "desc")
     .get()
     .then((querySnapshot) => {
       if (querySnapshot.empty) {
-        productsList.innerHTML = '<p>Товаров нет</p>';
+        productsList.innerHTML = '<p>Товарів немає</p>';
         return;
       }
       
       productsList.innerHTML = `
         <div style="margin-bottom: 15px;">
-          <input type="text" id="admin-products-search" placeholder="Поиск товаров..." oninput="searchAdminProducts(this.value)" style="padding: 8px; width: 100%; border: 1px solid #ddd; border-radius: var(--border-radius);">
+          <input type="text" id="admin-products-search" placeholder="Пошук товарів..." oninput="searchAdminProducts(this.value)" style="padding: 8px; width: 100%; border: 1px solid #ddd; border-radius: var(--border-radius);">
         </div>
         <div class="admin-products-container"></div>
       `;
@@ -1858,19 +1891,19 @@ function loadAdminProducts() {
           <div style="display: flex; justify-content: space-between; align-items: flex-start;">
             <div style="flex: 1;">
               <h4>${product.title}</h4>
-              <p>${product.description || 'Описание отсутствует'}</p>
-              <p><strong>Цена:</strong> ${formatPrice(product.price)} ₴</p>
-              <p><strong>Категория:</strong> ${product.category}</p>
+              <p>${product.description || 'Опис відсутній'}</p>
+              <p><strong>Ціна:</strong> ${formatPrice(product.price)} ₴</p>
+              <p><strong>Категорія:</strong> ${product.category}</p>
               <p><strong>Бренд:</strong> ${product.brand}</p>
-              <p><strong>Статус:</strong> ${product.inStock ? 'В наличии' : 'Нет в наличии'}</p>
+              <p><strong>Статус:</strong> ${product.inStock ? 'В наявності' : 'Немає в наявності'}</p>
             </div>
             <div>
               <img src="${product.image || 'https://via.placeholder.com/100x100?text=No+Image'}" alt="${product.title}" style="width: 100px; height: 100px; object-fit: cover; border-radius: var(--border-radius);">
             </div>
           </div>
           <div style="margin-top: 15px; display: flex; gap: 10px;">
-            <button class="btn btn-detail" onclick="editProduct('${product.id}')">Редактировать</button>
-            <button class="btn" style="background: var(--danger); color: white;" onclick="deleteProduct('${product.id}')">Удалить</button>
+            <button class="btn btn-detail" onclick="editProduct('${product.id}')">Редагувати</button>
+            <button class="btn" style="background: var(--danger); color: white;" onclick="deleteProduct('${product.id}')">Видалити</button>
           </div>
         `;
         
@@ -1878,12 +1911,12 @@ function loadAdminProducts() {
       });
     })
     .catch((error) => {
-      console.error("Ошибка загрузки товаров: ", error);
-      productsList.innerHTML = '<p>Ошибка загрузки товаров</p>';
+      console.error("Помилка завантаження товарів: ", error);
+      productsList.innerHTML = '<p>Помилка завантаження товарів</p>';
     });
 }
 
-// Функция поиска товаров в админ-панели
+// Функція пошуку товарів в адмін-панелі
 function searchAdminProducts(query) {
   const productItems = document.querySelectorAll('.admin-product-item');
   const searchTerm = query.toLowerCase();
@@ -1900,36 +1933,36 @@ function searchAdminProducts(query) {
   });
 }
 
-// Функция редактирования товара
+// Функція редагування товару
 function editProduct(productId) {
   const product = products.find(p => p.id === productId);
   if (!product) return;
   
   const modalContent = document.getElementById("modal-content");
   modalContent.innerHTML = `
-    <h3>Редактировать товар</h3>
+    <h3>Редагувати товар</h3>
     <form onsubmit="updateProduct(event, '${productId}')">
       <div class="form-group">
-        <label>Название товара</label>
+        <label>Назва товару</label>
         <input type="text" id="edit-product-title" value="${product.title}" required>
       </div>
       <div class="form-group">
-        <label>Описание</label>
+        <label>Опис</label>
         <textarea id="edit-product-description" rows="3">${product.description || ''}</textarea>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label>Цена, ₴</label>
+          <label>Ціна, ₴</label>
           <input type="number" id="edit-product-price" value="${product.price}" min="0" step="0.01" required>
         </div>
         <div class="form-group">
-          <label>Старая цена, ₴</label>
+          <label>Стара ціна, ₴</label>
           <input type="number" id="edit-product-old-price" value="${product.oldPrice || ''}" min="0" step="0.01">
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label>Категория</label>
+          <label>Категорія</label>
           <input type="text" id="edit-product-category" value="${product.category}" required>
         </div>
         <div class="form-group">
@@ -1938,13 +1971,13 @@ function editProduct(productId) {
         </div>
       </div>
       <div class="form-group">
-        <label>URL изображения</label>
+        <label>URL зображення</label>
         <input type="url" id="edit-product-image" value="${product.image || ''}">
       </div>
       <div class="form-row">
         <div class="form-group">
           <label>
-            <input type="checkbox" id="edit-product-in-stock" ${product.inStock ? 'checked' : ''}> В наличии
+            <input type="checkbox" id="edit-product-in-stock" ${product.inStock ? 'checked' : ''}> В наявності
           </label>
         </div>
         <div class="form-group">
@@ -1954,17 +1987,17 @@ function editProduct(productId) {
         </div>
       </div>
       <div class="form-group">
-        <label>Скидка, %</label>
+        <label>Знижка, %</label>
         <input type="number" id="edit-product-discount" value="${product.discount || ''}" min="0" max="100">
       </div>
-      <button type="submit" class="btn btn-detail">Сохранить изменения</button>
+      <button type="submit" class="btn btn-detail">Зберегти зміни</button>
     </form>
   `;
   
   openModal();
 }
 
-// Функция обновления товара
+// Функція оновлення товару
 function updateProduct(event, productId) {
   event.preventDefault();
   
@@ -1985,43 +2018,43 @@ function updateProduct(event, productId) {
   saveProduct(updatedProduct)
     .then(() => {
       closeModal();
-      // Обновляем список товаров в админ-панели
+      // Оновлюємо список товарів в адмін-панелі
       loadAdminProducts();
     });
 }
 
-// Функция удаления товара
+// Функція видалення товару
 function deleteProduct(productId) {
-  if (confirm("Вы уверены, что хотите удалить этот товар? Это действие нельзя отменить.")) {
+  if (confirm("Ви впевнені, що хочете видалити цей товар? Цю дію не можна скасувати.")) {
     db.collection("products").doc(productId).delete()
       .then(() => {
-        showNotification("Товар успешно удален");
-        // Обновляем список товаров
+        showNotification("Товар успішно видалено");
+        // Оновлюємо список товарів
         loadAdminProducts();
-        // Перезагружаем основные продукты
+        // Перезавантажуємо основні продукти
         loadProducts();
       })
       .catch((error) => {
-        console.error("Ошибка удаления товара: ", error);
-        showNotification("Ошибка удаления товара", "error");
+        console.error("Помилка видалення товару: ", error);
+        showNotification("Помилка видалення товару", "error");
       });
   }
 }
 
-// Функция открытия профиля пользователя
+// Функція відкриття профілю користувача
 function openProfile() {
   if (!currentUser) {
-    showNotification("Сначала войдите в систему", "warning");
+    showNotification("Спочатку увійдіть в систему", "warning");
     openAuthModal();
     return;
   }
   
   const modalContent = document.getElementById("modal-content");
   modalContent.innerHTML = `
-    <h3>Профиль пользователя</h3>
+    <h3>Профіль користувача</h3>
     <div class="profile-info">
       <div class="form-group">
-        <label>Имя</label>
+        <label>Ім'я</label>
         <input type="text" id="profile-name" value="${currentUser.displayName || ''}">
       </div>
       <div class="form-group">
@@ -2029,17 +2062,17 @@ function openProfile() {
         <input type="email" id="profile-email" value="${currentUser.email || ''}" disabled>
       </div>
       <div class="form-group">
-        <label>Новый пароль</label>
-        <input type="password" id="profile-password" placeholder="Оставьте пустым, если не хотите менять">
+        <label>Новий пароль</label>
+        <input type="password" id="profile-password" placeholder="Залиште порожнім, якщо не хочете змінювати">
       </div>
-      <button class="btn btn-detail" onclick="updateProfile()">Сохранить изменения</button>
+      <button class="btn btn-detail" onclick="updateProfile()">Зберегти зміни</button>
     </div>
   `;
   
   openModal();
 }
 
-// Функция обновления профиля пользователя
+// Функція оновлення профілю користувача
 function updateProfile() {
   const name = document.getElementById('profile-name').value;
   const password = document.getElementById('profile-password').value;
@@ -2049,41 +2082,41 @@ function updateProfile() {
     updates.displayName = name;
   }
   
-  // Обновляем профиль
+  // Оновлюємо профіль
   const promises = [currentUser.updateProfile(updates)];
   
-  // Если указан новый пароль, обновляем его
+  // Якщо вказано новий пароль, оновлюємо його
   if (password) {
     promises.push(currentUser.updatePassword(password));
   }
   
   Promise.all(promises)
     .then(() => {
-      showNotification("Профиль успешно обновлен");
+      showNotification("Профіль успішно оновлено");
       closeModal();
-      // Обновляем имя пользователя в интерфейсе
+      // Оновлюємо ім'я користувача в інтерфейсі
       document.getElementById('user-name').textContent = name || currentUser.email;
     })
     .catch((error) => {
-      console.error("Ошибка обновления профиля: ", error);
-      showNotification("Ошибка обновления профиля: " + error.message, "error");
+      console.error("Помилка оновлення профілю: ", error);
+      showNotification("Помилка оновлення профілю: " + error.message, "error");
     });
 }
 
-// Функция просмотра заказов пользователя
+// Функція перегляду замовлень користувача
 function viewOrders() {
   if (!currentUser) {
-    showNotification("Сначала войдите в систему", "warning");
+    showNotification("Спочатку увійдіть в систему", "warning");
     openAuthModal();
     return;
   }
   
   const modalContent = document.getElementById("modal-content");
-  modalContent.innerHTML = '<h3>Мои заказы</h3><p>Загрузка заказов...</p>';
+  modalContent.innerHTML = '<h3>Мої замовлення</h3><p>Завантаження замовлень...</p>';
   
   openModal();
   
-  // Загружаем заказы пользователя
+  // Завантажуємо замовлення користувача
   db.collection("orders")
     .where("userId", "==", currentUser.uid)
     .orderBy("createdAt", "desc")
@@ -2091,11 +2124,11 @@ function viewOrders() {
     .then((querySnapshot) => {
       if (querySnapshot.empty) {
         modalContent.innerHTML = `
-          <h3>Мои заказы</h3>
+          <h3>Мої замовлення</h3>
           <div class="empty-cart">
             <i class="fas fa-box-open"></i>
-            <h3>Заказов нет</h3>
-            <p>Вы еще не совершали покупок в нашем магазине</p>
+            <h3>Замовлень немає</h3>
+            <p>Ви ще не здійснювали покупок в нашому магазині</p>
           </div>
         `;
         return;
@@ -2104,70 +2137,70 @@ function viewOrders() {
       let ordersHTML = '';
       querySnapshot.forEach((doc) => {
         const order = { id: doc.id, ...doc.data() };
-        const orderDate = order.createdAt ? order.createdAt.toDate().toLocaleString('ru-RU') : 'Дата не указана';
+        const orderDate = order.createdAt ? order.createdAt.toDate().toLocaleString('uk-UA') : 'Дата не вказана';
         
-        // Определяем статус заказа
+        // Визначаємо статус замовлення
         let statusClass = 'status-new';
-        let statusText = 'Новый';
+        let statusText = 'Новий';
         
         if (order.status === 'processing') {
           statusClass = 'status-processing';
-          statusText = 'В обработке';
+          statusText = 'В обробці';
         } else if (order.status === 'shipped') {
           statusClass = 'status-shipped';
-          statusText = 'Отставлен';
+          statusText = 'Відправлено';
         } else if (order.status === 'delivered') {
           statusClass = 'status-delivered';
-          statusText = 'Доставлен';
+          statusText = 'Доставлено';
         } else if (order.status === 'cancelled') {
           statusClass = 'status-cancelled';
-          statusText = 'Отменен';
+          statusText = 'Скасовано';
         }
         
         ordersHTML += `
           <div class="order-item" style="border: 1px solid #eee; padding: 15px; margin-bottom: 15px; border-radius: 8px;">
-            <h4>Заказ #${order.id}</h4>
+            <h4>Змовлення #${order.id}</h4>
             <p><strong>Дата:</strong> ${orderDate}</p>
-            <p><strong>Сумма:</strong> ${formatPrice(order.total)} ₴</p>
+            <p><strong>Сума:</strong> ${formatPrice(order.total)} ₴</p>
             <p><strong>Статус:</strong> <span class="order-status ${statusClass}">${statusText}</span></p>
-            <p><strong>Способ доставки:</strong> ${order.delivery.service}</p>
-            <button class="btn btn-detail" onclick="viewOrderDetails('${order.id}')">Подробнее</button>
+            <p><strong>Спосіб доставки:</strong> ${order.delivery.service}</p>
+            <button class="btn btn-detail" onclick="viewOrderDetails('${order.id}')">Детальніше</button>
           </div>
         `;
       });
       
       modalContent.innerHTML = `
-        <h3>Мои заказы</h3>
+        <h3>Мої замовлення</h3>
         <div class="user-orders">
           ${ordersHTML}
         </div>
       `;
     })
     .catch((error) => {
-      console.error("Ошибка загрузки заказов: ", error);
+      console.error("Помилка завантаження замовлень: ", error);
       modalContent.innerHTML = `
-        <h3>Мои заказы</h3>
-        <p>Ошибка загрузки заказов. Пожалуйста, попробуйте позже.</p>
+        <h3>Мої замовлення</h3>
+        <p>Помилка завантаження замовлень. Будь ласка, спробуйте пізніше.</p>
       `;
     });
 }
 
-// Функция для открытия модального окна с правилами
+// Функція для відкриття модального вікна з правилами
 function openRules() {
   document.getElementById('rules-modal').style.display = 'block';
 }
 
-// Функция для закрытия модального окна с правилами
+// Функція для закриття модального вікна з правилами
 function closeRulesModal() {
   document.getElementById('rules-modal').style.display = 'none';
 }
 
-// Закрытие модального окна при клике outside content
+// Закриття модального вікна при кліку outside content
 document.getElementById('rules-modal').addEventListener('click', function(e) {
   if (e.target === this) {
     closeRulesModal();
   }
 });
 
-// Инициализация приложения после загрузки DOM
-document.addEventListener('DOMContentLoaded', initApp); 
+// Ініціалізація додатка після завантаження DOM
+document.addEventListener('DOMContentLoaded', initApp);

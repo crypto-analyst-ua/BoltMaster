@@ -1,17 +1,17 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
   <meta charset="UTF-8">
-  <title>BoltMaster — Интернет-магазин инструментов в Украине | Купить инструменты</title>
+  <title>BoltMaster — Інтернет-магазин інструментів в Україні | Купити інструменти</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="BoltMaster — интернет-магазин профессионального и бытового инструмента. Широкий ассортимент крепежа, сантехники, слесарного и малярного инструмента. Гарантия качества, доставка по Украине.">
-  <meta name="keywords" content="инструменты, крепеж, сантехника, строительные инструменты, ручной инструмент, купить инструмент, магазин инструментов, Украина">
+  <meta name="description" content="BoltMaster — інтернет-магазин професійного та побутового інструменту. Широкий асортимент кріплення, сантехніки, слюсарного та малярного інструменту. Гарантія якості, доставка по Україні.">
+  <meta name="keywords" content="інструменти, кріплення, сантехніка, будівельні інструменти, ручний інструмент, купити інструмент, магазин інструментів, Україна">
   <meta name="author" content="BoltMaster">
   <meta name="robots" content="index, follow">
   
-  <!-- Open Graph для социальных сетей -->
-  <meta property="og:title" content="BoltMaster — Интернет-магазин инструментов в Украине">
-  <meta property="og:description" content="Широкий ассортимент профессионального и бытового инструмента с доставкой по Украине">
+  <!-- Open Graph для соціальних мереж -->
+  <meta property="og:title" content="BoltMaster — Інтернет-магазин інструментів в Україні">
+  <meta property="og:description" content="Широкий асортимент професійного та побутового інструменту з доставкою по Україні">
   <meta property="og:image" content="https://boltmaster-2025.web.app/images/og-image.jpg">
   <meta property="og:url" content="https://boltmaster-2025.web.app/">
   <meta property="og:type" content="website">
@@ -19,17 +19,17 @@
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="BoltMaster — Интернет-магазин инструментов">
-  <meta name="twitter:description" content="Широкий ассортимент профессионального и бытового инструмента">
+  <meta name="twitter:title" content="BoltMaster — Інтернет-магазин інструментів">
+  <meta name="twitter:description" content="Широкий асортимент професійного та побутового інструменту">
   <meta name="twitter:image" content="https://boltmaster-2025.web.app/images/twitter-image.jpg">
   
-  <!-- Структурированные данные -->
+  <!-- Структуровані дані -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "Store",
     "name": "BoltMaster",
-    "description": "Интернет-магазин профессионального и бытового инструмента",
+    "description": "Інтернет-магазин професійного та побутового інструменту",
     "url": "https://boltmaster-2025.web.app/",
     "telephone": "+380684296978",
     "email": "korovinkonstantin0@gmail.com",
@@ -49,7 +49,7 @@
   </script>
   
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Добавляем необходимые Firebase скрипты -->
+  <!-- Додаємо необхідні Firebase скрипти -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -63,17 +63,17 @@
 <header>
   <div class="logo">
     <i class="fas fa-tools" aria-hidden="true"></i>
-    <h1>BoltMaster — магазин инструментов</h1>
+    <h1>BoltMaster — магазин інструментів</h1>
   </div>
   <div class="header-controls">
     <div class="search-container">
       <i class="fas fa-search search-icon" aria-hidden="true"></i>
-      <input type="text" id="search" placeholder="Поиск..." aria-label="Поиск товаров">
+      <input type="text" id="search" placeholder="Пошук..." aria-label="Пошук товарів">
     </div>
-    <select id="category" aria-label="Выбор категории товаров">
-      <option value="">Все категории</option>
+    <select id="category" aria-label="Вибір категорії товарів">
+      <option value="">Всі категорії</option>
     </select>
-    <button onclick="toggleFavorites()" class="btn" id="favorites-btn" aria-label="Избранное">
+    <button onclick="toggleFavorites()" class="btn" id="favorites-btn" aria-label="Обране">
       <i class="far fa-heart" aria-hidden="true"></i>
     </button>
     
@@ -83,21 +83,21 @@
         <span id="user-name"></span>
       </div>
       <div class="user-dropdown">
-        <a href="#" onclick="openProfile(); return false;">Профиль</a>
-        <a href="#" onclick="viewOrders(); return false;">Мои заказы</a>
-        <a href="#" onclick="logout(); return false;">Выйти</a>
+        <a href="#" onclick="openProfile(); return false;">Профіль</a>
+        <a href="#" onclick="viewOrders(); return false;">Мої замовлення</a>
+        <a href="#" onclick="logout(); return false;">Вийти</a>
       </div>
     </div>
     
     <button onclick="openAuthModal()" class="btn btn-admin" id="login-btn">
-      <i class="fas fa-user" aria-hidden="true"></i> Войти
+      <i class="fas fa-user" aria-hidden="true"></i> Увійти
     </button>
     
     <button onclick="promptAdminPassword()" class="btn btn-admin" id="admin-access-btn" style="display: none;">
-      <i class="fas fa-crown" aria-hidden="true"></i> Админ
+      <i class="fas fa-crown" aria-hidden="true"></i> Адмін
     </button>
     
-    <button onclick="openCart()" class="btn btn-cart" aria-label="Корзина">
+    <button onclick="openCart()" class="btn btn-cart" aria-label="Кошик">
       <i class="fas fa-shopping-cart" aria-hidden="true"></i>
       <span class="cart-count" id="cart-count">0</span>
     </button>
@@ -106,49 +106,49 @@
 
 <main>
   <aside class="filters">
-    <h3>Фильтры</h3>
+    <h3>Фільтри</h3>
     <div class="filter-group">
-      <label>Цена, ₴</label>
+      <label>Ціна, ₴</label>
       <div class="price-range">
-        <input type="number" id="price-min" placeholder="от" min="0" aria-label="Минимальная цена">
+        <input type="number" id="price-min" placeholder="від" min="0" aria-label="Мінімальна ціна">
         <span>-</span>
-        <input type="number" id="price-max" placeholder="до" min="0" aria-label="Максимальная цена">
+        <input type="number" id="price-max" placeholder="до" min="0" aria-label="Максимальна ціна">
       </div>
     </div>
     <div class="filter-group">
       <label>Бренд</label>
-      <select id="brand" aria-label="Фильтр по бренду">
-        <option value="">Все бренды</option>
+      <select id="brand" aria-label="Фільтр по бренду">
+        <option value="">Всі бренди</option>
       </select>
     </div>
     <div class="filter-group">
-      <label>Наличие</label>
-      <select id="availability" aria-label="Фильтр по наличию">
-        <option value="">Все товары</option>
-        <option value="in-stock">В наличии</option>
-        <option value="out-of-stock">Нет в наличии</option>
+      <label>Наявність</label>
+      <select id="availability" aria-label="Фільтр по наявності">
+        <option value="">Всі товари</option>
+        <option value="in-stock">В наявності</option>
+        <option value="out-of-stock">Немає в наявності</option>
       </select>
     </div>
     <div class="filter-group">
-      <label>Сортировка</label>
-      <select id="sort" aria-label="Сортировка товаров">
-        <option value="default">По умолчанию</option>
-        <option value="price-asc">Цена (по возрастанию)</option>
-        <option value="price-desc">Цена (по убыванию)</option>
-        <option value="name-asc">Название (А-Я)</option>
-        <option value="name-desc">Название (Я-А)</option>
-        <option value="popular">По популярности</option>
+      <label>Сортування</label>
+      <select id="sort" aria-label="Сортування товарів">
+        <option value="default">За замовчуванням</option>
+        <option value="price-asc">Ціна (за зростанням)</option>
+        <option value="price-desc">Ціна (за спаданням)</option>
+        <option value="name-asc">Назва (А-Я)</option>
+        <option value="name-desc">Назва (Я-А)</option>
+        <option value="popular">За популярністю</option>
       </select>
     </div>
     <div class="filter-buttons">
-      <button onclick="applyFilters()" class="btn btn-detail">Применить</button>
-      <button onclick="resetFilters()" class="btn">Сбросить</button>
+      <button onclick="applyFilters()" class="btn btn-detail">Застосувати</button>
+      <button onclick="resetFilters()" class="btn">Скинути</button>
     </div>
   </aside>
 
   <section>
     <div class="products-header">
-      <h2 id="products-title">Все товары</h2>
+      <h2 id="products-title">Всі товари</h2>
       <div>
         <span id="products-count"></span>
         <div class="view-options">
@@ -201,7 +201,7 @@
   </section>
 
   <aside>
-    <h3>Популярные товары</h3>
+    <h3>Популярні товари</h3>
     <div class="featured-products" id="featured-products">
       <div class="featured-item">
         <div class="skeleton-img" style="width: 60px; height: 60px;"></div>
@@ -220,27 +220,27 @@
     </div>
     
     <div id="admin-panel" class="admin-panel" style="display:none;">
-      <h4>Админ-панель</h4>
+      <h4>Адмін-панель</h4>
       <div class="tabs">
-        <div class="tab active" onclick="switchTab('import-tab')">Импорт</div>
-        <div class="tab" onclick="switchTab('products-tab')">Товары</div>
-        <div class="tab" onclick="switchTab('orders-tab')">Заказы</div>
+        <div class="tab active" onclick="switchTab('import-tab')">Імпорт</div>
+        <div class="tab" onclick="switchTab('products-tab')">Товари</div>
+        <div class="tab" onclick="switchTab('orders-tab')">Замовлення</div>
       </div>
       
       <div id="import-tab" class="tab-content active">
         <div class="filter-group">
-          <label>URL XML-фида:</label>
+          <label>URL XML-фіду:</label>
           <input type="text" id="feed-url" placeholder="https://api.dropshipping.ua/api/feeds/2091.xml">
-          <button onclick="saveFeedUrl()" class="btn" style="margin-top: 10px;">Сохранить URL</button>
+          <button onclick="saveFeedUrl()" class="btn" style="margin-top: 10px;">Зберегти URL</button>
         </div>
-        <button onclick="loadFromFeed()" class="btn btn-detail">Обновить из фида</button>
+        <button onclick="loadFromFeed()" class="btn btn-detail">Оновити з фіду</button>
         <p id="feed-message" style="font-size:12px; color:#555; margin-top: 10px;"></p>
-        <button onclick="clearCatalog()" class="btn">Очистить каталог</button>
-        <button onclick="exportJSON()" class="btn">Экспорт JSON</button>
+        <button onclick="clearCatalog()" class="btn">Очистити каталог</button>
+        <button onclick="exportJSON()" class="btn">Експорт JSON</button>
       </div>
       
       <div id="products-tab" class="tab-content">
-        <button onclick="openAddProductModal()" class="btn btn-detail">Добавить товар</button>
+        <button onclick="openAddProductModal()" class="btn btn-detail">Додати товар</button>
         <div id="admin-products-list"></div>
       </div>
       
@@ -251,48 +251,53 @@
   </aside>
 </main>
 
-<!-- Добавляем новый раздел "О магазине" перед футером -->
+<!-- Додаємо новий розділ "Про магазин" перед футером -->
 <section class="about-section">
   <div class="container">
-    <h1>BoltMaster — интернет-магазин инструментов в Украине</h1>
+    <h1>BoltMaster — інтернет-магазин інструментів в Україні</h1>
     <div class="about-content">
-      <p>Добро пожаловать в BoltMaster — ваш надежный партнер в выборе качественного инструмента и оборудования! Мы предлагаем широкий ассортимент профессионального и бытового инструмента для ремонта, строительства, монтажа и домашнего использования.</p>
+      <p>Ласкаво просимо до BoltMaster — ваш надійний партнер у виборі якісного інструменту та обладнання! Ми пропонуємо широкий асортимент професійного та побутового інструменту для ремонту, будівництва, монтажу та домашнього використання.</p>
       
-      <h2>Категории инструментов в нашем магазине</h2>
-      <p>В каталоге BoltMaster вы найдете все необходимое для выполнения задач любой сложности:</p>
+      <h2>Категорії інструментів у нашому магазині</h2>
+      <p>У каталозі BoltMaster ви знайдете все необхідне для виконання завдань будь-якої складності:</p>
       
-      <h3>Крепеж и расходные материалы</h3>
-      <p>У нас вы можете купить заклепки алюминиевые, скобы для степлера и другой крепеж по выгодным ценам с доставкой по всей Украине.</p>
+      <h3>Кріплення та витратні матеріали</h3>
+      <p>У нас ви можете купити заклепки алюмінієві, скоби для степлера та інше кріплення за вигідними цінами з доставкою по всій Україні.</p>
       
-      <h3>Сантехника и системы водоснабжения</h3>
-      <p>В наличии гидроаккумуляторы, циркуляционные и фонтанные насосы, реле давления, расширительные баки для систем отопления от проверенных брендов.</p>
+      <h3>Сантехніка та системи водопостачання</h3>
+      <p>В наявності гідроакумулятори, циркуляційні та фонтанні насоси, реле тиску, розширювальні баки для систем опалення від перевірених брендів.</p>
       
-      <h3>Абразивный и слесарный инструмент</h3>
-      <p>Предлагаем лепестковые круги для УШМ, наборы торцевых головок и бит, ключи-трещотки, отвертки ударные, зубила и клещи переставные для труб.</p>
+      <h3>Абразивний та слюсарний інструмент</h3>
+      <p>Пропонуємо пелюсткові круги для УШМ, набори торцевих головок та біт, ключі-трещотки, викрутки ударні, зубила та кліщі переставні для труб.</p>
       
-      <h3>Щетки металлические и малярный инструмент</h3>
-      <p>В нашем магазине представлены дисковые, чашечные и конусные щетки для дрелей и УШМ, а также шпатели, валики, кюветки и другой малярный инструмент.</p>
+      <h3>Щітки металеві та малярний інструмент</h3>
+      <p>У нашому магазині представлені дискові, чашкові та конічні щітки для дрилів та УШМ, а також шпателі, валики, кюветки та інший малярний інструмент.</p>
       
-      <h2>Почему выбирают BoltMaster?</h2>
+      <h2>Чому обирають BoltMaster?</h2>
       <ul>
-        <li>Широкий ассортимент инструментов и оборудования</li>
-        <li>Гарантия качества на все товары</li>
-        <li>Конкурентные цены и регулярные акции</li>
-        <li>Быстрая доставка по Киеву и всей Украине</li>
-        <li>Профессиональные консультации по подбору инструмента</li>
+        <li>Широкий асортимент інструментів та обладнання</li>
+        <li>Гарантія якості на всі товари</li>
+        <li>Конкурентні ціни та регулярні акції</li>
+        <li>Швидка доставка по Києву та всій Україні</li>
+        <li>Професійні консультації з підбору інструменту</li>
       </ul>
       
-      <p>Независимо от того, нужен ли вам инструмент для профессионального использования или для домашнего ремонта, в BoltMaster вы найдете именно то, что ищете. Мы тщательно отбираем ассортимент, сотрудничая только с проверенными производителями и поставщиками.</p>
+      <p>Незалежно від того, чи потрібен вам інструмент для професійного використання чи для домашнього ремонту, у BoltMaster ви знайдете саме те, що шукаєте. Ми ретельно відбираємо асортимент, співпрацюючи лише з перевіреними виробниками та постачальниками.</p>
       
-      <p>Сделайте заказ в нашем интернет-магазине уже сегодня и убедитесь в качества нашего сервиса и товаров!</p>
+      <p>Зробіть замовлення в нашому інтернет-магазині вже сьогодні та переконайтеся у якості нашого сервісу та товарів!</p>
     </div>
   </div>
 </section>
 
+<!-- Лічильник переглядів (тільки для адміністраторів) -->
+<div id="page-views-container" style="display: none; text-align: center; margin-top: 10px;">
+    <img id="page-views" alt="Page Views" style="display: block; margin: 10px auto;"/>
+</div>
+
 <footer>
   <div class="footer-section">
-    <h4>Помощь</h4>
-    <a href="#" onclick="openRules(); return false;">Правила магазина</a>
+    <h4>Допомога</h4>
+    <a href="#" onclick="openRules(); return false;">Правила магазину</a>
     <div class="contact-info">
       <div><i class="fas fa-envelope" aria-hidden="true"></i> korovinkonstantin0@gmail.com</div>
       <div><i class="fas fa-phone" aria-hidden="true"></i> +380684296978</div>
@@ -300,17 +305,17 @@
   </div>
   
   <div class="copyright">
-    © <span id="year"></span> BoltMaster. Все права защищены.
+    © <span id="year"></span> BoltMaster. Всі права захищені.
   </div>
   
-  <!-- Скрытые структурированные данные для локального бизнеса -->
+  <!-- Приховані структуровані дані для локального бізнесу -->
   <div itemscope itemtype="https://schema.org/LocalBusiness" style="display:none;">
     <span itemprop="name">BoltMaster</span>
-    <span itemprop="description">Интернет-магазин инструментов</span>
+    <span itemprop="description">Інтернет-магазин інструментів</span>
     <span itemprop="telephone">+380684296978</span>
     <span itemprop="email">korovinkonstantin0@gmail.com</span>
     <div itemprop="address" itemscope itemtype="https://schema.org/PostalAddress">
-      <span itemprop="addressCountry">Украина</span>
+      <span itemprop="addressCountry">Україна</span>
     </div>
     <span itemprop="priceRange">₴</span>
   </div>
@@ -318,95 +323,95 @@
 
 <div id="modal" class="modal">
   <div class="modal-content" id="modal-content">
-    <button class="modal-close" onclick="closeModal()" aria-label="Закрыть"><i class="fas fa-times" aria-hidden="true"></i></button>
+    <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
   </div>
 </div>
 
-<!-- Добавим модальное окно для правил после существующего модального окна -->
+<!-- Додамо модальне вікно для правил після існуючого модального вікна -->
 <div id="rules-modal" class="modal">
   <div class="modal-content" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
-    <button class="modal-close" onclick="closeRulesModal()" aria-label="Закрыть"><i class="fas fa-times" aria-hidden="true"></i></button>
+    <button class="modal-close" onclick="closeRulesModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
     <div class="rules-container">
-      <h1>Правила интернет‑магазина BoltMaster</h1>
-      <div class="version">Актуальная версия: 1.0 — опубликовано: 16.09.2025</div>
+      <h1>Правила інтернет‑магазину BoltMaster</h1>
+      <div class="version">Актуальна версія: 1.0 — опубліковано: 16.09.2025</div>
       
       <section id="general">
-        <h2>1. Общие положения</h2>
-        <p>1.1. Эти правила определяют порядок оформления и обработки заказов в интернет‑магазине ElectroTools, а также права и обязанности сторон.</p>
-        <p>1.2. Размещая заказ, Покупатель подтверждает согласие с настоящими правилами.</p>
-        <p>1.3. Магазин вправе вносить изменения в правила; новая версия вступает в силу с момента публикации на сайте.</p>
+        <h2>1. Загальні положення</h2>
+        <p>1.1. Ці правила визначають порядок оформлення та обробки замовлень в інтернет‑магазині BoltMaster, а також права та обов'язки сторін.</p>
+        <p>1.2. Розміщуючи замовлення, Покупець підтверджує згоду з цими правилами.</p>
+        <p>1.3. Магазин має право вносити зміни до правил; нова версія набуває чинності з моменту публікації на сайті.</p>
       </section>
 
       <section id="ordering">
-        <h2>2. Оформление заказа</h2>
+        <h2>2. Оформлення замовлення</h2>
         <ul>
-          <li>2.1. Заказ оформляется на сайте через корзину. При оформлении необходимо указать корректные Ф.И.О., адрес доставки, телефон и e‑mail.</li>
-          <li>2.2. После размещения заказа Покупатель получает подтверждение на e‑mail и/или SMS.</li>
-          <li>2.3. Магазин оставляет за собой право связаться с Покупателем для подтверждения заказа и условий доставки.</li>
+          <li>2.1. Замовлення оформляється на сайті через кошик. При оформленні необхідно вказати коректні ПІБ, адресу доставки, телефон та e‑mail.</li>
+          <li>2.2. Після розміщення замовлення Покупець отримує підтвердження на e‑mail та/або SMS.</li>
+          <li>2.3. Магазин залишає за собою право зв'язатися з Покупцем для підтвердження замовлення та умов доставки.</li>
         </ul>
       </section>
 
       <section id="payment">
         <h2>3. Оплата</h2>
         <ul>
-          <li>3.1. Доступные способы оплаты: онлайн‑оплата банковской картой, наложенный платёж (по согласованию), безналичный расчёт для юридических лиц.</li>
-          <li>3.2. Оплата считается произведённой с момента получения подтверждения платёжной системы.</li>
-          <li>3.3. В случае неуспешной оплаты магазин вправе отменить заказ и уведомить Покупателя.</li>
+          <li>3.1. Доступні способи оплати: онлайн‑оплата банківською карткою, накладений платіж (за погодженням), безготівковий розрахунок для юридичних осіб.</li>
+          <li>3.2. Оплата вважається виконаною з моменту отримання підтвердження платіжної системи.</li>
+          <li>3.3. У разі невдалої оплати магазин має право скасувати замовлення та повідомити Покупця.</li>
         </ul>
       </section>
 
       <section id="delivery">
         <h2>4. Доставка</h2>
         <ul>
-          <li>4.1. Доставка выполняется курьерскими службами или самовывозом из пунктов выдачи (если доступно).</li>
-          <li>4.2. Стоимость и срок доставки рассчитываются при оформлении заказа и зависят от региона и выбранного способа.</li>
-          <li>4.3. Магазин не несёт ответственности за задержки доставки, вызванные работой сторонних транспортных компаний, погодными условиями или форс‑мажором.</li>
+          <li>4.1. Доставка виконується кур'єрськими службами або самовивозом з пунктів видачі (якщо доступно).</li>
+          <li>4.2. Вартість та термін доставки розраховуються при оформленні замовлення та залежать від регіону та обраного способу.</li>
+          <li>4.3. Магазин не несе відповідальності за затримки доставки, викликані роботою сторонніх транспортних компаній, погодними умовами чи форс‑мажором.</li>
         </ul>
       </section>
 
       <section id="warranty_return">
-        <h2>5. Гарантия и возврат</h2>
+        <h2>5. Гарантія та повернення</h2>
         <ul>
-          <li>5.1. На большинство товаров распространяется гарантия производителя. Срок гарантия указан в карточке товара или в сопроводительных документах.</li>
-          <li>5.2. Возврат товара надлежащего качества возможен в течение 14 дней с момента покупки при соблюдении условий: товарный вид, целостность упаковки, сохранённые ярлыки и комплектующие.</li>
-          <li>5.3. Возврат дефектного товара осуществляется в соответствии с действующим законодательством и правилами производителя — обмен или возврат денежный средств производится после проверки товара.</li>
-          <li>5.4. Стоимость доставка при возврате возмещается в порядке, установленном законодательством и внутренной политикой магазина.</li>
+          <li>5.1. На більшість товарів поширюється гарантія виробника. Термін гарантії вказаний у картці товару або в супровідних документах.</li>
+          <li>5.2. Повернення товару належної якості можливе протягом 14 днів з моменту покупки за дотримання умов: товарний вигляд, цілісність упаковки, збережені ярлики та комплектуючі.</li>
+          <li>5.3. Повернення дефектного товару здійснюється відповідно до чинного законодавства та правил виробника — обмін або повернення коштів проводиться після перевірки товару.</li>
+          <li>5.4. Вартість доставки при поверненні відшкодовується в порядку, встановленому законодавством та внутрішньою політикою магазину.</li>
         </ul>
       </section>
 
       <section id="responsibility">
-        <h2>6. Ответственность сторон</h2>
+        <h2>6. Відповідальність сторін</h2>
         <ul>
-          <li>6.1. Магазин обязуется предоставить товары, соответствующие описанию в карточке товара.</li>
-          <li>6.2. Магазин не несёт ответственности за убытки Покупателя, возникшие вследствие неправильного использования товара.</li>
-          <li>6.3. Магазин не несёт ответственности за задержки или повреждения, вызванные третьими лицами (транспортные компании), а также в случае некорректно указанных Покупателем данных.</li>
+          <li>6.1. Магазин зобов'язується надати товари, що відповідають опису в картці товару.</li>
+          <li>6.2. Магазин не несе відповідальності за збитки Покупця, що виникли внаслідок неправильного використання товару.</li>
+          <li>6.3. Магазин не несе відповідальності за затримки чи пошкодження, викликані третіми особами (транспортні компанії), а також у разі некоректно вказаних Покупцем даних.</li>
         </ul>
       </section>
 
       <section id="personal_data">
-        <h2>7. Персональные данные и конфиденциальность</h2>
+        <h2>7. Персональні дані та конфіденційність</h2>
         <ul>
-          <li>7.1. Магазин обрабатывает персональные данные Покупателей в соответствии с законодательством о защите персональных данных.</li>
-          <li>7.2. Информация используется для обработки заказов, доставки и обратной связи, а также может использоваться для рассылки акций при согласии Покупателя.</li>
-          <li>7.3. Магазин не передаёт персональные данные третьим лицам без согласия Покупателя, за исключением случаев, предусмотренных законом (например, передача транспортным компаниям для доставки).</li>
+          <li>7.1. Магазин обробляє персональні дані Покупців відповідно до законодавства про захист персональних даних.</li>
+          <li>7.2. Інформація використовується для обробки замовлень, доставки та зворотного зв'язку, а також може використовуватися для розсилки акцій за згодою Покупця.</li>
+          <li>7.3. Магазин не передає персональні дані третім особам без згоди Покупця, за винятком випадків, передбачених законом (наприклад, передача транспортним компаніям для доставки).</li>
         </ul>
       </section>
 
       <section id="dispute">
-        <h2>8. Споры и форс‑мажор</h2>
+        <h2>8. Спори та форс‑мажор</h2>
         <ul>
-          <li>8.1. Все споры, возникающие между Покупателем и Магазином, решаются путём переговоров. В случае невозможности достичь соглашения спор подлежит рассмотрению в установленном законом порядке.</li>
-          <li>8.2. Магазин освобождается от ответственности за частичное или полное неисполнение обязательств, вызванное форс‑мажорными обстоятельствами (военные действия, чрезвычайные природные события, действия органов власти и т.п.).</li>
+          <li>8.1. Усі спори, що виникають між Покупцем та Магазином, вирішуються шляхом переговорів. У разі неможливості досягти згоди спір підлягає розгляду у встановленому законом порядку.</li>
+          <li>8.2. Магазин звільняється від відповідальності за часткове або повне невиконання зобов'язань, викликане форс‑мажорними обставинами (військові дії, надзвичайні природні події, дії органів влади тощо).</li>
         </ul>
       </section>
 
       <section id="contacts">
-        <h2>9. Контактная информация</h2>
-        <p class="small">По вопросам, связанным с заказами, оплатой, доставкой или возвратом, пожалуйста, обращайтесь в раздел «Контакты» на сайте или используйте указанные телефоны и e‑mail.</p>
+        <h2>9. Контактна інформація</h2>
+        <p class="small">З питань, пов'язаних із замовленнями, оплатою, доставкою або поверненням, будь ласка, звертайтеся до розділу «Контакти» на сайті або використовуйте вказані телефони та e‑mail.</p>
       </section>
 
       <div class="actions">
-        <button onclick="closeRulesModal()" class="btn">Закрыть</button>
+        <button onclick="closeRulesModal()" class="btn">Закрити</button>
       </div>
     </div>
   </div>
