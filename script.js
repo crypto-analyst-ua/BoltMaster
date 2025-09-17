@@ -14,7 +14,7 @@ const db = firebase.firestore();
 const auth = firebase.auth();
 
 // Константы приложения
-const ADMIN_PASSWORD = "12345";
+const ADMIN_PASSWORD = "Lenok1378@";
 const CART_STORAGE_KEY = "electrotools_cart";
 const FAVORITES_STORAGE_KEY = "electrotools_favorites";
 const FEED_URL_KEY = "electrotools_feed_url";
