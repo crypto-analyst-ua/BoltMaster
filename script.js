@@ -76,7 +76,7 @@ function loadProductsFromJson() {
     })
     .then(data => {
       if (Array.isArray(data)) {
-        return data;
+        return data; // Повертаємо дані без перемішування
       } else {
         throw new Error('Невірний формат файлу products.json');
       }
@@ -127,7 +127,7 @@ function initApp() {
       })
       .catch(jsonError => {
         console.error("Помилка завантаження з JSON:", jsonError);
-        showNotification("Не вдалося завантажити товари", "error");
+        showNotification("", "error");
       });
   });
   
@@ -206,10 +206,10 @@ function loadProducts() {
   showLoadingSkeleton();
   
   return db.collection("products")
-    .orderBy("createdAt", "desc")
-    .get()
-    .then((querySnapshot) => {
-      if (querySnapshot.empty) {
+        .orderBy("createdAt", "desc")
+        .get()
+        .then((querySnapshot) => {
+            if (querySnapshot.empty) {
         // Якщо в Firestore немає товарів, пробуємо завантажити з localStorage
         const data = localStorage.getItem('products_backup');
         if (data) {
@@ -237,10 +237,12 @@ function loadProducts() {
             });
         }
       } else {
-        products = [];
-        querySnapshot.forEach((doc) => {
-          products.push({ id: doc.id, ...doc.data() });
-        });
+                products = [];
+                querySnapshot.forEach((doc) => {
+                    products.push({ id: doc.id, ...doc.data() });
+                });
+                
+                products = shuffleArray(products);
         
         // Зберігаємо в кеш
         localStorage.setItem('products_cache', JSON.stringify(products));
@@ -2190,12 +2192,12 @@ function viewOrders() {
 
 // Функція для відкриття модального вікна з правилами
 function openRules() {
-  document.getElementById('rules-modal').style.display = 'block';
+  document.getElementById('rules-modal').classList.add('active');
 }
 
 // Функція для закриття модального вікна з правилами
 function closeRulesModal() {
-  document.getElementById('rules-modal').style.display = 'none';
+  document.getElementById('rules-modal').classList.remove('active');
 }
 
 // Закриття модального вікна при кліку outside content
@@ -2204,6 +2206,27 @@ document.getElementById('rules-modal').addEventListener('click', function(e) {
     closeRulesModal();
   }
 });
+
+// Функція перемикання видимості фільтрів
+function toggleFilters() {
+  const filters = document.querySelector('.filters');
+  filters.classList.toggle('active');
+  
+const button = document.querySelector('.filter-toggle');
+  if (filters.classList.contains('active')) {
+    button.innerHTML = '<i class="fas fa-times"></i> Приховати фільтри';
+  } else {
+    button.innerHTML = '<i class="fas fa-filter"></i> Показати фільтри';
+  }
+}
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
 
 // Ініціалізація додатка після завантаження DOM
 document.addEventListener('DOMContentLoaded', initApp);
