@@ -1278,6 +1278,11 @@ function showOrderConfirmation(orderId, order) {
         <p><strong>Відділення:</strong> ${order.delivery.warehouse}</p>
         <p><strong>Спосіб оплати:</strong> ${order.paymentMethod === 'cash' ? 'Готівкою при отриманні' : 'Онлайн-оплата карткою'}</p>
         <p><strong>Сума товарів:</strong> ${formatPrice(order.total)} ₴</p>
+        
+        <div class="manager-notice" style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff;">
+          <i class="fas fa-phone" style="color: #007bff; margin-right: 10px;"></i>
+          <strong>Наш менеджер зв'яжеться з вами протягом години для підтвердження замовлення та уточнення деталей.</strong>
+        </div>
       </div>
       <div class="confirmation-actions">
         <button class="btn btn-detail" onclick="closeModal()">Продовжити покупки</button>
