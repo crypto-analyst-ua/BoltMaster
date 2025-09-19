@@ -8,6 +8,11 @@ const firebaseConfig = {
   appId: "1:995027194761:web:d3464fefcc6eb41129c758"
 };
 
+// Константи для EmailJS
+const EMAILJS_SERVICE_ID = "boltmaster-2025";
+const EMAILJS_TEMPLATE_ID = "template_2csi2fp";
+const EMAILJS_USER_ID = "hYmYimcQ5x5Mu_skB";
+
 // Ініціалізація Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
@@ -60,6 +65,47 @@ function setupPageCounter() {
   }
 }
 
+// Функція отправки email с данными заказа
+function sendOrderEmail(orderId, order) {
+  // Форматируем список товаров
+  let itemsList = '';
+  for (const [productId, quantity] of Object.entries(order.items)) {
+    const product = products.find(p => p.id === productId);
+    if (product) {
+      itemsList += `
+        <tr>
+          <td>${product.title}</td>
+          <td>${quantity}</td>
+          <td>${formatPrice(product.price)} ₴</td>
+          <td>${formatPrice(product.price * quantity)} ₴</td>
+        </tr>
+      `;
+    }
+  }
+  
+  const templateParams = {
+    to_email: "korovinkonstantin0@gmail.com", // Замените на нужный email
+    order_id: orderId,
+    customer_name: order.userName,
+    customer_email: order.userEmail,
+    customer_phone: order.userPhone,
+    delivery_service: order.delivery.service,
+    delivery_city: order.delivery.city,
+    delivery_warehouse: order.delivery.warehouse,
+    payment_method: order.paymentMethod === 'cash' ? 'Готівкою при отриманні' : 'Онлайн-оплата карткою',
+    total_amount: formatPrice(order.total),
+    items: itemsList,
+    order_date: new Date().toLocaleString('uk-UA')
+  };
+
+  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
+    .then(function(response) {
+      console.log('Email успешно отправлен!', response.status, response.text);
+    }, function(error) {
+      console.error('Ошибка отправки email:', error);
+    });
+}
+
 // Додаємо нову функцію для завантаження товарів з JSON файлу
 function loadProductsFromJson() {
   return fetch('products.json')
@@ -85,6 +131,9 @@ function loadProductsFromJson() {
 
 // Ініціалізація додатка
 function initApp() {
+  // Ініціалізація EmailJS
+  emailjs.init(EMAILJS_USER_ID);
+
   // Перевіряємо статус аутентифікації
   auth.onAuthStateChanged(user => {
     if (user) {
@@ -1204,6 +1253,9 @@ function placeOrder(event) {
       cart = {};
       localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
       updateCartCount();
+      
+      // Отправляем email с заказом
+      sendOrderEmail(docRef.id, order);
       
       showNotification(`Замовлення успішно оформлено. Номер вашого замовлення: ${docRef.id}`);
       closeModal();
