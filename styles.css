@@ -2045,3 +2045,19 @@ button:focus, input:focus, select:focus, textarea:focus {
     font-size: 0.8rem;
   }
 }
+
+.manager-notice {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #007bff;
+  display: flex;
+  align-items: center;
+}
+
+.manager-notice i {
+  color: #007bff;
+  margin-right: 10px;
+  font-size: 1.2rem;
+}
