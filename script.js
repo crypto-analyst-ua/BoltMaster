@@ -1333,7 +1333,7 @@ function showOrderConfirmation(orderId, order) {
         
         <div class="manager-notice" style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff;">
           <i class="fas fa-phone" style="color: #007bff; margin-right: 10px;"></i>
-          <strong>Наш менеджер зв'яжеться з вами протягом години для підтвердження замовлення та уточнення деталей.</strong>
+          <strong>Ваше замовлення вже в обробці! Протягом години ми зв’яжемося з вами для підтвердження, а після цього надішлемо всю інформацію про доставку та ТТН прямо на вашу пошту.</strong>
         </div>
       </div>
       <div class="confirmation-actions">
